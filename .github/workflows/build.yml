@@ -1,0 +1,81 @@
+# Builds the firmware on every push to main and publishes the browser flasher to GitHub Pages.
+# One-time setup: repo Settings > Pages > Source = "GitHub Actions".
+
+name: Build firmware and flasher
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Install PlatformIO and esptool
+        run: pip install platformio esptool
+
+      - name: Build firmware
+        run: pio run -e jc4827w543
+
+      - name: Merge into one flashable image
+        run: |
+          BUILD=.pio/build/jc4827w543
+          BOOT_APP0=$(find ~/.platformio/packages/framework-arduinoespressif32 -name boot_app0.bin | head -n 1)
+          python -m esptool --chip esp32s3 merge_bin \
+            -o gridmix-merged.bin \
+            --flash_mode dio --flash_size 4MB \
+            0x0     $BUILD/bootloader.bin \
+            0x8000  $BUILD/partitions.bin \
+            0xe000  "$BOOT_APP0" \
+            0x10000 $BUILD/firmware.bin
+
+      - name: Assemble flasher site
+        run: |
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          mkdir -p site/firmware
+          cp -r web/* site/
+          cp gridmix-merged.bin site/firmware/
+          sed "s/__VERSION__/$VERSION/" web/firmware/manifest.json > site/firmware/manifest.json
+          sed -i "s/__VERSION__/$VERSION/" site/index.html
+
+      - name: Keep the firmware as a downloadable build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridmix-firmware
+          path: gridmix-merged.bin
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
