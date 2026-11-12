@@ -11,7 +11,7 @@ An animated 4.3" desk display that shows what's powering your electricity grid r
 - An animated scene where each power source comes alive in proportion to its share
 - Renewable percentage and a colour-matched bar of every source
 - Your tariff rate right now, with time-of-use periods and a pre-peak warning
-- Switch between your state, your whole country, or a global estimate
+- Switch between your local grid and your whole country
 - Install and update from the browser, no software needed
 
 ## Hardware
@@ -26,7 +26,7 @@ An animated 4.3" desk display that shows what's powering your electricity grid r
 | --- | --- | --- |
 | Australia | [Open Electricity](https://openelectricity.org.au) (CC BY-NC 4.0) | Every 5 minutes |
 | United States | [U.S. EIA Hourly Electric Grid Monitor](https://www.eia.gov/electricity/gridmonitor/) | Hourly |
-| Elsewhere | [Electricity Maps](https://www.electricitymaps.com) | Hourly |
+| Most other countries | [Electricity Maps](https://www.electricitymaps.com) (personal, non-commercial) | Live |
 
 Each display uses its owner's own free API key and talks to the source directly. There's no account or cloud service in between.
 
