@@ -77,6 +77,11 @@
     details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px; margin-bottom: 10px; }
     summary { cursor: pointer; font-weight: 600; color: var(--white); padding: 12px 0; min-height: 44px; display: flex; align-items: center; }
     details p { margin: 0 0 14px; color: #C9D0D9; }
+    .steps li { margin-bottom: 14px; }
+    .shot { margin: 12px 0 4px; }
+    .shot img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+    .tip { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+    #key .card { margin-bottom: 12px; }
     footer { max-width: 1040px; margin: 0 auto; padding: 32px 20px 48px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 
     /* Scene animations (match the device firmware) */
@@ -126,6 +131,7 @@
     <li><a href="#need">What you need</a></li>
     <li><a href="#install">Install</a></li>
     <li><a href="#setup">Set up</a></li>
+    <li><a href="#key">Get a key</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
 </nav>
@@ -300,7 +306,7 @@
           <tr><td>USB power adapter</td><td>Any 5 V phone charger for everyday use.</td></tr>
           <tr><td>Printed stand</td><td>From the MakerWorld listing. Prints without supports.</td></tr>
           <tr><td>A computer with Chrome or Edge</td><td>Only for installing. Windows, Mac or Linux.</td></tr>
-          <tr><td>A free data key</td><td>See <a href="#setup">Set up</a> below. Takes a couple of minutes.</td></tr>
+          <tr><td>A free data key</td><td>See <a href="#key">Get your free data key</a> below. Takes a couple of minutes.</td></tr>
         </tbody>
       </table>
     </div>
@@ -352,6 +358,40 @@
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section id="key" aria-labelledby="key-h">
+    <h2 id="key-h">Get your free data key</h2>
+    <p class="sub">A one-off job that takes about two minutes. The key is like a library card: it lets your display ask for grid data.</p>
+
+    <div class="card">
+      <h3 style="margin-top:0">Australia: Open Electricity</h3>
+      <ol class="steps">
+        <li>Go to <a href="https://platform.openelectricity.org.au">platform.openelectricity.org.au</a> and create a free account.</li>
+        <li>Click <b>API Keys</b> in the menu on the left, then the button to create a new key.</li>
+        <li>Name the key <b>Gridmix</b>, set <b>Expiry</b> to <b>Never</b>, and click <b>Create Key</b>.
+          <figure class="shot">
+            <img src="img/oe-create-key.jpg" width="1400" height="603" loading="lazy" alt="Open Electricity's Create New API Key page, with Key Name set to Gridmix and Expiry set to Never, and the Create Key button.">
+          </figure>
+        </li>
+        <li><b>Copy the key straight away</b> with the copy button. It starts with <code>oe_</code> and is only shown once. Keep it somewhere safe, then click <b>I've saved my key</b>.
+          <figure class="shot">
+            <img src="img/oe-copy-key.jpg" width="1400" height="603" loading="lazy" alt="The Save Your API Key window, showing where the key appears and its copy button. The key itself is hidden in this picture.">
+          </figure>
+        </li>
+        <li>Paste the key into your display's setup page (<code>gridmix.local</code>) when it asks.</li>
+      </ol>
+      <p class="tip">Keep your key private, like a password. If it ever ends up somewhere public, delete it on the API Keys page and make a new one.</p>
+    </div>
+
+    <details>
+      <summary>United States: U.S. EIA</summary>
+      <p>Register with your email address at <a href="https://www.eia.gov/opendata/">eia.gov/opendata</a>. Your key is emailed to you. Step-by-step pictures coming soon.</p>
+    </details>
+    <details>
+      <summary>Anywhere else: Electricity Maps</summary>
+      <p>Create a free account at <a href="https://www.electricitymaps.com/free-tier">electricitymaps.com</a> and copy your key from the dashboard. Step-by-step pictures coming soon.</p>
+    </details>
   </section>
 
   <section id="faq" aria-labelledby="faq-h">
