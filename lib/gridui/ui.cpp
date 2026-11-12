@@ -68,7 +68,7 @@ static Spoke blades[3][3];
 static lv_obj_t *hubs[3];
 static Raster flame_art;
 // bottom
-static lv_obj_t *bar, *chips, *thin_bar;
+static lv_obj_t *bar, *chips, *thin_bar, *details_btn;
 // picker
 static lv_obj_t *picker, *opt_btn[2], *opt_title[2], *opt_sub[2], *opt_freq[2], *opt_ago[2], *opt_ring[2], *opt_dot[2], *opt_fresh[2];
 
@@ -285,6 +285,7 @@ static void on_scene(lv_event_t *) {
   if (cbs.scene_tapped) cbs.scene_tapped();
 }
 static void on_rate(lv_event_t *) { show_tariff(); }
+static void on_details(lv_event_t *) { show_detail(); }
 
 
 static void build_header() {
@@ -462,6 +463,12 @@ static void build_bottom() {
   lv_obj_set_ext_click_area(thin_bar, 8);
   clickable(thin_bar, on_bar);
 
+  // "Details ›" in the bottom-right corner (tapping the scene does the same)
+  details_btn = box(scr, 380, 240, 100, 32, 0, LV_OPA_TRANSP);
+  clickable(details_btn, on_details);
+  lv_obj_t *dl = label(details_btn, &gm_inter_12, TEXT, "Details \xE2\x80\xBA");
+  lv_obj_align(dl, LV_ALIGN_RIGHT_MID, -16, 0);
+
   chips = row(scr, 12);
   lv_obj_set_pos(chips, 16, 244);
   lv_obj_set_height(chips, 20);
@@ -528,7 +535,13 @@ static void set_hidden(lv_obj_t *o, bool hidden) { lv_obj_set_hidden(o, hidden);
 
 
 
+static int chips_used = 0;   // width taken in the chip row, which must stay clear of "Details ›"
 static void add_chip(lv_obj_t *parent, Source s, int pct) {
+  char t[8];
+  snprintf(t, sizeof t, "%d%%", pct);
+  const int w = 8 + 5 + text_width(source_name(s), &gm_inter_12) + 5 + text_width(t, &gm_grotesk_13) + (chips_used ? 12 : 0);
+  if (chips_used + w > 360) return;
+  chips_used += w;
   lv_obj_t *c = row(parent, 5);
   lv_obj_t *sw = box(c, 0, 0, 8, 8, SRC_STYLE[s].color);
   lv_obj_set_style_radius(sw, 2, 0);
@@ -545,6 +558,8 @@ static void update_bottom() {
   set_hidden(bar, !bar_fat);
   set_hidden(thin_bar, bar_fat);
   lv_obj_set_y(chips, bar_fat ? 244 : 232);
+  chips_used = 0;
+  lv_obj_set_y(details_btn, bar_fat ? 238 : 226);
   if (!cur.has_data) return;
 
   // sources, biggest first
