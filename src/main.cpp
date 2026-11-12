@@ -15,6 +15,9 @@
 #include <lvgl.h>
 #include "improv_serial.h"
 #include "board_config.h"
+#include "app_state.h"
+#include "settings_store.h"
+#include "setup_server.h"
 
 #if HAS_GT911_TOUCH
 #include <Wire.h>
@@ -32,6 +35,25 @@ Arduino_GFX *gfx = new Arduino_NV3041A(bus, GFX_NOT_DEFINED /* no reset pin */, 
 #if HAS_GT911_TOUCH
 TAMC_GT911 touch(TOUCH_SDA, TOUCH_SCL, TOUCH_INT, TOUCH_RST, LCD_WIDTH, LCD_HEIGHT);
 #endif
+
+// ---------- Settings (from the phone setup page) ----------
+gridcore::Settings g_settings;
+AppStatus g_status;
+static bool net_started = false;
+
+static void apply_brightness() {
+  ledcWrite(LCD_BL, (uint32_t)g_settings.brightness * 255 / 100);
+}
+
+static void apply_settings() {
+  setenv("TZ", g_settings.tz, 1);
+  tzset();
+  apply_brightness();
+}
+
+void on_settings_changed() {
+  apply_settings();
+}
 
 // ---------- Test scene ----------
 static const int HUB_X = 240, HUB_Y = 120, BLADE_LEN = 70;
@@ -145,9 +167,12 @@ static void build_test_screen() {
 void setup() {
   Serial.begin(115200);
 
-  // Backlight on
-  pinMode(LCD_BL, OUTPUT);
-  digitalWrite(LCD_BL, HIGH);
+  // Saved settings (defaults on first boot)
+  settings_load(g_settings);
+
+  // Backlight (PWM, so brightness can be set from the phone)
+  ledcAttach(LCD_BL, 5000, 8);
+  apply_settings();
 
   if (!gfx->begin()) {
     Serial.println("Display init failed - check pins in board_config.h");
@@ -187,6 +212,12 @@ void setup() {
 
 void loop() {
   improv::loop();
+  if (!net_started && WiFi.status() == WL_CONNECTED) {
+    configTzTime(g_settings.tz, "pool.ntp.org", "time.google.com");   // clock, in the user's time zone
+    setup_server_begin();
+    net_started = true;
+  }
+  setup_server_loop();
   lv_timer_handler();
   delay(2);
 }

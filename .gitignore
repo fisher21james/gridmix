@@ -3,3 +3,4 @@
 *.bin
 site/
 __pycache__/
+include/generated/

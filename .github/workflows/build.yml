@@ -36,8 +36,15 @@ jobs:
       - name: Install PlatformIO and esptool
         run: pip install platformio esptool
 
-      - name: Test the data translators (real sample responses)
+      - name: Test the data translators, tariff engine and settings
         run: pio test -e native
+
+      - name: Check the display's root certificates still verify the data APIs
+        run: |
+          for host in api.openelectricity.org.au api.eia.gov; do
+            echo | openssl s_client -connect $host:443 -servername $host -CAfile data/ca_roots.pem -verify_return_error 2>/dev/null | grep -q "Verify return code: 0 (ok)" \
+              && echo "$host: OK" || { echo "::error::$host no longer verifies against data/ca_roots.pem"; exit 1; }
+          done
 
       - name: Build firmware
         run: pio run -e jc4827w543
