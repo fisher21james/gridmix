@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Grid Mix Display (beta) — live electricity mix on a 4.3" ESP32 screen</title>
-  <meta name="description" content="An animated desk display that shows what's powering your grid right now, your power price and the wholesale price. Install the firmware straight from your browser.">
+  <meta name="description" content="An animated desk display that shows what's powering your grid right now, what your power costs, and how the grid is coping. Install the firmware straight from your browser.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
@@ -170,7 +170,7 @@
                     <span style="font-size:10px;color:#C9D0D9">/kWh</span>
                     <span id="pPeriod" style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px"></span>
                   </span>
-                  <span id="pWholesale" style="font-size:10px;font-weight:500;white-space:nowrap"></span>
+                  <span id="pGrid" style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;white-space:nowrap"><span id="pGridDot" style="width:6px;height:6px;border-radius:3px"></span><span id="pGridText"></span></span>
                 </div>
               </div>
 
@@ -294,7 +294,7 @@
     <div class="grid">
       <div class="card"><div class="swatch" style="background:var(--wind)"></div><h3>A living scene</h3><p>Each power source is a little building that comes alive in proportion to how much it's producing: spinning turbines, smoking stacks, a pouring dam, glinting solar panels.</p></div>
       <div class="card"><div class="swatch" style="background:var(--solar)"></div><h3>The mix at a glance</h3><p>A big renewable percentage, plus a colour-matched bar of every source. Tap the bar to switch between a labelled and a slim style.</p></div>
-      <div class="card"><div class="swatch" style="background:var(--gas)"></div><h3>Your price, not just the market's</h3><p>Enter your own tariff and it shows your rate right now, which time-of-use period you're in, and warns you before peak starts.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--gas)"></div><h3>Your price, in plain English</h3><p>Enter your own tariff and it shows your rate right now and which time-of-use period you're in. A simple grid status (clean &amp; cheap, normal, busy or under strain) tells you when it's a good time to run big appliances.</p></div>
       <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country. Australia and the US for now, with more countries coming in updates. Each view shows how fresh its data is.</p></div>
     </div>
   </section>
@@ -447,7 +447,7 @@
     dusk: { top: '#3B3768', bottom: '#F2A06B', hill: '#6C7F4E', ground: '#4D6B43', text: '#FFFFFF', sub: '#F3E9F2', smoke: '#6F6A72' },
     night: { top: '#0A1430', bottom: '#263A6B', hill: '#2B4A33', ground: '#1E3826', text: '#FFFFFF', sub: '#DCE4F2', smoke: '#5C6270' }
   };
-  const WHOLESALE = { neg: '#7EE2A8', mid: '#A9B1BC', high: '#FF8A78' };
+  const GRID = { neg: ['Clean & cheap', '#7EE2A8'], mid: ['Normal', '#C9D0D9'], busy: ['Busy', '#F2B35A'], high: ['Under strain', '#FF8A78'] };
   const PERIOD = {
     'Solar soak': ['#F5D46B', '#3A2C00'], 'Shoulder': ['#E39B3A', '#2B1700'],
     'Peak': ['#D2453A', '#FFFFFF'], 'Flat': ['#2A303A', '#E6EAF0']
@@ -455,7 +455,7 @@
   const TONE = { good: ['#DFF5E8', '#10502F'], ok: ['#EEF2F6', '#1C2633'], bad: ['#FFE3DC', '#7A1E10'] };
   const PRESETS = [
     { region: 'SA · Adelaide', time: '1:20 pm', sky: 'day', price: '−$12', level: 'neg', renew: 93, mix: { solar: 58, wind: 31, gas: 7, battery: 4 },
-      cells: 2, batt: true, status: 'Negative price · run the dishwasher', tone: 'good', rate: '21.0¢', period: 'Solar soak' },
+      cells: 2, batt: true, status: 'Clean & cheap · run the dishwasher', tone: 'good', rate: '21.0¢', period: 'Solar soak' },
     { region: 'SA · Adelaide', time: '9:40 pm', sky: 'night', price: '$88', level: 'mid', renew: 78, mix: { wind: 64, gas: 22, battery: 14 },
       cells: 3, batt: true, status: 'Windy night · turbines doing the heavy lifting', tone: 'ok', rate: '31.2¢', period: 'Shoulder' },
     { region: 'NSW · Sydney', time: '6:15 pm', sky: 'dusk', price: '$312', level: 'high', renew: 23, mix: { coal: 68, gas: 9, hydro: 8, wind: 6, battery: 5, solar: 4 },
@@ -480,8 +480,10 @@
     const per = PERIOD[p.period];
     Object.assign($('pPeriod').style, { background: per[0], color: per[1] });
     $('pPeriod').textContent = p.period;
-    $('pWholesale').textContent = 'Wholesale ' + p.price + '/MWh';
-    $('pWholesale').style.color = WHOLESALE[p.level];
+    const g = GRID[p.level];
+    $('pGridText').textContent = 'Grid: ' + g[0];
+    $('pGrid').style.color = g[1];
+    $('pGridDot').style.background = g[1];
 
     $('skyTop').setAttribute('stop-color', sky.top);
     $('skyBottom').setAttribute('stop-color', sky.bottom);

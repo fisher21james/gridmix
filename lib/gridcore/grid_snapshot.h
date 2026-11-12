@@ -38,6 +38,19 @@ struct GridSnapshot {
   bool battery_is_charging() const { return battery_charging > mw[BATTERY]; }
 };
 
+// Wholesale price turned into something people understand.
+// Thresholds are in $/MWh (Australian NEM; most US sources don't supply a price).
+enum GridStatus : uint8_t {
+  GRID_UNKNOWN = 0,    // no price available
+  GRID_CLEAN_CHEAP,    // price below zero: more solar/wind than needed
+  GRID_NORMAL,         // under $150/MWh
+  GRID_BUSY,           // $150-$300/MWh
+  GRID_STRAIN          // $300/MWh and up: peak demand or a spike
+};
+GridStatus grid_status(const GridSnapshot &s);
+const char *grid_status_label(GridStatus g);   // "Clean & cheap", "Normal", "Busy", "Under strain"
+inline float price_cents_per_kwh(float dollars_per_mwh) { return dollars_per_mwh / 10.0f; }
+
 // Days/seconds helpers (no timezone database needed).
 int64_t days_from_civil(int y, unsigned m, unsigned d);
 // Parses "YYYY-MM-DDTHH", "YYYY-MM-DDTHH:MM", or "...:SS", with optional "+HH:MM"/"-HH:MM"/"Z" offset. Returns UTC seconds, or -1.

@@ -162,6 +162,30 @@ void test_oe_merge_keeps_actual_rooftop() {
   TEST_ASSERT_FLOAT_WITHIN(0.01f, 600.0f, s.mw[SOLAR]);
 }
 
+// ---------- grid status (plain-English version of the wholesale price)
+
+void test_grid_status_thresholds() {
+  GridSnapshot s;
+  TEST_ASSERT_EQUAL(GRID_UNKNOWN, grid_status(s));
+  s.has_price = true;
+  s.price = -12;   TEST_ASSERT_EQUAL(GRID_CLEAN_CHEAP, grid_status(s));
+  s.price = 88;    TEST_ASSERT_EQUAL(GRID_NORMAL, grid_status(s));
+  s.price = 150;   TEST_ASSERT_EQUAL(GRID_BUSY, grid_status(s));
+  s.price = 312;   TEST_ASSERT_EQUAL(GRID_STRAIN, grid_status(s));
+  s.price = 3119.88f; TEST_ASSERT_EQUAL(GRID_STRAIN, grid_status(s));   // real SA spike, 12 Nov 2026
+  TEST_ASSERT_EQUAL_STRING("Clean & cheap", grid_status_label(GRID_CLEAN_CHEAP));
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, 15.0f, price_cents_per_kwh(150));
+}
+
+void test_grid_status_from_real_market_data() {
+  GridSnapshot s;
+  MarketInfo m;
+  parse_openelectricity(OE_SA1_FUELTECH, strlen(OE_SA1_FUELTECH), s);
+  parse_openelectricity_market(OE_SA1_MARKET, strlen(OE_SA1_MARKET), s.data_time, m);
+  merge_market(s, m);
+  TEST_ASSERT_EQUAL(GRID_BUSY, grid_status(s));   // $150/MWh
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_iso_time_utc_hour);
@@ -181,5 +205,7 @@ int main(int, char **) {
   RUN_TEST(test_oe_market_price_and_forecast);
   RUN_TEST(test_oe_merge_adds_rooftop_solar);
   RUN_TEST(test_oe_merge_keeps_actual_rooftop);
+  RUN_TEST(test_grid_status_thresholds);
+  RUN_TEST(test_grid_status_from_real_market_data);
   return UNITY_END();
 }

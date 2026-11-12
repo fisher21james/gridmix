@@ -30,6 +30,24 @@ float GridSnapshot::renewable_pct() const {
   return r * 100.0f / t;
 }
 
+GridStatus grid_status(const GridSnapshot &s) {
+  if (!s.has_price) return GRID_UNKNOWN;
+  if (s.price < 0) return GRID_CLEAN_CHEAP;
+  if (s.price < 150) return GRID_NORMAL;
+  if (s.price < 300) return GRID_BUSY;
+  return GRID_STRAIN;
+}
+
+const char *grid_status_label(GridStatus g) {
+  switch (g) {
+    case GRID_CLEAN_CHEAP: return "Clean & cheap";
+    case GRID_NORMAL: return "Normal";
+    case GRID_BUSY: return "Busy";
+    case GRID_STRAIN: return "Under strain";
+    default: return "";
+  }
+}
+
 // Howard Hinnant's algorithm: days since 1970-01-01 for a proleptic Gregorian date.
 int64_t days_from_civil(int y, unsigned m, unsigned d) {
   y -= m <= 2;
