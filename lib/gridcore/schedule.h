@@ -61,7 +61,11 @@ class Scheduler {
 // ---- freshness
 // "Updated just now", "Updated 4 min ago", "Updated 3 h ago", "Updated 1 day ago"
 void format_ago(int64_t age_s, char *out, size_t cap);
-// Data counts as fresh for 25 minutes (Open Electricity) or 3 hours (EIA, which is hourly and often late).
-bool data_is_fresh(DataSource src, int64_t age_s);
+// How up to date the data on screen is, for the dot next to the clock:
+//   0 = up to date, 1 = falling behind (amber), 2 = out of date (red).
+// Open Electricity: up to 25 min, up to 90 min, older. EIA is hourly and normally runs hours to
+// about a day behind, so: up to 24 h, up to 48 h, older.
+int freshness_level(DataSource src, int64_t age_s);
+inline bool data_is_fresh(DataSource src, int64_t age_s) { return freshness_level(src, age_s) == 0; }
 
 }  // namespace gridcore

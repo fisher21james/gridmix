@@ -49,6 +49,24 @@ bool tariff_rate_now(const Tariff &t, int weekday, int minute, RateNow &out);
 // ("Gap at Sun 01:00", "Overlap at Mon 15:00").
 bool tariff_validate(const Tariff &t, char *err, size_t err_len);
 
+// ---- for the tariff screen
+
+// Today's periods as runs of minutes: [start, end) with the period index. Returns how many.
+struct DaySegment { uint16_t start, end; int8_t index; };
+int tariff_day_segments(const Tariff &t, int weekday, DaySegment *out, int max);
+
+// One card per distinct rate (same name and price), cheapest first, with its hours today
+// written like "10am – 3pm" or "6–10am, 3pm–1am".
+struct RateCard { int index; char hours[40]; };
+int tariff_cards(const Tariff &t, int weekday, RateCard *out, int max);
+
+// "1:20pm", "6am", "12pm"
+void format_clock(int minute_of_day, char *out, size_t cap);
+
+// The next stretch of the cheapest rate, from now on: "Now – 3pm" or "10am – 3pm" (or "Tomorrow 10am – 3pm").
+// False for a flat rate or no plan.
+bool tariff_cheapest_window(const Tariff &t, int weekday, int minute, char *out, size_t cap);
+
 // "HH:MM" -> minutes after midnight; "24:00" allowed as end of day. -1 if invalid.
 int parse_hhmm(const char *s);
 

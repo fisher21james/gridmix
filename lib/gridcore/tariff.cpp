@@ -92,4 +92,101 @@ int parse_hhmm(const char *s) {
   return h * 60 + m;
 }
 
+// ---------------------------------------------------------------- tariff screen helpers
+
+static const char *DASH = "\xE2\x80\x93";   // en dash
+
+int tariff_day_segments(const Tariff &t, int weekday, DaySegment *out, int max) {
+  int n = 0, cur = -2, start = 0;
+  for (int m = 0; m <= DAY_MIN; m++) {
+    const int idx = m < DAY_MIN ? tariff_period_at(t, weekday, m) : -3;
+    if (idx == cur) continue;
+    if (cur != -2 && n < max) out[n++] = DaySegment{(uint16_t)start, (uint16_t)m, (int8_t)cur};
+    cur = idx;
+    start = m;
+  }
+  return n;
+}
+
+void format_clock(int minute_of_day, char *out, size_t cap) {
+  const int md = ((minute_of_day % DAY_MIN) + DAY_MIN) % DAY_MIN;
+  const int h = md / 60, m = md % 60, h12 = h % 12 ? h % 12 : 12;
+  if (m) snprintf(out, cap, "%d:%02d%s", h12, m, h < 12 ? "am" : "pm");
+  else snprintf(out, cap, "%d%s", h12, h < 12 ? "am" : "pm");
+}
+
+// "6–10am" when both ends share am/pm, else "3pm–1am"
+static void format_span(int start, int end, char *out, size_t cap) {
+  char a[12], b[12];
+  format_clock(start, a, sizeof a);
+  format_clock(end, b, sizeof b);
+  const size_t la = strlen(a), lb = strlen(b);
+  if (start % DAY_MIN != end % DAY_MIN && la > 2 && lb > 2 && !strcmp(a + la - 2, b + lb - 2) && (start % DAY_MIN) < (end % DAY_MIN ? end % DAY_MIN : DAY_MIN))
+    a[la - 2] = 0;
+  snprintf(out, cap, "%s%s%s", a, DASH, b);
+}
+
+static bool same_rate(const Tariff &t, int i, int j) {
+  return i >= 0 && j >= 0 && t.periods[i].cents == t.periods[j].cents && !strcmp(t.periods[i].name, t.periods[j].name);
+}
+
+int tariff_cards(const Tariff &t, int weekday, RateCard *out, int max) {
+  DaySegment seg[48];
+  const int ns = tariff_day_segments(t, weekday, seg, 48);
+  int n = 0;
+  for (int k = 0; k < ns && n < max; k++) {
+    if (seg[k].index < 0) continue;
+    bool seen = false;
+    for (int c = 0; c < n; c++) if (same_rate(t, out[c].index, seg[k].index)) seen = true;
+    if (seen) continue;
+    RateCard &card = out[n++];
+    card.index = seg[k].index;
+    card.hours[0] = 0;
+    // A run that ends at midnight and one that starts at midnight with the same rate are one span ("3pm–1am")
+    const bool wraps = ns > 1 && same_rate(t, seg[0].index, seg[ns - 1].index) && same_rate(t, seg[0].index, card.index);
+    if (ns == 1) { snprintf(card.hours, sizeof card.hours, "All day"); continue; }
+    for (int j = 0; j < ns; j++) {
+      if (!same_rate(t, seg[j].index, card.index)) continue;
+      int start = seg[j].start, end = seg[j].end;
+      if (wraps && j == 0) continue;                  // printed with the last run
+      if (wraps && j == ns - 1) end = seg[0].end;     // ... which runs on past midnight
+      char span[24];
+      format_span(start, end, span, sizeof span);
+      const size_t len = strlen(card.hours);
+      snprintf(card.hours + len, sizeof card.hours - len, "%s%s", len ? ", " : "", span);
+    }
+  }
+  // cheapest first
+  for (int i = 1; i < n; i++)
+    for (int j = i; j > 0 && t.periods[out[j].index].cents < t.periods[out[j - 1].index].cents; j--) {
+      RateCard tmp = out[j]; out[j] = out[j - 1]; out[j - 1] = tmp;
+    }
+  return n;
+}
+
+bool tariff_cheapest_window(const Tariff &t, int weekday, int minute, char *out, size_t cap) {
+  if (t.count == 0) return false;
+  float lo = 1e9f, hi = -1e9f;
+  for (int i = 0; i < t.count; i++) { lo = t.periods[i].cents < lo ? t.periods[i].cents : lo; hi = t.periods[i].cents > hi ? t.periods[i].cents : hi; }
+  if (hi - lo < 0.01f) return false;   // flat rate
+  const int now = weekday * DAY_MIN + minute;
+  auto cheap_at = [&](int abs_min) {
+    const int m = ((abs_min % WEEK_MIN) + WEEK_MIN) % WEEK_MIN;
+    const int idx = tariff_period_at(t, m / DAY_MIN, m % DAY_MIN);
+    return idx >= 0 && t.periods[idx].cents <= lo + 0.005f;
+  };
+  int start = -1;
+  for (int step = 0; step < 2 * DAY_MIN; step++) if (cheap_at(now + step)) { start = now + step; break; }
+  if (start < 0) return false;
+  int end = start;
+  while (end - start < DAY_MIN && cheap_at(end)) end++;
+  char a[16], b[16];
+  format_clock(end % DAY_MIN, b, sizeof b);
+  if (start == now) { snprintf(out, cap, "Now %s %s", DASH, b); return true; }
+  format_clock(start % DAY_MIN, a, sizeof a);
+  const bool tomorrow = start / DAY_MIN != now / DAY_MIN;
+  snprintf(out, cap, "%s%s %s %s", tomorrow ? "Tomorrow " : "", a, DASH, b);
+  return true;
+}
+
 }  // namespace gridcore

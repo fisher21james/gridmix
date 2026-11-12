@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   create(cb);
 
   const Tariff plan = demo_tariff();
-  struct Scenario { std::string name; Model model; int action; };   // action: 0 none, 1 open picker, 2 thin bar
+  struct Scenario { std::string name; Model model; int action; };   // action: 0 none, 1 picker, 2 thin bar, 3 detail, 4 tariff
   std::vector<Scenario> list;
   static const char *DEMO_NAMES[4] = {"01-sa-sunny-afternoon", "02-sa-windy-night", "03-nsw-evening-peak", "04-texas-us"};
   for (int i = 0; i < demo_count(); i++) list.push_back({DEMO_NAMES[i], demo_model(i), 0});
@@ -123,14 +123,14 @@ int main(int argc, char **argv) {
     parse_openelectricity_market(OE_SA1_MARKET, strlen(OE_SA1_MARKET), s.data_time, mk);
     merge_market(s, mk);
     Model m = model_build(s, true, SA, 4, 16 * 60 + 5, &plan);
-    model_views(m, "South Australia", SUB, "Australia", "East coast grid (NEM)", "Every 10 min", "Updated 9 min ago", true);
+    model_views(m, "South Australia", SUB, "Australia", "East coast grid (NEM)", "Every 10 min", "Updated 9 min ago", FRESH_OK);
     list.push_back({"05-real-sa-12nov-4pm", m, 0});
   }
   {
     GridSnapshot s;
     parse_eia(EIA_ERCOT, strlen(EIA_ERCOT), s);
     Model m = model_build(s, true, "Texas", 3, 23 * 60, nullptr);
-    model_views(m, "Texas", "My region \xC2\xB7 EIA", "United States", "Lower 48 states (EIA)", "Hourly", "Updated 1 day ago", false);
+    model_views(m, "Texas", "My region \xC2\xB7 EIA", "United States", "Lower 48 states (EIA)", "Hourly", "Updated 1 day ago", FRESH_OK);
     list.push_back({"06-real-texas-11nov-11pm", m, 0});
   }
 
@@ -154,12 +154,26 @@ int main(int argc, char **argv) {
     m.tone = TONE_BAD;
     list.push_back({"11-key-problem", m, 0});
   }
+  // Detail screen (tap the scene) and tariff screen (tap your rate)
+  list.push_back({"12-detail-sa-sunny", list[0].model, 3});
+  list.push_back({"13-detail-real-sa", list[4].model, 3});
+  list.push_back({"14-tariff-sa-afternoon", list[0].model, 4});
+  list.push_back({"15-tariff-sa-evening", list[1].model, 4});
+  list.push_back({"16-tariff-flat-us", list[3].model, 4});
+  list.push_back({"17-tariff-no-plan", list[5].model, 4});
+  {
+    Model m = list[4].model;       // data that's falling behind: amber dot next to the clock
+    m.freshness = FRESH_LATE;
+    list.push_back({"18-data-falling-behind", m, 0});
+  }
 
   for (Scenario &sc : list) {
     update(sc.model);
     run(1500);
     if (sc.action == 1) tap(60, 20);
     if (sc.action == 2) tap(240, 224);
+    if (sc.action == 3) tap(300, 120);
+    if (sc.action == 4) tap(420, 14);
     save_png(out + "/" + sc.name + ".png");
     for (int f = 0; f < frames; f++) {
       run(50);
@@ -169,6 +183,7 @@ int main(int argc, char **argv) {
     }
     if (sc.action == 1) tap(447, 60);   // close the picker
     if (sc.action == 2) tap(240, 217);  // back to the fat bar
+    if (sc.action >= 3) tap(30, 20);    // Back
     printf("%s\n", sc.name.c_str());
   }
   tap(240, 120);

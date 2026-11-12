@@ -220,7 +220,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         api.header($("header").value);
         rebuild();
       }
-      if (kind === "scene") log("Tapped the scene (on the display, this skips to the next sample before setup)");
+      if (kind === "scene") log("Opened the detail screen (tap ‹ Back, or it returns by itself after a minute)");
     }});
   } catch (e) {
     $("loading").textContent = "The simulator couldn't start in this browser.";
@@ -242,6 +242,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     age: M.cwrap("gm_set_age", null, ["number"]),
     hasPlan: M.cwrap("gm_set_has_plan", null, ["number"]),
     setView: M.cwrap("gm_set_view", null, ["number"]),
+    historyMode: M.cwrap("gm_set_history_mode", null, ["number"]),
     setSettings: M.cwrap("gm_set_settings", "string", ["string"]),
     getSettings: M.cwrap("gm_get_settings", "string", []),
     parse: M.cwrap("gm_parse", "string", ["number", "string"]),
@@ -321,10 +322,11 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     $("timeLabel").textContent = fmtTime(+$("time").value);
     rebuild();
   }
-  $("day").addEventListener("change", setTime);
-  $("time").addEventListener("input", setTime);
+  $("day").addEventListener("change", () => { stopLive(); setTime(); });
+  $("time").addEventListener("input", () => { stopLive(); setTime(); });
   let playing = null;
   $("play").addEventListener("click", () => {
+    stopLive();
     if (playing) { clearInterval(playing); playing = null; $("play").textContent = "Play a whole day"; return; }
     $("play").textContent = "Stop";
     playing = setInterval(() => {
@@ -376,6 +378,8 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   $("scenes").addEventListener("click", e => {
     const b = e.target.closest("button");
     if (!b) return;
+    stopLive();
+    api.historyMode(b.dataset.demo !== undefined ? 0 : 1);
     if (b.dataset.demo !== undefined) {
       const i = +b.dataset.demo;
       const us = i === 3;
@@ -499,6 +503,23 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   });
 
   // After live data arrives: match the screen to that place and the data's own time
+  let liveClock = null;
+  function tickLiveClock(quiet) {
+    if (!liveClock) return;
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", {timeZone: liveClock.tz, weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23"})
+      .formatToParts(new Date()).map(p => [p.type, p.value]));
+    const wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts.weekday);
+    const min = (+parts.hour % 24) * 60 + +parts.minute;
+    api.time(wd, min);
+    api.age(Math.max(0, Math.round((Date.now() / 1000 - liveClock.dataTime) / 60)));
+    $("day").value = wd; $("time").value = min; $("timeLabel").textContent = fmtTime(min);
+    $("age").value = Math.min(1800, +$("age").max >= 0 ? Math.round((Date.now() / 1000 - liveClock.dataTime) / 60) : 0);
+    $("ageN").value = Math.round((Date.now() / 1000 - liveClock.dataTime) / 60);
+    rebuild();
+  }
+  setInterval(tickLiveClock, 15000);
+  const stopLive = () => { if (liveClock) { liveClock = null; log("Clock no longer follows real time"); } };
+
   function showLive(label) {
     const s = JSON.parse(api.state());
     const [code, , header, tz] = regionInfo();
@@ -507,19 +528,17 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     if (us) { $("plan").value = "none"; api.hasPlan(0); }
     else if ($("plan").value === "none") { $("plan").value = "tou"; api.hasPlan(1); applySettings(PLANS.tou, true); }
     const when = new Date((s.data_time || Date.now() / 1000) * 1000);
-    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", {timeZone: tz, weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23"})
-      .formatToParts(when).map(p => [p.type, p.value]));
-    const wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts.weekday);
-    api.time(wd, (+parts.hour % 24) * 60 + +parts.minute);
-    const age = Math.max(0, Math.round((Date.now() / 1000 - s.data_time) / 60));
-    api.age(age);
+    // Like the display: the clock is the real time there, and the dot shows how old the data is
+    liveClock = {tz, dataTime: s.data_time || Date.now() / 1000};
+    api.historyMode(1);
+    tickLiveClock(true);
+    const age = Math.max(0, Math.round((Date.now() / 1000 - liveClock.dataTime) / 60));
     api.problem("");
     const wholeLabel = us ? "United States" : "Australia (NEM)";
     api.header(lv.whole() ? wholeLabel : header);
     api.setView(lv.whole() ? 1 : 0);
     $("hasData").checked = true;
     syncFromState();
-    rebuild();
     const ago = age < 90 ? `${age} min` : age < 2880 ? `${Math.round(age / 60)} h` : `${Math.round(age / 1440)} days`;
     lvMsg(`${label} Data is from ${when.toLocaleString([], {timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit"})} local time (${ago} ago).`, true);
     log(`Live: ${label} ${lv.whole() ? wholeLabel : header}, ${ago} old${s.estimated ? ", rooftop solar from AEMO's forecast" : ""}`);
@@ -570,7 +589,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   // start on the first sample
   $("scenes").querySelector("button").click();
   $("log").textContent = "";
-  log("Ready. Tap the region name to open the picker, tap the bar to switch styles.");
+  log("Ready. Tap the region name for the picker, the scene for details, your rate for the tariff, the bar to switch styles.");
 })();
 </script>
 </body>

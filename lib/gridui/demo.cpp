@@ -16,11 +16,12 @@ Tariff demo_tariff() {   // a real SA time-of-use plan
   t.add("Peak", 15 * 60, 60, 53.99f);
   t.add("Off peak", 60, 6 * 60, 34.51f);
   t.supply_cents_per_day = 116.18f;
+  t.feed_in_cents = 1.0f;
   return t;
 }
 
 void model_views(Model &m, const char *local, const char *local_sub, const char *country, const char *country_sub,
-                 const char *freq, const char *ago, bool fresh) {
+                 const char *freq, const char *ago, Freshness freshness) {
   snprintf(m.local.title, sizeof m.local.title, "%s", local);
   snprintf(m.local.sub, sizeof m.local.sub, "%s", local_sub);
   snprintf(m.country.title, sizeof m.country.title, "%s", country);
@@ -29,7 +30,7 @@ void model_views(Model &m, const char *local, const char *local_sub, const char 
   for (ViewOption *o : opts) {
     snprintf(o->freq, sizeof o->freq, "%s", freq);
     snprintf(o->ago, sizeof o->ago, "%s", ago);
-    o->fresh = fresh;
+    o->freshness = freshness;
   }
 }
 
@@ -41,6 +42,9 @@ Model model_build(const GridSnapshot &snap, bool has_data, const char *region, i
   const int h = (minute / 60) % 24, mi = minute % 60, h12 = h % 12 ? h % 12 : 12;
   snprintf(m.clock, sizeof m.clock, "%d:%02d %s", h12, mi, h < 12 ? "am" : "pm");
   m.sky = sky_for_hour(h);
+  m.weekday = weekday;
+  m.minute = minute;
+  if (tariff && tariff->count > 0) { m.has_tariff = true; m.tariff = *tariff; }
   RateNow r;
   const bool rate_ok = tariff && tariff->count > 0 && tariff_rate_now(*tariff, weekday, minute, r);
   if (rate_ok) {
@@ -63,6 +67,23 @@ GridSnapshot demo_snapshot(const DemoScene &d) {
   return s;
 }
 
+void demo_history(Model &m) {
+  // Wind drifts slowly, solar follows the sun; scaled so the last point is the share now.
+  const float now = m.has_data ? m.snap.renewable_pct() : 0;
+  float raw[HISTORY_POINTS];
+  for (int i = 0; i < HISTORY_POINTS; i++) {
+    const float hour = fmodf(m.minute / 60.0f - (HISTORY_POINTS - 1 - i) * 0.5f + 48, 24);
+    const float sun = hour > 6.5f && hour < 19 ? sinf((hour - 6.5f) / 12.5f * (float)M_PI) : 0;
+    const float wind = 0.5f + 0.25f * sinf(i * 0.21f + m.minute * 0.003f) + 0.1f * sinf(i * 0.7f);
+    raw[i] = 20 + 45 * sun + 30 * wind;
+  }
+  const float k = raw[HISTORY_POINTS - 1] > 1 ? now / raw[HISTORY_POINTS - 1] : 1;
+  for (int i = 0; i < HISTORY_POINTS; i++) {
+    const float v = raw[i] * k;
+    m.history[i] = v < 0 ? 0 : v > 100 ? 100 : v;
+  }
+}
+
 int demo_count() { return 4; }
 
 DemoScene demo_scene(int i) {
@@ -82,8 +103,9 @@ Model demo_model(int i) {
   if (flat.count == 0) flat.add("Flat", 0, 0, 14.2f);
   const DemoScene d = demo_scene(i);
   Model m = model_build(demo_snapshot(d), true, d.region, d.weekday, d.minute, d.us ? &flat : &plan);
-  if (d.us) model_views(m, d.title, "My region \xC2\xB7 EIA", "United States", "Lower 48 states (EIA)", "Hourly", "Sample data", false);
-  else model_views(m, d.title, "My region \xC2\xB7 state grid", "Australia", "East coast grid (NEM)", "Every 10 min", "Sample data", true);
+  if (d.us) model_views(m, d.title, "My region \xC2\xB7 EIA", "United States", "Lower 48 states (EIA)", "Hourly", "Sample data", FRESH_OK);
+  else model_views(m, d.title, "My region \xC2\xB7 state grid", "Australia", "East coast grid (NEM)", "Every 10 min", "Sample data", FRESH_OK);
+  demo_history(m);
   return m;
 }
 

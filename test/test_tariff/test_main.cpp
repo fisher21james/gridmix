@@ -127,6 +127,43 @@ void test_parse_hhmm() {
   TEST_ASSERT_EQUAL(-1, parse_hhmm("3pm"));
 }
 
+void test_day_segments_and_cards() {
+  DaySegment seg[16];
+  const int n = tariff_day_segments(plan, THU, seg, 16);
+  TEST_ASSERT_EQUAL(5, n);   // peak 0-1, off peak 1-6, peak 6-10, shoulder 10-3, peak 3-12
+  TEST_ASSERT_EQUAL(0, seg[0].start);  TEST_ASSERT_EQUAL(60, seg[0].end);
+  TEST_ASSERT_EQUAL(900, seg[4].start); TEST_ASSERT_EQUAL(1440, seg[4].end);
+
+  RateCard cards[8];
+  TEST_ASSERT_EQUAL(3, tariff_cards(plan, THU, cards, 8));
+  TEST_ASSERT_EQUAL_STRING("Shoulder", plan.periods[cards[0].index].name);   // cheapest first
+  TEST_ASSERT_EQUAL_STRING("10am\xE2\x80\x93" "3pm", cards[0].hours);
+  TEST_ASSERT_EQUAL_STRING("1\xE2\x80\x93" "6am", cards[1].hours);
+  TEST_ASSERT_EQUAL_STRING("6\xE2\x80\x93" "10am, 3pm\xE2\x80\x93" "1am", cards[2].hours);
+
+  Tariff flat;
+  flat.add("Flat", 0, 0, 30);
+  TEST_ASSERT_EQUAL(1, tariff_cards(flat, THU, cards, 8));
+  TEST_ASSERT_EQUAL_STRING("All day", cards[0].hours);
+}
+
+void test_cheapest_window() {
+  char s[40];
+  TEST_ASSERT_TRUE(tariff_cheapest_window(plan, THU, hm(13, 20), s, sizeof s));
+  TEST_ASSERT_EQUAL_STRING("Now \xE2\x80\x93 3pm", s);
+  TEST_ASSERT_TRUE(tariff_cheapest_window(plan, THU, hm(7, 0), s, sizeof s));
+  TEST_ASSERT_EQUAL_STRING("10am \xE2\x80\x93 3pm", s);
+  TEST_ASSERT_TRUE(tariff_cheapest_window(plan, THU, hm(18, 0), s, sizeof s));
+  TEST_ASSERT_EQUAL_STRING("Tomorrow 10am \xE2\x80\x93 3pm", s);
+  Tariff flat;
+  flat.add("Flat", 0, 0, 30);
+  TEST_ASSERT_FALSE(tariff_cheapest_window(flat, THU, hm(7, 0), s, sizeof s));
+  char c[12];
+  format_clock(hm(13, 20), c, sizeof c); TEST_ASSERT_EQUAL_STRING("1:20pm", c);
+  format_clock(0, c, sizeof c);          TEST_ASSERT_EQUAL_STRING("12am", c);
+  format_clock(hm(12, 0), c, sizeof c);  TEST_ASSERT_EQUAL_STRING("12pm", c);
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_plan_is_valid);
@@ -140,5 +177,7 @@ int main(int, char **) {
   RUN_TEST(test_flat_rate);
   RUN_TEST(test_weekend_rates);
   RUN_TEST(test_parse_hhmm);
+  RUN_TEST(test_day_segments_and_cards);
+  RUN_TEST(test_cheapest_window);
   return UNITY_END();
 }

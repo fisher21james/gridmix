@@ -34,6 +34,8 @@ static bool view_country = false;
 static char header[32] = "SA \xC2\xB7 Adelaide";
 static char problem[64] = "";
 static int data_age_min = 2;
+static bool has_history = false;    // live data has no 24 h history, so the chart shows what the board shows on day one
+static float history[HISTORY_POINTS];
 static Model last;
 static char out[1024];
 
@@ -122,6 +124,12 @@ EMSCRIPTEN_KEEPALIVE void gm_set_problem(const char *s) { snprintf(problem, size
 EMSCRIPTEN_KEEPALIVE void gm_set_age(int minutes) { data_age_min = minutes; }
 EMSCRIPTEN_KEEPALIVE void gm_set_has_plan(int b) { has_plan = b; }
 EMSCRIPTEN_KEEPALIVE void gm_set_view(int country) { view_country = country; }
+// 0 = sample curve (for the sample scenes), 1 = none yet (live data, like a freshly set up display)
+EMSCRIPTEN_KEEPALIVE void gm_set_history_mode(int live) {
+  has_history = live;
+  for (float &h : history) h = NAN;
+  if (live && has_data) history[HISTORY_POINTS - 1] = snap.renewable_pct();
+}
 
 // Settings JSON as the setup page saves it (gridmix.local/api/settings). Returns "" or the reason it was refused.
 EMSCRIPTEN_KEEPALIVE const char *gm_set_settings(const char *json) {
@@ -200,7 +208,10 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
   m.view_country = view_country;
   char ago[24] = "Waiting for data";
   if (has_data) format_ago((int64_t)data_age_min * 60, ago, sizeof ago);
-  const bool fresh = has_data && data_is_fresh(us ? SRC_EIA : SRC_OPEN_ELECTRICITY, (int64_t)data_age_min * 60);
+  const Freshness fresh = (Freshness)freshness_level(us ? SRC_EIA : SRC_OPEN_ELECTRICITY, (int64_t)data_age_min * 60);
+  m.freshness = fresh;
+  if (!has_history) demo_history(m);
+  else for (int i = 0; i < HISTORY_POINTS; i++) m.history[i] = history[i];
   model_views(m, region_label(settings.country, settings.region), us ? "My region \xC2\xB7 EIA" : "My region \xC2\xB7 state grid",
               us ? "United States" : "Australia", us ? "Lower 48 states (EIA)" : "East coast grid (NEM)",
               us ? "Hourly" : "Every 10 min", ago, fresh);

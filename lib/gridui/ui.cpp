@@ -5,17 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "raster.h"
-#include "fonts/gm_fonts.h"
+#include "ui_common.h"
 
-extern "C" void lv_image_cache_drop(const void *src);   // public in LVGL 9.6 but not in lvgl.h
 
 namespace gridui {
 
 using namespace gridcore;
-
-// ---------------------------------------------------------------- palette
-
-static lv_color_t hex(uint32_t c) { return lv_color_hex(c); }
 
 struct SkyColors { uint32_t top, bottom, hill, ground, text, sub, smoke; };
 static const SkyColors SKIES[3] = {
@@ -23,70 +18,6 @@ static const SkyColors SKIES[3] = {
   {0x3B3768, 0xF2A06B, 0x6C7F4E, 0x4D6B43, 0xFFFFFF, 0xF3E9F2, 0x6F6A72},   // dusk
   {0x0A1430, 0x263A6B, 0x2B4A33, 0x1E3826, 0xFFFFFF, 0xDCE4F2, 0x5C6270},   // night
 };
-
-struct SourceStyle { uint32_t color, text; };
-static const SourceStyle SRC_STYLE[SOURCE_COUNT] = {
-  {0xF5B800, 0x2E2300},   // solar
-  {0x4FB3D9, 0x03202C},   // wind
-  {0x2E6FD8, 0xFFFFFF},   // hydro
-  {0x9B7BEA, 0x160B33},   // battery
-  {0x3BB273, 0x03200E},   // nuclear
-  {0xF07A3A, 0x2B1100},   // gas
-  {0x8C7B6E, 0x1A120C},   // coal
-  {0x6E7783, 0xFFFFFF},   // other
-};
-
-static const uint32_t BG = 0x0E1116, MUTED = 0xA9B1BC, TEXT = 0xE6EAF0;
-
-// ---------------------------------------------------------------- small builders
-
-static lv_obj_t *box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t color, lv_opa_t opa = LV_OPA_COVER) {
-  lv_obj_t *o = lv_obj_create(parent);
-  lv_obj_remove_style_all(o);
-  lv_obj_set_scrollable(o, false);
-  lv_obj_set_clickable(o, false);
-  lv_obj_set_pos(o, x, y);
-  lv_obj_set_size(o, w, h);
-  lv_obj_set_style_bg_color(o, hex(color), 0);
-  lv_obj_set_style_bg_opa(o, opa, 0);
-  return o;
-}
-
-static lv_obj_t *circle(lv_obj_t *parent, float cx, float cy, float r, uint32_t color) {
-  const int d = (int)lroundf(r * 2);
-  lv_obj_t *o = box(parent, (int)lroundf(cx - r), (int)lroundf(cy - r), d, d, color);
-  lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0);
-  return o;
-}
-
-static lv_obj_t *label(lv_obj_t *parent, const lv_font_t *font, uint32_t color, const char *text = "") {
-  lv_obj_t *l = lv_label_create(parent);
-  lv_obj_set_style_text_font(l, font, 0);
-  lv_obj_set_style_text_color(l, hex(color), 0);
-  lv_label_set_text(l, text);
-  return l;
-}
-
-static lv_obj_t *row(lv_obj_t *parent, int gap) {
-  lv_obj_t *o = lv_obj_create(parent);
-  lv_obj_remove_style_all(o);
-  lv_obj_set_scrollable(o, false);
-  lv_obj_set_clickable(o, false);
-  lv_obj_set_size(o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-  lv_obj_set_flex_flow(o, LV_FLEX_FLOW_ROW);
-  lv_obj_set_flex_align(o, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-  lv_obj_set_style_pad_column(o, gap, 0);
-  return o;
-}
-
-static lv_obj_t *pill(lv_obj_t *parent, const lv_font_t *font) {
-  lv_obj_t *l = label(parent, font, 0xFFFFFF);
-  lv_obj_set_style_bg_opa(l, LV_OPA_COVER, 0);
-  lv_obj_set_style_radius(l, 8, 0);
-  lv_obj_set_style_pad_hor(l, 6, 0);
-  lv_obj_set_style_pad_ver(l, 1, 0);
-  return l;
-}
 
 // A line whose object covers only its own small box (so redraws stay small).
 struct Spoke {
@@ -121,7 +52,7 @@ static bool bar_fat = true;
 
 static lv_obj_t *scr;
 // header
-static lv_obj_t *hdr_left, *lbl_region, *lbl_clock, *chev;
+static lv_obj_t *hdr_left, *lbl_region, *lbl_clock, *clock_dot, *chev;
 static lv_point_precise_t chev_pts[3] = {{0, 0}, {4, 4}, {8, 0}};
 static lv_obj_t *rate_row, *lbl_your, *lbl_rate, *lbl_unit, *pill_period, *grid_row, *grid_dot, *lbl_grid, *lbl_noplan;
 // scene
@@ -323,6 +254,7 @@ static void spin_timer(lv_timer_t *) {
   const uint32_t now = lv_tick_get();
   const float dt = lv_tick_diff(now, last_tick) / 1000.0f;
   last_tick = now;
+  if (screens_open()) return;   // covered by the detail or tariff screen
   if (rotors_on) {
     for (int r = 0; r < 3; r++) {
       rotor_deg[r] = fmodf(rotor_deg[r] + 360 * dt / rotor_period[r], 360);
@@ -348,13 +280,12 @@ static void on_bar(lv_event_t *) {
   bar_fat = !bar_fat;
   update(cur);
 }
-static void on_scene(lv_event_t *) { if (cbs.scene_tapped) cbs.scene_tapped(); }
-
-static lv_obj_t *clickable(lv_obj_t *o, lv_event_cb_t cb, void *user = nullptr) {
-  lv_obj_set_clickable(o, true);
-  lv_obj_add_event_cb(o, cb, LV_EVENT_CLICKED, user);
-  return o;
+static void on_scene(lv_event_t *) {
+  show_detail();
+  if (cbs.scene_tapped) cbs.scene_tapped();
 }
+static void on_rate(lv_event_t *) { show_tariff(); }
+
 
 static void build_header() {
   hdr_left = row(scr, 6);
@@ -369,11 +300,13 @@ static void build_header() {
   lv_obj_set_style_line_color(chev, hex(MUTED), 0);
   lv_obj_set_style_line_rounded(chev, true, 0);
   lbl_clock = label(hdr_left, &gm_inter_12, MUTED);
+  clock_dot = circle(hdr_left, 0, 0, 3.5f, 0x3BB273);   // how up to date the data is
 
   lv_obj_t *right = lv_obj_create(scr);
   lv_obj_remove_style_all(right);
   lv_obj_set_scrollable(right, false);
-  lv_obj_set_clickable(right, false);
+  clickable(right, on_rate);   // opens the tariff screen
+  lv_obj_set_ext_click_area(right, 8);
   lv_obj_set_size(right, LV_SIZE_CONTENT, 40);
   lv_obj_align(right, LV_ALIGN_TOP_RIGHT, -12, 0);
   lv_obj_set_flex_flow(right, LV_FLEX_FLOW_COLUMN);
@@ -586,24 +519,14 @@ void create(const Callbacks &cb) {
   build_scene();
   build_bottom();
   build_picker();
+  screens_build(scr);
 }
 
 // ---------------------------------------------------------------- update
 
 static void set_hidden(lv_obj_t *o, bool hidden) { lv_obj_set_hidden(o, hidden); }
 
-static int text_width(const char *s, const lv_font_t *font) {   // ASCII only
-  int w = 0;
-  for (; *s; s++) w += lv_font_get_glyph_width(font, (uint32_t)(uint8_t)*s, (uint32_t)(uint8_t)s[1]);
-  return w;
-}
 
-static void band_colors(PriceBand b, bool flat, uint32_t &bg, uint32_t &fg) {
-  if (flat) { bg = 0x2A303A; fg = 0xE6EAF0; return; }
-  if (b == BAND_LOW) { bg = 0x3BB273; fg = 0x04210F; }
-  else if (b == BAND_HIGH) { bg = 0xD2453A; fg = 0xFFFFFF; }
-  else { bg = 0xE39B3A; fg = 0x2B1700; }
-}
 
 static void add_chip(lv_obj_t *parent, Source s, int pct) {
   lv_obj_t *c = row(parent, 5);
@@ -668,6 +591,8 @@ void update(const Model &m) {
   // header
   lv_label_set_text(lbl_region, m.region);
   lv_label_set_text(lbl_clock, m.clock);
+  set_hidden(clock_dot, !m.has_data);
+  lv_obj_set_style_bg_color(clock_dot, hex(freshness_color(m.freshness)), 0);
   set_hidden(rate_row, !m.has_rate);
   set_hidden(lbl_noplan, m.has_rate);
   if (m.has_rate) {
@@ -763,8 +688,10 @@ void update(const Model &m) {
     set_hidden(opt_dot[i], !on);
     lv_obj_update_layout(opt_ago[i]);
     lv_obj_set_pos(opt_fresh[i], lv_obj_get_x(opt_ago[i]) - 10, 33);
-    lv_obj_set_style_bg_color(opt_fresh[i], hex(opts[i]->fresh ? 0x3BB273 : 0xE39B3A), 0);
+    lv_obj_set_style_bg_color(opt_fresh[i], hex(freshness_color(opts[i]->freshness)), 0);
   }
+
+  screens_update(m);
 }
 
 }  // namespace gridui

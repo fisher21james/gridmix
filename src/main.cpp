@@ -43,6 +43,7 @@ AppStatus g_status;
 static bool net_started = false;
 static bool view_country = false;     // what's on screen now (starts from the saved setting)
 static bool dirty = true;             // rebuild the screen on the next pass
+static void history_clear();
 
 static bool is_night() {
   const time_t now = time(nullptr);
@@ -67,6 +68,7 @@ static void apply_settings() {
 void on_settings_changed() {
   apply_settings();
   view_country = g_settings.view_country;
+  history_clear();
   fetcher_reset(view_country);
   dirty = true;
 }
@@ -114,6 +116,22 @@ static void setup_hint(char *out, size_t cap) {
 static int demo_index = 0;
 static uint32_t demo_since = 0;
 
+// Renewable share over the last 24 hours, one slot per half hour (for the detail screen's chart).
+// Starts empty after power-up and fills in as data arrives.
+static float hist[gridui::HISTORY_POINTS];
+static int64_t hist_slot[gridui::HISTORY_POINTS];
+static void history_clear() { for (auto &s : hist_slot) s = -1; }
+static void history_fill(gridui::Model &m, const GridSnapshot &snap) {
+  const int64_t slot = snap.data_time / 1800;
+  const int N = gridui::HISTORY_POINTS;
+  hist[slot % N] = snap.renewable_pct();
+  hist_slot[slot % N] = slot;
+  for (int i = 0; i < N; i++) {
+    const int64_t want = slot - (N - 1) + i;
+    m.history[i] = hist_slot[want % N] == want ? hist[want % N] : NAN;
+  }
+}
+
 static gridui::Model build_model() {
   const bool us = g_settings.country[0] == 'U';
   const bool has_key = g_settings.key_for_country()[0] != 0;
@@ -142,12 +160,14 @@ static gridui::Model build_model() {
 
   char local_sub[40], ago[24] = "Waiting for data";
   snprintf(local_sub, sizeof local_sub, "My region %s %s", DOT, us ? "EIA" : "state grid");
-  bool fresh = false;
+  gridui::Freshness fresh = gridui::FRESH_OLD;
   if (d.has_data && clock_ok) {
     const int64_t age = (int64_t)now - d.snap.data_time;
     format_ago(age, ago, sizeof ago);
-    fresh = data_is_fresh(d.source, age);
+    fresh = (gridui::Freshness)freshness_level(d.source, age);
   }
+  m.freshness = fresh;
+  if (d.has_data) history_fill(m, d.snap);
   gridui::model_views(m, region_label(g_settings.country, g_settings.region), local_sub,
                       us ? "United States" : "Australia", us ? "Lower 48 states (EIA)" : "East coast grid (NEM)",
                       us ? "Hourly" : "Every 10 min", ago, fresh);
@@ -171,17 +191,11 @@ static gridui::Model build_model() {
 static void on_view_changed(bool country) {
   if (country == view_country) return;
   view_country = country;
+  history_clear();
   fetcher_reset(view_country);
   dirty = true;
 }
 
-static void on_scene_tapped() {
-  if (g_settings.key_for_country()[0] == 0) {   // next sample scene
-    demo_index = (demo_index + 1) % gridui::demo_count();
-    demo_since = millis();
-    dirty = true;
-  }
-}
 
 // Rebuild the screen when new data arrives, the minute changes, or a sample scene is due
 static void screen_tick(lv_timer_t *) {
@@ -214,6 +228,7 @@ void setup() {
   Serial.printf("\nGrid Mix Display %s\n", FW_VERSION);
 
   settings_load(g_settings);
+  history_clear();
   view_country = g_settings.view_country;
 
   ledcAttach(LCD_BL, 5000, 8);   // backlight on PWM so brightness can be set from the phone
@@ -244,7 +259,6 @@ void setup() {
 
   gridui::Callbacks cb;
   cb.view_changed = on_view_changed;
-  cb.scene_tapped = on_scene_tapped;
   gridui::create(cb);
   lv_timer_create(screen_tick, 500, nullptr);
 

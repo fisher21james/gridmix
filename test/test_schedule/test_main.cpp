@@ -133,6 +133,11 @@ void test_ago() {
   TEST_ASSERT_TRUE(data_is_fresh(SRC_OPEN_ELECTRICITY, 20 * 60));
   TEST_ASSERT_FALSE(data_is_fresh(SRC_OPEN_ELECTRICITY, 40 * 60));
   TEST_ASSERT_TRUE(data_is_fresh(SRC_EIA, 2 * 3600));
+  TEST_ASSERT_EQUAL(1, freshness_level(SRC_OPEN_ELECTRICITY, 60 * 60));
+  TEST_ASSERT_EQUAL(2, freshness_level(SRC_OPEN_ELECTRICITY, 2 * 3600));
+  TEST_ASSERT_EQUAL(0, freshness_level(SRC_EIA, 19 * 3600));   // normal EIA lag (seen 13 Nov 2026)
+  TEST_ASSERT_EQUAL(1, freshness_level(SRC_EIA, 30 * 3600));
+  TEST_ASSERT_EQUAL(2, freshness_level(SRC_EIA, 3 * 86400));
 }
 
 int main(int, char **) {

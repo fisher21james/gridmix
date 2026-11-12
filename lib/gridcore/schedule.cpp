@@ -146,8 +146,10 @@ void format_ago(int64_t age_s, char *out, size_t cap) {
   }
 }
 
-bool data_is_fresh(DataSource src, int64_t age_s) {
-  return age_s <= (src == SRC_EIA ? 3 * HOUR : 25 * MIN);
+int freshness_level(DataSource src, int64_t age_s) {
+  const int64_t ok = src == SRC_EIA ? 24 * HOUR : 25 * MIN;
+  const int64_t late = src == SRC_EIA ? 48 * HOUR : 90 * MIN;
+  return age_s <= ok ? 0 : age_s <= late ? 1 : 2;
 }
 
 }  // namespace gridcore
