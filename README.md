@@ -25,8 +25,9 @@ An animated 4.3" desk display that shows what's powering your electricity grid r
 | Region | Source | Updates |
 | --- | --- | --- |
 | Australia | [Open Electricity](https://openelectricity.org.au) (CC BY-NC 4.0) | Every 5 minutes |
-| United States | [U.S. EIA Hourly Electric Grid Monitor](https://www.eia.gov/electricity/gridmonitor/) | Hourly |
-| Most other countries | [Electricity Maps](https://www.electricitymaps.com) (personal, non-commercial) | Live |
+| United States | [U.S. EIA Hourly Electric Grid Monitor](https://www.eia.gov/electricity/gridmonitor/) | Hourly (can lag up to a day) |
+
+Australia and the US are supported for now; more countries are planned for future updates, starting with Europe and the UK.
 
 Each display uses its owner's own free API key and talks to the source directly. There's no account or cloud service in between.
 
