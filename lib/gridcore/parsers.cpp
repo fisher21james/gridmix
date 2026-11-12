@@ -145,6 +145,7 @@ bool parse_openelectricity(const char *json, size_t len, GridSnapshot &out) {
         }
       }
       if (!have) continue;   // anything else missing counts as zero
+      if (key && !strcmp(key, "solar_rooftop")) out.has_rooftop = true;
 
       if (kind == OE_CHARGING) out.battery_charging += v > 0 ? v : -v;
       else if (v > 0) out.mw[src] += v;
@@ -153,6 +154,64 @@ bool parse_openelectricity(const char *json, size_t len, GridSnapshot &out) {
   out.data_time = parse_iso_time(newest);
   out.valid = out.total() > 0;
   return out.valid;
+}
+
+// ---------------------------------------------------------------- Open Electricity market data
+
+bool parse_openelectricity_market(const char *json, size_t len, int64_t at_time, MarketInfo &out) {
+  out = MarketInfo();
+  JsonDocument filter;
+  filter["success"] = true;
+  filter["data"][0]["metric"] = true;
+  filter["data"][0]["results"][0]["data"] = true;
+
+  JsonDocument doc;
+  if (deserializeJson(doc, json, len, DeserializationOption::Filter(filter))) return false;
+  if (!(doc["success"] | false)) return false;
+
+  for (JsonObjectConst set : doc["data"].as<JsonArrayConst>()) {
+    const char *metric = set["metric"] | "";
+    JsonArrayConst results = set["results"];
+    if (results.size() == 0) continue;
+    JsonArrayConst pts = results[0]["data"];
+
+    if (!strcmp(metric, "price")) {
+      // Newest non-null price
+      for (int i = (int)pts.size() - 1; i >= 0; i--) {
+        bool is_null;
+        const float v = as_float(pts[i][1], is_null);
+        if (!is_null) {
+          out.has_price = true;
+          out.price = v;
+          out.price_time = parse_iso_time(pts[i][0] | "");
+          break;
+        }
+      }
+    } else if (!strcmp(metric, "solar_rooftop_forecast")) {
+      // Forecast value for the interval at (or just before) at_time
+      for (JsonArrayConst pt : pts) {
+        const int64_t t = parse_iso_time(pt[0] | "");
+        if (t < 0 || t > at_time) continue;
+        bool is_null;
+        const float v = as_float(pt[1], is_null);
+        if (!is_null) { out.has_rooftop_forecast = true; out.rooftop_forecast = v; }
+      }
+    }
+  }
+  return out.has_price || out.has_rooftop_forecast;
+}
+
+void merge_market(GridSnapshot &snap, const MarketInfo &m) {
+  if (m.has_price) {
+    snap.has_price = true;
+    snap.price = m.price;
+    snap.price_time = m.price_time;
+  }
+  if (!snap.has_rooftop && m.has_rooftop_forecast && m.rooftop_forecast > 0) {
+    snap.mw[SOLAR] += m.rooftop_forecast;
+    snap.has_rooftop = true;
+    snap.estimated = true;
+  }
 }
 
 }  // namespace gridcore

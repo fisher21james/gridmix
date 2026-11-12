@@ -25,7 +25,12 @@ struct GridSnapshot {
   float mw[SOURCE_COUNT] = {0};   // generation per source, MW (or MWh for hourly sources; only shares matter)
   float battery_charging = 0;     // power going INTO batteries; not part of the mix
   int64_t data_time = 0;          // UTC seconds of the data point shown
-  bool estimated = false;         // true if part of the mix was filled in (e.g. rooftop solar carried forward)
+  bool estimated = false;         // true if part of the mix was filled in (e.g. rooftop solar from AEMO's forecast)
+  bool has_rooftop = false;       // true once rooftop solar is included (actual, carried forward or forecast)
+
+  bool has_price = false;         // wholesale price ($/MWh), when the source provides one
+  float price = 0;
+  int64_t price_time = 0;
 
   float total() const;
   float share_pct(Source s) const;   // 0..100

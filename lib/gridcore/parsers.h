@@ -15,4 +15,19 @@ bool parse_eia(const char *json, size_t len, GridSnapshot &out);
 // and the snapshot is marked estimated.
 bool parse_openelectricity(const char *json, size_t len, GridSnapshot &out);
 
+// Open Electricity v4 /market/network/{NEM}?metrics=price&metrics=solar_rooftop_forecast
+struct MarketInfo {
+  bool has_price = false;
+  float price = 0;                 // $/MWh, newest interval
+  int64_t price_time = 0;
+  bool has_rooftop_forecast = false;
+  float rooftop_forecast = 0;      // MW, AEMO forecast for the interval at at_time
+};
+// at_time: the generation snapshot's data_time, so the forecast matches the same 5 minutes.
+bool parse_openelectricity_market(const char *json, size_t len, int64_t at_time, MarketInfo &out);
+
+// Adds the price, and rooftop solar from the forecast if the generation data had none
+// (at 5-minute detail Open Electricity has no rooftop series, so this is the normal case).
+void merge_market(GridSnapshot &snap, const MarketInfo &m);
+
 }  // namespace gridcore

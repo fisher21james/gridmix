@@ -115,6 +115,53 @@ void test_oe_failure_response() {
   TEST_ASSERT_FALSE(parse_openelectricity(bad, strlen(bad), s));
 }
 
+// ---------- Open Electricity at fueltech level + market data (real, 12 Nov 2026 15:35 NEM time)
+
+void test_oe_fueltech_has_no_rooftop() {
+  GridSnapshot s;
+  TEST_ASSERT_TRUE(parse_openelectricity(OE_SA1_FUELTECH, strlen(OE_SA1_FUELTECH), s));
+  TEST_ASSERT_EQUAL_INT64(1794461700, s.data_time);
+  TEST_ASSERT_FALSE(s.has_rooftop);                         // 5-minute data has no rooftop series
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 392.13f, s.mw[GAS]);      // ccgt + ocgt + steam + recip folded together
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, 1013.64f, s.total());
+}
+
+void test_oe_market_price_and_forecast() {
+  MarketInfo m;
+  TEST_ASSERT_TRUE(parse_openelectricity_market(OE_SA1_MARKET, strlen(OE_SA1_MARKET), 1794461700, m));
+  TEST_ASSERT_TRUE(m.has_price);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 150.0f, m.price);
+  TEST_ASSERT_EQUAL_INT64(1794462000, m.price_time);        // 15:40, newest price interval
+  TEST_ASSERT_TRUE(m.has_rooftop_forecast);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 1045.81f, m.rooftop_forecast);   // forecast for 15:35, not a future slot
+}
+
+void test_oe_merge_adds_rooftop_solar() {
+  GridSnapshot s;
+  MarketInfo m;
+  parse_openelectricity(OE_SA1_FUELTECH, strlen(OE_SA1_FUELTECH), s);
+  parse_openelectricity_market(OE_SA1_MARKET, strlen(OE_SA1_MARKET), s.data_time, m);
+  merge_market(s, m);
+  TEST_ASSERT_TRUE(s.has_rooftop);
+  TEST_ASSERT_TRUE(s.estimated);
+  TEST_ASSERT_TRUE(s.has_price);
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, 2059.46f, s.total());
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, 78.43f, s.renewable_pct());   // 56% without rooftop solar
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, 56.03f, s.share_pct(SOLAR));
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, 19.04f, s.share_pct(GAS));
+}
+
+void test_oe_merge_keeps_actual_rooftop() {
+  // If the generation data already had rooftop solar, the forecast must not be added on top
+  GridSnapshot s;
+  parse_openelectricity(OE_ROOFTOP_LATE, strlen(OE_ROOFTOP_LATE), s);
+  MarketInfo m;
+  m.has_rooftop_forecast = true;
+  m.rooftop_forecast = 999;
+  merge_market(s, m);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 600.0f, s.mw[SOLAR]);
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_iso_time_utc_hour);
@@ -130,5 +177,9 @@ int main(int, char **) {
   RUN_TEST(test_oe_battery_both_ways);
   RUN_TEST(test_oe_rooftop_carried_forward);
   RUN_TEST(test_oe_failure_response);
+  RUN_TEST(test_oe_fueltech_has_no_rooftop);
+  RUN_TEST(test_oe_market_price_and_forecast);
+  RUN_TEST(test_oe_merge_adds_rooftop_solar);
+  RUN_TEST(test_oe_merge_keeps_actual_rooftop);
   return UNITY_END();
 }

@@ -40,10 +40,20 @@ Uses the community `pioarduino` platform (Arduino core 3.x), which the display l
 
 ## Data notes
 
-- **Open Electricity:** request a short window with `date_start`; without it the API returns 4 days of 5-minute data (about 300 KB, too much for the board).
-- **Rooftop solar** arrives roughly an hour after everything else. Request `secondary_grouping=fueltech` so `solar_rooftop` is its own series; the translator carries its last value forward and marks the snapshot as estimated.
-- **EIA** can lag several hours to a day. Negative battery values mean charging.
-- **Open Electricity credits:** the Community plan showed 500. Still to confirm whether that's per day or per month.
+Open Electricity, two requests per refresh (each costs 1 credit, including `/v4/me`):
+
+1. Generation: `/v4/data/network/NEM?metrics=power&interval=5m&network_region=SA1&secondary_grouping=fueltech&date_start=…`
+2. Market: `/v4/market/network/NEM?metrics=price&metrics=solar_rooftop_forecast&interval=5m&network_region=SA1&date_start=…&date_end=…`
+
+- **Always send `date_start`.** Without it the API returns half the maximum range (4 days of 5-minute data, about 300 KB).
+- **Dates are NEM time without a timezone:** always UTC+10, no daylight saving, regardless of where the display is. Convert from UTC on the board; don't use local time.
+- **Rooftop solar:** 5-minute generation data has no rooftop series at all, so rooftop comes from AEMO's `solar_rooftop_forecast` (30-minute values) for the same interval, and the snapshot is marked estimated. In SA on 12 Nov this moved renewables from 56% to 78%.
+- **Credits:** Community plan, 500 shown. 1 credit per request. Still to confirm whether it resets daily or monthly.
+- Licence: Community data is non-commercial only.
+
+EIA:
+
+- Can lag several hours to a day. Negative battery values mean charging.
 
 ## Known unknowns
 
