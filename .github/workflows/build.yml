@@ -60,6 +60,8 @@ jobs:
           mkdir -p site/firmware
           cp -r web/* site/
           cp gridmix-merged.bin site/firmware/
+          mkdir -p site/setup-demo
+          cp device-web/setup.html site/setup-demo/index.html
           sed "s/__VERSION__/$VERSION/" web/firmware/manifest.json > site/firmware/manifest.json
           sed -i "s/__VERSION__/$VERSION/" site/index.html
 

@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Grid Mix setup</title>
+<style>
+:root{--bg:#0E1116;--card:#151A21;--line:#262C36;--field:#0B0E12;--text:#E6EAF0;--muted:#A9B1BC;--dim:#8C95A1;--white:#fff;
+--accent:#4FB3D9;--low:#3BB273;--mid:#E39B3A;--high:#D2453A;--bad:#FF8A78;--good:#7EE2A8}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 120px}
+h1{font-size:24px;line-height:1.2;margin:8px 0 4px;color:var(--white)}
+h2{font-size:17px;margin:0 0 12px;color:var(--white)}
+p{margin:0 0 10px}
+a{color:var(--accent)}
+.sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);margin-bottom:12px}
+input,select{font:inherit;font-size:16px;color:var(--white);background:var(--field);border:1px solid #2F3744;border-radius:9px;height:46px;padding:0 12px;width:100%;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[aria-invalid=true]{border-color:var(--bad)}
+.hint{font-size:13px;color:var(--dim);margin:-4px 0 12px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--field);border:1px solid #2F3744;border-radius:11px;margin-bottom:12px}
+.seg button{font:inherit;font-size:14px;font-weight:600;height:40px;border:0;border-radius:8px;background:none;color:#C9D0D9;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);color:#04131B}
+.btn{font:inherit;font-weight:700;font-size:15px;height:46px;padding:0 18px;border-radius:10px;border:1px solid #3A4250;background:none;color:var(--white);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#04131B}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{height:40px;font-size:14px;padding:0 14px}
+.flabel{font-size:13px;color:var(--muted);margin-bottom:6px}
+.status{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.status dt{color:var(--muted)}
+.status dd{margin:0;color:var(--white);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:4px;margin-right:6px;vertical-align:1px}
+.keybox{display:flex;gap:8px}
+.keybox input{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px}
+.msg{font-size:14px;border-radius:9px;padding:10px 12px;margin:0 0 12px}
+.msg.ok{background:#14261C;color:var(--good)}
+.msg.err{background:#2A1714;color:#FFD9D2}
+.msg.info{background:#1A2230;color:#D6E4F5}
+.periods{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.period{border:1px solid var(--line);border-left:5px solid var(--dim);border-radius:10px;padding:10px 10px 0;background:#11151B}
+.period .top{display:grid;grid-template-columns:minmax(0,1fr) 128px 44px;gap:8px}
+.period .times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.period label{margin-bottom:10px}
+.icon{width:44px;height:46px;border:0;background:none;color:var(--dim);cursor:pointer;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-top:22px}
+.icon:hover{color:var(--white);background:#1B212A}
+.day{margin-bottom:10px}
+.day .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:4px}
+.bar{display:flex;height:26px;border-radius:7px;overflow:hidden;background:#1B1F27}
+.bar span{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden}
+.ticks{display:flex;justify-content:space-between;font-size:11px;color:#6E7783;margin-top:3px}
+.check{flex-direction:row;align-items:center;gap:10px;color:var(--text);font-size:15px;min-height:44px}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:rgba(14,17,22,.96);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.savebar .in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.savebar .note{flex:1;font-size:13px;color:var(--muted)}
+.savebar .btn{min-width:150px}
+.demo{background:#3A2A06;color:#FFE7B0;font-size:14px;padding:10px 16px;text-align:center}
+.demo b{color:#fff}
+.hidden{display:none!important}
+input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="demoBanner" class="demo hidden" role="note"><b>Demo:</b> this is a preview of the page your display shows. Nothing you enter here is saved or sent anywhere.</div>
+<main>
+  <h1>Grid Mix setup</h1>
+  <p class="sub">Changes go live on the display when you press <b>Save</b>.</p>
+
+  <section class="card" aria-labelledby="st-h">
+    <h2 id="st-h">Display</h2>
+    <dl class="status" id="status">
+      <dt>Status</dt><dd id="stState">Loading…</dd>
+      <dt>Wi-Fi</dt><dd id="stWifi">–</dd>
+      <dt>Last update</dt><dd id="stAge">–</dd>
+      <dt>Data credits</dt><dd id="stCredits">–</dd>
+      <dt>Firmware</dt><dd id="stFw">–</dd>
+    </dl>
+  </section>
+
+  <section class="card" aria-labelledby="loc-h">
+    <h2 id="loc-h">Where you are</h2>
+    <label>Country
+      <select id="country">
+        <option value="AU">Australia</option>
+        <option value="US">United States</option>
+      </select>
+    </label>
+    <label>Grid region
+      <select id="region"></select>
+    </label>
+    <label>Time zone
+      <select id="tz"></select>
+    </label>
+    <p class="hint">Used for your tariff times. Daylight saving is handled automatically.</p>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Start-up view</div>
+    <div class="seg" role="group" aria-label="Start-up view">
+      <button type="button" data-view="local" aria-pressed="true">My region</button>
+      <button type="button" data-view="country" aria-pressed="false">Whole country</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="key-h">
+    <h2 id="key-h">Data key</h2>
+    <p id="keyIntro" class="hint" style="margin:0 0 12px"></p>
+    <div class="flabel"><label for="key" style="display:inline;margin:0">Your <span id="keyProvider">Open Electricity</span> key</label></div>
+    <div class="keybox" style="margin:0 0 8px">
+      <input id="key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key">
+      <button type="button" class="btn small" id="keyShow" aria-pressed="false">Show</button>
+    </div>
+    <p id="keySaved" class="hint hidden" style="margin:0 0 12px"></p>
+    <div id="keyMsg" class="msg hidden" role="status"></div>
+    <button type="button" class="btn small" id="keyTest">Test key</button>
+    <p class="hint" style="margin:12px 0 0">Don't have one? <a id="keyHelp" href="https://fisher21james.github.io/gridmix/#key" target="_blank" rel="noopener">How to get a free key</a> (takes about two minutes).</p>
+  </section>
+
+  <section class="card" aria-labelledby="tar-h">
+    <h2 id="tar-h">Your power plan</h2>
+    <p class="hint" style="margin:0 0 12px">From your power bill. Leave it if you're not sure, the display still works without it.</p>
+    <div class="seg" role="group" aria-label="Plan type">
+      <button type="button" data-plan="tou" aria-pressed="true">Time of use</button>
+      <button type="button" data-plan="flat" aria-pressed="false">Single rate</button>
+    </div>
+
+    <div id="flatBox" class="hidden">
+      <label>Usage rate (¢ per kWh)
+        <input id="flatRate" inputmode="decimal" placeholder="e.g. 32.5">
+      </label>
+    </div>
+
+    <div id="touBox">
+      <div class="periods" id="periods"></div>
+      <button type="button" class="btn small" id="addPeriod">+ Add period</button>
+      <div id="planMsg" class="msg hidden" role="status" style="margin-top:12px"></div>
+      <div id="preview" style="margin-top:14px"></div>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <label>Supply (¢ per day)
+        <input id="supply" inputmode="decimal" placeholder="e.g. 116.18">
+      </label>
+      <label>Solar feed-in (¢/kWh)
+        <input id="feedin" inputmode="decimal" placeholder="e.g. 4.0">
+      </label>
+    </div>
+    <label class="check"><input type="checkbox" id="warn"> Warn me 15 minutes before the price goes up</label>
+  </section>
+
+  <section class="card" aria-labelledby="disp-h">
+    <h2 id="disp-h">Screen</h2>
+    <div class="flabel" style="display:flex;justify-content:space-between"><label for="bright" style="display:inline;margin:0">Brightness</label><span id="brightVal" style="color:var(--white)"></span></div>
+    <input type="range" id="bright" min="10" max="100" step="5" style="margin-bottom:8px">
+    <label class="check"><input type="checkbox" id="nightDim"> Dim the screen at night (10pm – 6am)</label>
+  </section>
+</main>
+
+<div class="savebar">
+  <div class="in">
+    <span class="note" id="saveNote" role="status">No changes</span>
+    <button type="button" class="btn primary" id="save" disabled>Save</button>
+  </div>
+</div>
+
+<script>
+(function () {
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+
+// ---------------------------------------------------------------- reference data
+var REGIONS = {
+  AU: [["SA1","South Australia"],["NSW1","New South Wales & ACT"],["VIC1","Victoria"],["QLD1","Queensland"],["TAS1","Tasmania"],["WEM","Western Australia (South West)"]],
+  US: [["CAL","California"],["CAR","Carolinas"],["CENT","Central"],["FLA","Florida"],["MIDA","Mid-Atlantic"],["MIDW","Midwest"],["NE","New England"],["NY","New York"],["NW","Northwest"],["SE","Southeast"],["SW","Southwest"],["TEN","Tennessee"],["TEX","Texas"]]
+};
+var ZONES = {
+  AU: [["ACST-9:30ACDT,M10.1.0,M4.1.0/3","Adelaide"],["AEST-10AEDT,M10.1.0,M4.1.0/3","Sydney, Melbourne, Canberra, Hobart"],["AEST-10","Brisbane"],["AWST-8","Perth"],["ACST-9:30","Darwin"]],
+  US: [["EST5EDT,M3.2.0,M11.1.0","Eastern"],["CST6CDT,M3.2.0,M11.1.0","Central"],["MST7MDT,M3.2.0,M11.1.0","Mountain"],["MST7","Arizona"],["PST8PDT,M3.2.0,M11.1.0","Pacific"]]
+};
+var DEFAULT_TZ = {SA1:0,NSW1:1,VIC1:1,QLD1:2,TAS1:1,WEM:3, CAL:4,NW:4,SW:3,CENT:1,TEX:1,MIDW:1,TEN:1,FLA:0,CAR:0,MIDA:0,NE:0,NY:0,SE:0};
+var PROVIDER = {
+  AU: {id:"oe", name:"Open Electricity", intro:"Australia uses Open Electricity, which updates every 5 minutes. The key is free and starts with oe_.", help:"https://fisher21james.github.io/gridmix/#key"},
+  US: {id:"eia", name:"U.S. EIA", intro:"The US uses the Energy Information Administration's hourly grid data. The key is free and arrives by email.", help:"https://fisher21james.github.io/gridmix/#key"}
+};
+var DAYS = {all:[0x7F,"Every day"], weekdays:[0x3E,"Mon – Fri"], weekends:[0x41,"Sat & Sun"]};
+
+// ---------------------------------------------------------------- backend (real device or demo)
+var DEMO = /github\.io$/.test(location.hostname) || location.protocol === "file:" || /[?&]demo\b/.test(location.search);
+var demoState = {
+  country:"AU", region:"SA1", tz:ZONES.AU[0][0], view:"local",
+  keys:{oe:{set:true, hint:"x9Qa"}, eia:{set:false, hint:""}},
+  tariff:{type:"tou", flat:0, periods:[
+    {name:"Peak", from:"06:00", to:"10:00", rate:53.99, days:"all"},
+    {name:"Shoulder", from:"10:00", to:"15:00", rate:23.78, days:"all"},
+    {name:"Peak", from:"15:00", to:"01:00", rate:53.99, days:"all"},
+    {name:"Off peak", from:"01:00", to:"06:00", rate:34.51, days:"all"}],
+    supply:116.18, feed_in:1.0, warn:true},
+  display:{brightness:80, night_dim:true}
+};
+function api(method, path, body) {
+  if (!DEMO) {
+    return fetch(path, {method:method, headers:body ? {"Content-Type":"application/json"} : {}, body:body ? JSON.stringify(body) : undefined})
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok && !j.message) j.message = "Error " + r.status; j.httpOk = r.ok; return j; }); });
+  }
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      if (path === "/api/status") resolve({fw:"0.1.0 (demo)", ssid:"HomeWiFi", ip:"192.168.1.42", rssi:-58, ok:true, data_age_s:140, credits:486, credits_known:true});
+      else if (path === "/api/settings" && method === "GET") resolve(JSON.parse(JSON.stringify(demoState)));
+      else if (path === "/api/settings") {
+        var c = JSON.parse(JSON.stringify(body));
+        ["oe","eia"].forEach(function (k) { var v = c.keys[k].value; c.keys[k] = v ? {set:true, hint:v.slice(-4)} : demoState.keys[k]; });
+        demoState = c; resolve({httpOk:true, ok:true, message:"Saved (demo, nothing was sent)"});
+      } else if (path === "/api/test-key") {
+        var k = body.key || "";
+        if (!k && !(demoState.keys[body.provider] || {}).set) resolve({ok:false, message:"Paste a key first."});
+        else if (body.provider === "oe" && k && !/^oe_/.test(k)) resolve({ok:false, message:"That doesn't look like an Open Electricity key. They start with oe_."});
+        else resolve({ok:true, message:"Key works (demo). 486 credits left today."});
+      }
+    }, 350);
+  });
+}
+
+// ---------------------------------------------------------------- state
+var saved = null, cur = null;
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function num(v) { var n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; }
+function hhmm(s) {
+  var m = /^(\d{1,2}):(\d{2})$/.exec(String(s || "").trim());
+  if (!m) return -1;
+  var h = +m[1], mi = +m[2];
+  if (h > 24 || mi > 59 || (h === 24 && mi)) return -1;
+  return h * 60 + mi;
+}
+function fmtTime(min) {
+  var h = Math.floor(min / 60) % 24, m = min % 60, ap = h < 12 ? "am" : "pm", h12 = h % 12 || 12;
+  return h12 + (m ? ":" + (m < 10 ? "0" : "") + m : "") + ap;
+}
+
+// ---------------------------------------------------------------- tariff checks (same rules as the firmware)
+function covers(p, day, m) {
+  if (!(DAYS[p.days][0] & (1 << day))) return false;
+  var s = hhmm(p.from), e = hhmm(p.to) % 1440;
+  if (s === e) return true;
+  return s < e ? (m >= s && m < e) : (m >= s || m < e);
+}
+function checkPlan(periods) {
+  if (!periods.length) return {ok:false, msg:"Add at least one period."};
+  for (var i = 0; i < periods.length; i++) {
+    var p = periods[i], n = i + 1;
+    if (hhmm(p.from) < 0 || hhmm(p.from) >= 1440) return {ok:false, msg:"Period " + n + ": the start time should look like 06:00.", field:[i,"from"]};
+    if (hhmm(p.to) < 0) return {ok:false, msg:"Period " + n + ": the end time should look like 15:00.", field:[i,"to"]};
+    if (num(p.rate) === null) return {ok:false, msg:"Period " + n + ": enter a rate in cents, e.g. 53.99.", field:[i,"rate"]};
+  }
+  var names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  for (var d = 0; d < 7; d++) {
+    for (var m = 0; m < 1440; m++) {
+      var hits = 0;
+      for (var j = 0; j < periods.length; j++) if (covers(periods[j], d, m)) hits++;
+      if (hits !== 1) {
+        var end = m; while (end < 1440) { var h2 = 0; for (var k = 0; k < periods.length; k++) if (covers(periods[k], d, end)) h2++; if (h2 !== hits) break; end++; }
+        var span = fmtTime(m) + " – " + fmtTime(end), mask = 0;
+        for (var dd = 0; dd < 7; dd++) {
+          var h3 = 0; for (var q = 0; q < periods.length; q++) if (covers(periods[q], dd, m)) h3++;
+          if (h3 === hits) mask |= 1 << dd;
+        }
+        var when = mask === 0x7F ? "every day" : mask === 0x3E ? "on weekdays" : mask === 0x41 ? "on weekends" : "on " + names[d];
+        return {ok:false, msg:(hits === 0 ? "Nothing covers " : "More than one period covers ") + span + " " + when + "."};
+      }
+    }
+  }
+  return {ok:true};
+}
+function bandColor(rate, lo, hi) {
+  if (rate === null) return ["#5A6372","#fff"];
+  if (hi - lo < 0.01) return ["#2A303A","#E6EAF0"];
+  if (rate <= lo + 0.005) return ["#3BB273","#04210F"];
+  if (rate >= hi - 0.005) return ["#D2453A","#fff"];
+  return ["#E39B3A","#2B1700"];
+}
+function rateRange(periods) {
+  var rs = periods.map(function (p) { return num(p.rate); }).filter(function (r) { return r !== null; });
+  return rs.length ? [Math.min.apply(null, rs), Math.max.apply(null, rs)] : [0, 0];
+}
+
+// ---------------------------------------------------------------- rendering
+function fillSelect(sel, list, value) {
+  sel.innerHTML = "";
+  list.forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
+  if (value && list.some(function (o) { return o[0] === value; })) sel.value = value;
+}
+function setPressed(attr, value) {
+  document.querySelectorAll("[data-" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset[attr] === value ? "true" : "false"); });
+}
+function renderLocation() {
+  $("country").value = cur.country;
+  fillSelect($("region"), REGIONS[cur.country], cur.region);
+  cur.region = $("region").value;
+  fillSelect($("tz"), ZONES[cur.country], cur.tz);
+  cur.tz = $("tz").value;
+  setPressed("view", cur.view);
+  var pv = PROVIDER[cur.country], k = cur.keys[pv.id];
+  $("keyProvider").textContent = pv.name;
+  $("keyIntro").textContent = pv.intro;
+  $("keyHelp").href = pv.help;
+  $("key").value = k.value || "";
+  $("key").placeholder = k.set ? "Paste a new key" : "Paste your key";
+  $("keySaved").innerHTML = k.set ? '<span class="dot" style="background:#3BB273"></span>Key saved (ends in ' + k.hint.replace(/[<>&"]/g, "") + ')' : "";
+  $("keySaved").classList.toggle("hidden", !k.set);
+}
+function periodRow(p, i, lo, hi) {
+  var c = bandColor(num(p.rate), lo, hi);
+  var el = document.createElement("div");
+  el.className = "period";
+  el.style.borderLeftColor = c[0];
+  el.innerHTML =
+    '<div class="top"><label>Name<input data-i="' + i + '" data-f="name" maxlength="15" placeholder="e.g. Peak"></label>' +
+    '<label>Days<select data-i="' + i + '" data-f="days"><option value="all">Every day</option><option value="weekdays">Mon – Fri</option><option value="weekends">Sat & Sun</option></select></label>' +
+    '<button type="button" class="icon" data-del="' + i + '" aria-label="Remove period ' + (i + 1) + '"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>' +
+    '<div class="times"><label>From<input data-i="' + i + '" data-f="from" inputmode="numeric" placeholder="06:00"></label>' +
+    '<label>To<input data-i="' + i + '" data-f="to" inputmode="numeric" placeholder="10:00"></label>' +
+    '<label>¢ per kWh<input data-i="' + i + '" data-f="rate" inputmode="decimal" placeholder="53.99"></label></div>';
+  ["name","from","to","rate","days"].forEach(function (f) { el.querySelector('[data-f="' + f + '"]').value = p[f] === undefined ? "" : p[f]; });
+  return el;
+}
+function renderTariff() {
+  var t = cur.tariff;
+  setPressed("plan", t.type);
+  $("flatBox").classList.toggle("hidden", t.type !== "flat");
+  $("touBox").classList.toggle("hidden", t.type !== "tou");
+  $("flatRate").value = t.flat || "";
+  $("supply").value = t.supply === null || t.supply === undefined ? "" : t.supply;
+  $("feedin").value = t.feed_in === null || t.feed_in === undefined ? "" : t.feed_in;
+  $("warn").checked = !!t.warn;
+  var box = $("periods"); box.innerHTML = "";
+  var r = rateRange(t.periods);
+  t.periods.forEach(function (p, i) { box.appendChild(periodRow(p, i, r[0], r[1])); });
+  renderPlanCheck();
+}
+function renderPlanCheck() {
+  var t = cur.tariff, msg = $("planMsg"), prev = $("preview");
+  document.querySelectorAll("#periods input").forEach(function (inp) { inp.removeAttribute("aria-invalid"); });
+  if (t.type !== "tou") { msg.classList.add("hidden"); prev.innerHTML = ""; return; }
+  var res = checkPlan(t.periods);
+  msg.className = "msg " + (res.ok ? "ok" : "err");
+  msg.textContent = res.ok ? "Every hour of the week is covered." : res.msg;
+  msg.classList.remove("hidden");
+  if (res.field) { var bad = document.querySelector('#periods [data-i="' + res.field[0] + '"][data-f="' + res.field[1] + '"]'); if (bad) bad.setAttribute("aria-invalid", "true"); }
+  // Preview bars: one per distinct day type in use
+  var used = {}; t.periods.forEach(function (p) { used[p.days] = 1; });
+  var dayTypes = used.all && !used.weekdays && !used.weekends ? [["all",3]] : [["weekdays",3],["weekends",6]];
+  var r = rateRange(t.periods);
+  prev.innerHTML = "";
+  dayTypes.forEach(function (dt) {
+    var wrap = document.createElement("div"); wrap.className = "day";
+    wrap.innerHTML = '<div class="lbl"><span>' + (dt[0] === "all" ? "Your day" : DAYS[dt[0]][1]) + '</span><span>green = cheapest, red = dearest</span></div>';
+    var bar = document.createElement("div"); bar.className = "bar";
+    var m = 0;
+    while (m < 1440) {
+      var idx = -1;
+      for (var j = 0; j < t.periods.length; j++) if (covers(t.periods[j], dt[1], m)) { idx = idx === -1 ? j : -2; }
+      var end = m + 1;
+      while (end < 1440) {
+        var idx2 = -1; for (var k = 0; k < t.periods.length; k++) if (covers(t.periods[k], dt[1], end)) { idx2 = idx2 === -1 ? k : -2; }
+        if (idx2 !== idx) break; end++;
+      }
+      var seg = document.createElement("span");
+      seg.style.flex = (end - m) + " 1 0px";
+      if (idx >= 0) { var c = bandColor(num(t.periods[idx].rate), r[0], r[1]); seg.style.background = c[0]; seg.style.color = c[1]; if (end - m >= 150) seg.textContent = t.periods[idx].name || ""; }
+      else { seg.style.background = idx === -1 ? "repeating-linear-gradient(45deg,#2A1714,#2A1714 4px,#3A1F1A 4px,#3A1F1A 8px)" : "#7A1E10"; }
+      seg.title = fmtTime(m) + " – " + fmtTime(end);
+      bar.appendChild(seg);
+      m = end;
+    }
+    wrap.appendChild(bar);
+    wrap.insertAdjacentHTML("beforeend", '<div class="ticks"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>12am</span></div>');
+    prev.appendChild(wrap);
+  });
+}
+function renderDisplay() {
+  $("bright").value = cur.display.brightness;
+  $("brightVal").textContent = cur.display.brightness + "%";
+  $("nightDim").checked = !!cur.display.night_dim;
+}
+function renderAll() { renderLocation(); renderTariff(); renderDisplay(); updateSave(); }
+
+// ---------------------------------------------------------------- dirty / validity / save
+function payload() {
+  var c = clone(cur);
+  ["oe","eia"].forEach(function (k) { if (!c.keys[k].value) delete c.keys[k].value; });
+  c.tariff.periods = c.tariff.periods.map(function (p) { return {name:(p.name || "").trim(), from:p.from, to:p.to, rate:num(p.rate), days:p.days}; });
+  c.tariff.flat = num(c.tariff.flat); c.tariff.supply = num(c.tariff.supply); c.tariff.feed_in = num(c.tariff.feed_in);
+  return c;
+}
+function problems() {
+  var t = cur.tariff;
+  if (t.type === "tou" && !checkPlan(t.periods).ok) return "Fix the power plan to save.";
+  if (t.type === "flat" && t.flat !== "" && t.flat !== null && num(t.flat) === null) return "The usage rate should be a number.";
+  if (t.supply !== "" && t.supply !== null && num(t.supply) === null) return "The supply charge should be a number.";
+  if (t.feed_in !== "" && t.feed_in !== null && num(t.feed_in) === null) return "The feed-in rate should be a number.";
+  return null;
+}
+function updateSave() {
+  var dirty = JSON.stringify(payload()) !== JSON.stringify(savedPayload);
+  var p = problems();
+  $("save").disabled = !dirty || !!p;
+  $("saveNote").textContent = p ? p : dirty ? "Unsaved changes" : "No changes";
+  $("saveNote").style.color = p ? "#FFB4A6" : "";
+}
+var savedPayload = null;
+function adopt(s) {
+  s.keys = s.keys || {oe:{set:false,hint:""}, eia:{set:false,hint:""}};
+  saved = s; cur = clone(s);
+  savedPayload = payload();
+}
+
+// ---------------------------------------------------------------- events
+$("country").addEventListener("change", function () {
+  cur.country = this.value;
+  cur.region = REGIONS[cur.country][0][0];
+  cur.tz = ZONES[cur.country][DEFAULT_TZ[cur.region] || 0][0];
+  $("keyMsg").classList.add("hidden");
+  renderLocation(); updateSave();
+});
+$("region").addEventListener("change", function () {
+  cur.region = this.value;
+  cur.tz = ZONES[cur.country][DEFAULT_TZ[cur.region] || 0][0];
+  fillSelect($("tz"), ZONES[cur.country], cur.tz);
+  updateSave();
+});
+$("tz").addEventListener("change", function () { cur.tz = this.value; updateSave(); });
+document.querySelectorAll("[data-view]").forEach(function (b) { b.addEventListener("click", function () { cur.view = b.dataset.view; setPressed("view", cur.view); updateSave(); }); });
+document.querySelectorAll("[data-plan]").forEach(function (b) { b.addEventListener("click", function () { cur.tariff.type = b.dataset.plan; renderTariff(); updateSave(); }); });
+
+$("key").addEventListener("input", function () { cur.keys[PROVIDER[cur.country].id].value = this.value.trim(); $("keyMsg").classList.add("hidden"); updateSave(); });
+$("keyShow").addEventListener("click", function () {
+  var show = $("key").type === "password";
+  $("key").type = show ? "text" : "password";
+  this.textContent = show ? "Hide" : "Show";
+  this.setAttribute("aria-pressed", show ? "true" : "false");
+});
+$("keyTest").addEventListener("click", function () {
+  var btn = this, pv = PROVIDER[cur.country], m = $("keyMsg");
+  btn.disabled = true; btn.textContent = "Testing…";
+  m.className = "msg info"; m.textContent = "Asking " + pv.name + "…";
+  api("POST", "/api/test-key", {provider:pv.id, key:$("key").value.trim()}).then(function (r) {
+    m.className = "msg " + (r.ok ? "ok" : "err");
+    m.textContent = r.message || (r.ok ? "Key works." : "That key didn't work.");
+  }).catch(function () {
+    m.className = "msg err"; m.textContent = "Couldn't reach the display. Is your phone on the same Wi-Fi?";
+  }).then(function () { btn.disabled = false; btn.textContent = "Test key"; });
+});
+
+$("periods").addEventListener("input", function (e) {
+  var i = e.target.dataset.i, f = e.target.dataset.f;
+  if (i === undefined) return;
+  cur.tariff.periods[+i][f] = e.target.value;
+  if (f === "rate") {
+    var r = rateRange(cur.tariff.periods);
+    document.querySelectorAll("#periods .period").forEach(function (row, j) { row.style.borderLeftColor = bandColor(num(cur.tariff.periods[j].rate), r[0], r[1])[0]; });
+  }
+  renderPlanCheck(); updateSave();
+});
+$("periods").addEventListener("change", function (e) { if (e.target.dataset.f === "days") { cur.tariff.periods[+e.target.dataset.i].days = e.target.value; renderPlanCheck(); updateSave(); } });
+$("periods").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-del]"); if (!b) return;
+  cur.tariff.periods.splice(+b.dataset.del, 1); renderTariff(); updateSave();
+});
+$("addPeriod").addEventListener("click", function () {
+  cur.tariff.periods.push({name:"", from:"", to:"", rate:"", days:"all"});
+  renderTariff(); updateSave();
+  var ins = document.querySelectorAll('#periods [data-f="name"]'); ins[ins.length - 1].focus();
+});
+$("flatRate").addEventListener("input", function () { cur.tariff.flat = this.value; updateSave(); });
+$("supply").addEventListener("input", function () { cur.tariff.supply = this.value; updateSave(); });
+$("feedin").addEventListener("input", function () { cur.tariff.feed_in = this.value; updateSave(); });
+$("warn").addEventListener("change", function () { cur.tariff.warn = this.checked; updateSave(); });
+$("bright").addEventListener("input", function () { cur.display.brightness = +this.value; $("brightVal").textContent = this.value + "%"; updateSave(); });
+$("nightDim").addEventListener("change", function () { cur.display.night_dim = this.checked; updateSave(); });
+
+$("save").addEventListener("click", function () {
+  var btn = this; btn.disabled = true; btn.textContent = "Saving…";
+  api("POST", "/api/settings", payload()).then(function (r) {
+    if (r.httpOk === false || r.ok === false) throw new Error(r.message || "Save failed");
+    return api("GET", "/api/settings");
+  }).then(function (s) {
+    adopt(s); renderAll();
+    $("saveNote").textContent = DEMO ? "Saved (demo, nothing was sent)" : "Saved. The display is updating.";
+    $("saveNote").style.color = "#7EE2A8";
+    loadStatus();
+  }).catch(function (err) {
+    $("saveNote").textContent = err.message || "Couldn't save. Check you're on the same Wi-Fi.";
+    $("saveNote").style.color = "#FFB4A6";
+  }).then(function () { btn.textContent = "Save"; if ($("saveNote").style.color !== "rgb(126, 226, 168)") updateSave(); });
+});
+
+window.addEventListener("beforeunload", function (e) { if (!$("save").disabled) { e.preventDefault(); e.returnValue = ""; } });
+
+// ---------------------------------------------------------------- status
+function ago(s) {
+  if (s === null || s === undefined || s < 0) return "Not yet";
+  if (s < 90) return "Just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " hr ago";
+  return Math.round(s / 86400) + " days ago";
+}
+function loadStatus() {
+  api("GET", "/api/status").then(function (s) {
+    var good = s.ok && s.data_age_s !== null && s.data_age_s >= 0;
+    $("stState").innerHTML = '<span class="dot" style="background:' + (good ? "#3BB273" : "#E39B3A") + '"></span>' + (good ? "Showing live data" : (s.problem || "Waiting for data"));
+    $("stWifi").textContent = s.ssid ? s.ssid + " · " + s.ip : "Not connected";
+    $("stAge").textContent = ago(s.data_age_s);
+    $("stCredits").textContent = s.credits_known ? s.credits + " left today" : "–";
+    $("stFw").textContent = s.fw || "–";
+  }).catch(function () { $("stState").textContent = "Couldn't reach the display"; });
+}
+
+// ---------------------------------------------------------------- start
+if (DEMO) $("demoBanner").classList.remove("hidden");
+api("GET", "/api/settings").then(function (s) { adopt(s); renderAll(); }).catch(function () {
+  $("saveNote").textContent = "Couldn't load settings from the display.";
+});
+loadStatus();
+setInterval(function () { if (!document.hidden) loadStatus(); }, 30000);
+})();
+</script>
+</body>
+</html>
