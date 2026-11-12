@@ -4,3 +4,5 @@
 site/
 __pycache__/
 include/generated/
+sim-out/
+.sim-build/

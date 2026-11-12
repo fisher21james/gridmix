@@ -1,0 +1,67 @@
+// When to ask the data services for new numbers, and the exact requests to send.
+// Kept free of Arduino code so it can be tested on a PC.
+//
+// Open Electricity (Community plan): about 500 requests a day and 10,000 a month, reset at
+// midnight UTC (10:30 am in Adelaide). One refresh of the mix every 10 minutes plus the price and
+// rooftop-solar forecast every 30 minutes is 144 + 48 = 192 a day, about 5,900 a month.
+// EIA has no practical daily limit, but its data is hourly, so it is checked every 15 minutes.
+#pragma once
+#include <stddef.h>
+#include <stdint.h>
+
+namespace gridcore {
+
+// ---- requests
+enum DataSource : uint8_t { SRC_OPEN_ELECTRICITY = 0, SRC_EIA };
+
+struct Feed {
+  DataSource source = SRC_OPEN_ELECTRICITY;
+  char network[4] = "NEM";   // Open Electricity network: NEM or WEM
+  char region[6] = "SA1";    // Open Electricity network_region ("" = whole network) or EIA respondent
+  bool has_market = true;    // Open Electricity price + rooftop forecast (NEM only)
+};
+
+// Which feed to use for a country/region and view. country view = whole NEM / lower 48 states.
+Feed feed_for(const char *country, const char *region, bool country_view);
+
+// "2026-11-12T16:05:00" in NEM time (UTC+10 all year, no daylight saving), as Open Electricity expects.
+void nem_time(int64_t utc, char *out, size_t cap);
+
+// Return the length written (0 if it didn't fit). The EIA URL ends with "api_key=" so the key can be appended.
+size_t oe_power_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
+size_t oe_market_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
+size_t eia_url(const Feed &f, char *out, size_t cap);
+
+// ---- timing
+enum FetchKind : uint8_t { FETCH_MIX = 0, FETCH_MARKET };
+
+class Scheduler {
+ public:
+  void reset(DataSource src, int64_t now);   // new settings or view: fetch straight away
+  bool due(FetchKind k, int64_t now) const;
+  // http: status code (200 = OK, negative = no connection)
+  void done(FetchKind k, int64_t now, int http);
+
+  int64_t next(FetchKind k) const { return next_[k]; }
+  int failures(FetchKind k) const { return fails_[k]; }
+  bool key_rejected() const { return key_rejected_; }
+  bool out_of_credits() const { return out_of_credits_; }
+  void set_credits_left(int n) { credits_left_ = n; }
+
+ private:
+  int64_t next_regular(FetchKind k, int64_t now) const;
+  DataSource src_ = SRC_OPEN_ELECTRICITY;
+  int64_t next_[2] = {0, 0};
+  int fails_[2] = {0, 0};
+  bool key_rejected_ = false;
+  bool out_of_credits_ = false;
+  int credits_left_ = -1;
+};
+
+// ---- freshness
+// "Updated just now", "Updated 4 min ago", "Updated 3 h ago", "Updated 1 day ago"
+void format_ago(int64_t age_s, char *out, size_t cap);
+// Data counts as fresh for 25 minutes (Open Electricity) or 3 hours (EIA, which is hourly and often late).
+bool data_is_fresh(DataSource src, int64_t age_s);
+
+}  // namespace gridcore

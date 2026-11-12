@@ -1,16 +1,13 @@
-// Grid Mix Display — bring-up firmware (step 1)
+// Grid Mix Display firmware
 //
-// What this does:
-//   - Starts the 480x272 QSPI display and the GT911 touch panel
-//   - Runs LVGL 9 with an FPS/CPU overlay in the corner
-//   - Draws a test wind turbine; drag the slider to change its speed (tests touch + animation load)
-//   - Listens for Wi-Fi details from the browser flasher (Improv) and reconnects on later boots
-//
-// The real screens get built on top of this once the hardware checks out.
+//   - 480x272 QSPI display (NV3041A) and GT911 touch, driven by LVGL 9
+//   - Screens come from lib/gridui, the same code the simulator runs
+//   - Wi-Fi details arrive from the browser installer (Improv); settings from the phone page at gridmix.local
+//   - Live data is fetched in the background (src/fetcher.cpp); until a key is set, sample scenes play
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <math.h>
+#include <time.h>
 #include <Arduino_GFX_Library.h>
 #include <lvgl.h>
 #include "improv_serial.h"
@@ -18,6 +15,8 @@
 #include "app_state.h"
 #include "settings_store.h"
 #include "setup_server.h"
+#include "fetcher.h"
+#include "gridui.h"
 
 #if HAS_GT911_TOUCH
 #include <Wire.h>
@@ -27,6 +26,8 @@
 #ifndef FW_VERSION
 #define FW_VERSION "dev"
 #endif
+
+using namespace gridcore;
 
 // ---------- Display ----------
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(LCD_CS, LCD_SCK, LCD_D0, LCD_D1, LCD_D2, LCD_D3);
@@ -40,9 +41,21 @@ TAMC_GT911 touch(TOUCH_SDA, TOUCH_SCL, TOUCH_INT, TOUCH_RST, LCD_WIDTH, LCD_HEIG
 gridcore::Settings g_settings;
 AppStatus g_status;
 static bool net_started = false;
+static bool view_country = false;     // what's on screen now (starts from the saved setting)
+static bool dirty = true;             // rebuild the screen on the next pass
+
+static bool is_night() {
+  const time_t now = time(nullptr);
+  if (now < 1700000000) return false;
+  struct tm lt;
+  localtime_r(&now, &lt);
+  return lt.tm_hour >= 22 || lt.tm_hour < 6;
+}
 
 static void apply_brightness() {
-  ledcWrite(LCD_BL, (uint32_t)g_settings.brightness * 255 / 100);
+  uint32_t pct = g_settings.brightness;
+  if (g_settings.night_dim && is_night() && pct > 15) pct = 15;
+  ledcWrite(LCD_BL, pct * 255 / 100);
 }
 
 static void apply_settings() {
@@ -53,27 +66,21 @@ static void apply_settings() {
 
 void on_settings_changed() {
   apply_settings();
+  view_country = g_settings.view_country;
+  fetcher_reset(view_country);
+  dirty = true;
 }
 
-// ---------- Test scene ----------
-static const int HUB_X = 240, HUB_Y = 120, BLADE_LEN = 70;
-static lv_obj_t *blades[3];
-static lv_point_precise_t blade_pts[3][2];
-static float angle_deg = 0;
-static float speed_deg_per_frame = 3.0f;   // set by the slider
-static lv_obj_t *wifi_label;
-
+// ---------- LVGL glue ----------
 static uint32_t tick_cb() { return millis(); }
 
 static void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
-  const uint32_t w = lv_area_get_width(area);
-  const uint32_t h = lv_area_get_height(area);
-  gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)px_map, w, h);
+  gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)px_map, lv_area_get_width(area), lv_area_get_height(area));
   lv_display_flush_ready(disp);
 }
 
 #if HAS_GT911_TOUCH
-static void touch_read_cb(lv_indev_t *indev, lv_indev_data_t *data) {
+static void touch_read_cb(lv_indev_t *, lv_indev_data_t *data) {
   touch.read();
   if (touch.isTouched) {
     data->point.x = touch.points[0].x;
@@ -85,98 +92,134 @@ static void touch_read_cb(lv_indev_t *indev, lv_indev_data_t *data) {
 }
 #endif
 
-static void spin_timer_cb(lv_timer_t *) {
-  angle_deg += speed_deg_per_frame;
-  if (angle_deg >= 360) angle_deg -= 360;
-  for (int i = 0; i < 3; i++) {
-    const float a = (angle_deg + i * 120.0f) * (float)M_PI / 180.0f;
-    blade_pts[i][0] = {(lv_value_precise_t)HUB_X, (lv_value_precise_t)HUB_Y};
-    blade_pts[i][1] = {(lv_value_precise_t)(HUB_X + sinf(a) * BLADE_LEN),
-                       (lv_value_precise_t)(HUB_Y - cosf(a) * BLADE_LEN)};
-    lv_line_set_points(blades[i], blade_pts[i], 2);
+// ---------- Building what the screen shows ----------
+static const char *DOT = "\xC2\xB7";
+
+static void header_for(char *out, size_t cap) {
+  const bool us = g_settings.country[0] == 'U';
+  if (view_country) { snprintf(out, cap, "%s", us ? "United States" : "Australia (NEM)"); return; }
+  if (us) { snprintf(out, cap, "%s", region_label(g_settings.country, g_settings.region)); return; }
+  static const char *AU[][3] = {{"SA1", "SA", "Adelaide"}, {"NSW1", "NSW", "Sydney"}, {"VIC1", "VIC", "Melbourne"},
+                                {"QLD1", "QLD", "Brisbane"}, {"TAS1", "TAS", "Hobart"}, {"WEM", "WA", "Perth"}};
+  for (auto &r : AU)
+    if (!strcmp(r[0], g_settings.region)) { snprintf(out, cap, "%s %s %s", r[1], DOT, r[2]); return; }
+  snprintf(out, cap, "%s", g_settings.region);
+}
+
+static void setup_hint(char *out, size_t cap) {
+  if (WiFi.status() != WL_CONNECTED) snprintf(out, cap, "Sample data %s connect Wi-Fi with the installer", DOT);
+  else snprintf(out, cap, "Sample data %s finish setup at gridmix.local", DOT);
+}
+
+static int demo_index = 0;
+static uint32_t demo_since = 0;
+
+static gridui::Model build_model() {
+  const bool us = g_settings.country[0] == 'U';
+  const bool has_key = g_settings.key_for_country()[0] != 0;
+
+  if (!has_key) {   // not set up yet: play the sample scenes so the display isn't blank on day one
+    gridui::Model m = gridui::demo_model(demo_index);
+    setup_hint(m.advice, sizeof m.advice);
+    m.tone = gridui::TONE_OK;
+    return m;
+  }
+
+  LiveData d;
+  fetcher_get(d);
+  const time_t now = time(nullptr);
+  const bool clock_ok = now > 1700000000;
+  struct tm lt = {};
+  if (clock_ok) localtime_r(&now, &lt);
+
+  char header[32];
+  header_for(header, sizeof header);
+  const Tariff tariff = g_settings.active_tariff();
+  gridui::Model m = gridui::model_build(d.snap, d.has_data, header, lt.tm_wday, lt.tm_hour * 60 + lt.tm_min,
+                                        g_settings.has_tariff() ? &tariff : nullptr);
+  if (!clock_ok) m.clock[0] = 0;
+  m.view_country = view_country;
+
+  char local_sub[40], ago[24] = "Waiting for data";
+  snprintf(local_sub, sizeof local_sub, "My region %s %s", DOT, us ? "EIA" : "state grid");
+  bool fresh = false;
+  if (d.has_data && clock_ok) {
+    const int64_t age = (int64_t)now - d.snap.data_time;
+    format_ago(age, ago, sizeof ago);
+    fresh = data_is_fresh(d.source, age);
+  }
+  gridui::model_views(m, region_label(g_settings.country, g_settings.region), local_sub,
+                      us ? "United States" : "Australia", us ? "Lower 48 states (EIA)" : "East coast grid (NEM)",
+                      us ? "Hourly" : "Every 10 min", ago, fresh);
+
+  // Say plainly why there's nothing to show
+  if (!d.has_data) {
+    const char *why = nullptr;
+    if (WiFi.status() != WL_CONNECTED) why = "No Wi-Fi \xC2\xB7 reconnect with the installer";
+    else if (d.key_rejected) why = "Data key not accepted \xC2\xB7 check gridmix.local";
+    else if (d.out_of_credits) why = "Out of data requests for today";
+    else if (d.failures >= 3) why = "Can't reach the data service \xC2\xB7 retrying";
+    if (why) {
+      snprintf(m.advice, sizeof m.advice, "%s", why);
+      m.tone = gridui::TONE_BAD;
+    }
+  }
+  g_status.problem = !d.has_data && d.key_rejected ? "Data key not accepted" : d.out_of_credits ? "Out of requests for today" : nullptr;
+  return m;
+}
+
+static void on_view_changed(bool country) {
+  if (country == view_country) return;
+  view_country = country;
+  fetcher_reset(view_country);
+  dirty = true;
+}
+
+static void on_scene_tapped() {
+  if (g_settings.key_for_country()[0] == 0) {   // next sample scene
+    demo_index = (demo_index + 1) % gridui::demo_count();
+    demo_since = millis();
+    dirty = true;
   }
 }
 
-static void slider_cb(lv_event_t *e) {
-  lv_obj_t *slider = (lv_obj_t *)lv_event_get_target(e);
-  // 0..100 "wind share" maps to 0..12 degrees per frame
-  speed_deg_per_frame = lv_slider_get_value(slider) * 0.12f;
-}
+// Rebuild the screen when new data arrives, the minute changes, or a sample scene is due
+static void screen_tick(lv_timer_t *) {
+  static uint32_t last_version = UINT32_MAX;
+  static int last_minute = -1;
+  static wl_status_t last_wifi = WL_IDLE_STATUS;
 
-static void wifi_timer_cb(lv_timer_t *) {
-  if (WiFi.status() == WL_CONNECTED) {
-    lv_label_set_text_fmt(wifi_label, "Wi-Fi: %s  %s", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
-  } else {
-    lv_label_set_text(wifi_label, "Wi-Fi: not set - use the web flasher to connect");
+  LiveData d;
+  fetcher_get(d);
+  const time_t now = time(nullptr);
+  const int minute = (int)(now / 60);
+  const bool demo = g_settings.key_for_country()[0] == 0;
+  if (demo && millis() - demo_since > 8000) {
+    demo_index = (demo_index + 1) % gridui::demo_count();
+    demo_since = millis();
+    dirty = true;
   }
-}
-
-static void build_test_screen() {
-  lv_obj_t *scr = lv_screen_active();
-  lv_obj_set_style_bg_color(scr, lv_color_hex(0x0E1116), 0);
-
-  lv_obj_t *title = lv_label_create(scr);
-  lv_label_set_text(title, "Grid Mix  bring-up  v" FW_VERSION);
-  lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
-  lv_obj_set_style_text_font(title, &lv_font_montserrat_14, 0);
-  lv_obj_align(title, LV_ALIGN_TOP_LEFT, 12, 10);
-
-  // Tower
-  static lv_point_precise_t tower_pts[2] = {{HUB_X, HUB_Y}, {HUB_X, 230}};
-  lv_obj_t *tower = lv_line_create(scr);
-  lv_line_set_points(tower, tower_pts, 2);
-  lv_obj_set_style_line_width(tower, 6, 0);
-  lv_obj_set_style_line_color(tower, lv_color_hex(0xE9EEF2), 0);
-  lv_obj_set_style_line_rounded(tower, true, 0);
-
-  // Blades
-  for (int i = 0; i < 3; i++) {
-    blades[i] = lv_line_create(scr);
-    lv_obj_set_style_line_width(blades[i], 5, 0);
-    lv_obj_set_style_line_color(blades[i], lv_color_hex(0xF7F9FB), 0);
-    lv_obj_set_style_line_rounded(blades[i], true, 0);
-  }
-
-  // Hub, in the wind colour
-  lv_obj_t *hub = lv_obj_create(scr);
-  lv_obj_set_size(hub, 14, 14);
-  lv_obj_set_style_radius(hub, LV_RADIUS_CIRCLE, 0);
-  lv_obj_set_style_bg_color(hub, lv_color_hex(0x4FB3D9), 0);
-  lv_obj_set_style_border_width(hub, 0, 0);
-  lv_obj_set_pos(hub, HUB_X - 7, HUB_Y - 7);
-
-  // Speed slider (touch test)
-  lv_obj_t *slider = lv_slider_create(scr);
-  lv_obj_set_width(slider, 300);
-  lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -14);
-  lv_slider_set_value(slider, 25, LV_ANIM_OFF);
-  lv_obj_set_style_bg_color(slider, lv_color_hex(0x4FB3D9), LV_PART_INDICATOR);
-  lv_obj_set_style_bg_color(slider, lv_color_hex(0x4FB3D9), LV_PART_KNOB);
-  lv_obj_add_event_cb(slider, slider_cb, LV_EVENT_VALUE_CHANGED, NULL);
-
-  wifi_label = lv_label_create(scr);
-  lv_obj_set_style_text_color(wifi_label, lv_color_hex(0xA9B1BC), 0);
-  lv_obj_set_style_text_font(wifi_label, &lv_font_montserrat_12, 0);
-  lv_obj_align(wifi_label, LV_ALIGN_TOP_LEFT, 12, 32);
-
-  lv_timer_create(spin_timer_cb, 16, NULL);
-  lv_timer_create(wifi_timer_cb, 1000, NULL);
-  wifi_timer_cb(NULL);
+  if (d.version != last_version || minute != last_minute || WiFi.status() != last_wifi) dirty = true;
+  if (!dirty) return;
+  dirty = false;
+  last_version = d.version;
+  last_minute = minute;
+  last_wifi = WiFi.status();
+  apply_brightness();
+  gridui::update(build_model());
 }
 
 void setup() {
   Serial.begin(115200);
+  Serial.printf("\nGrid Mix Display %s\n", FW_VERSION);
 
-  // Saved settings (defaults on first boot)
   settings_load(g_settings);
+  view_country = g_settings.view_country;
 
-  // Backlight (PWM, so brightness can be set from the phone)
-  ledcAttach(LCD_BL, 5000, 8);
+  ledcAttach(LCD_BL, 5000, 8);   // backlight on PWM so brightness can be set from the phone
   apply_settings();
 
-  if (!gfx->begin()) {
-    Serial.println("Display init failed - check pins in board_config.h");
-  }
+  if (!gfx->begin()) Serial.println("Display init failed - check pins in board_config.h");
   gfx->fillScreen(0x0000);
 
 #if HAS_GT911_TOUCH
@@ -184,14 +227,11 @@ void setup() {
   touch.setRotation(ROTATION_NORMAL);   // if taps land mirrored, try ROTATION_INVERTED
 #endif
 
-  // LVGL
   lv_init();
   lv_tick_set_cb(tick_cb);
-
   const size_t buf_px = LCD_WIDTH * 40;  // 40 lines per chunk
   uint8_t *buf1 = (uint8_t *)heap_caps_malloc(buf_px * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
   uint8_t *buf2 = (uint8_t *)heap_caps_malloc(buf_px * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-
   lv_display_t *disp = lv_display_create(LCD_WIDTH, LCD_HEIGHT);
   lv_display_set_flush_cb(disp, flush_cb);
   lv_display_set_buffers(disp, buf1, buf2, buf_px * 2, LV_DISPLAY_RENDER_MODE_PARTIAL);
@@ -202,12 +242,18 @@ void setup() {
   lv_indev_set_read_cb(indev, touch_read_cb);
 #endif
 
-  // Wi-Fi: reuse saved details if we have them; the browser flasher can send new ones
+  gridui::Callbacks cb;
+  cb.view_changed = on_view_changed;
+  cb.scene_tapped = on_scene_tapped;
+  gridui::create(cb);
+  lv_timer_create(screen_tick, 500, nullptr);
+
+  // Wi-Fi: reuse saved details if we have them; the browser installer can send new ones
   WiFi.mode(WIFI_STA);
   WiFi.begin();
   improv::begin("GridMix", FW_VERSION, "Grid Mix Display", "http://{IP}");
 
-  build_test_screen();
+  fetcher_begin();
 }
 
 void loop() {

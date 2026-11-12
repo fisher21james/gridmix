@@ -36,8 +36,16 @@ jobs:
       - name: Install PlatformIO and esptool
         run: pip install platformio esptool
 
-      - name: Test the data translators, tariff engine and settings
+      - name: Test the data translators, tariff engine, settings and refresh timing
         run: pio test -e native
+
+      - name: Build the simulator and render every screen
+        run: |
+          pip install pillow
+          git clone --quiet --depth 1 --branch v9.6.0 https://github.com/lvgl/lvgl.git "$RUNNER_TEMP/lvgl"
+          git clone --quiet --depth 1 --branch v7.4.3 https://github.com/bblanchon/ArduinoJson.git "$RUNNER_TEMP/ajson"
+          LVGL_DIR="$RUNNER_TEMP/lvgl" AJSON_DIR="$RUNNER_TEMP/ajson" BUILD_DIR="$RUNNER_TEMP/sim-build" sim/build.sh sim-out --frames 40
+          python scripts/sim_gallery.py sim-out "$(cat VERSION | tr -d '[:space:]')"
 
       - name: Check the display's root certificates still verify the data APIs
         run: |
@@ -69,6 +77,7 @@ jobs:
           cp gridmix-merged.bin site/firmware/
           mkdir -p site/setup-demo
           cp device-web/setup.html site/setup-demo/index.html
+          cp -r sim-out site/sim
           sed "s/__VERSION__/$VERSION/" web/firmware/manifest.json > site/firmware/manifest.json
           sed -i "s/__VERSION__/$VERSION/" site/index.html
 
@@ -77,6 +86,12 @@ jobs:
         with:
           name: gridmix-firmware
           path: gridmix-merged.bin
+
+      - name: Keep the simulator screens too
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridmix-sim
+          path: sim-out
 
       - uses: actions/upload-pages-artifact@v3
         with:
