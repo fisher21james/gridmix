@@ -13,7 +13,7 @@
 #include <math.h>
 #include <Arduino_GFX_Library.h>
 #include <lvgl.h>
-#include <ImprovWiFiLibrary.h>
+#include "improv_serial.h"
 #include "board_config.h"
 
 #if HAS_GT911_TOUCH
@@ -32,9 +32,6 @@ Arduino_GFX *gfx = new Arduino_NV3041A(bus, GFX_NOT_DEFINED /* no reset pin */, 
 #if HAS_GT911_TOUCH
 TAMC_GT911 touch(TOUCH_SDA, TOUCH_SCL, TOUCH_INT, TOUCH_RST, LCD_WIDTH, LCD_HEIGHT);
 #endif
-
-// ---------- Wi-Fi setup from the browser flasher ----------
-ImprovWiFi improv(&Serial);
 
 // ---------- Test scene ----------
 static const int HUB_X = 240, HUB_Y = 120, BLADE_LEN = 70;
@@ -183,14 +180,13 @@ void setup() {
   // Wi-Fi: reuse saved details if we have them; the browser flasher can send new ones
   WiFi.mode(WIFI_STA);
   WiFi.begin();
-  improv.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32_S3, "GridMix", FW_VERSION,
-                       "Grid Mix Display", "http://{LOCAL_IPV4}");
+  improv::begin("GridMix", FW_VERSION, "Grid Mix Display", "http://{IP}");
 
   build_test_screen();
 }
 
 void loop() {
-  improv.handleSerial();
+  improv::loop();
   lv_timer_handler();
   delay(2);
 }
