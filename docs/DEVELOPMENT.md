@@ -72,7 +72,9 @@ Open Electricity, two requests per refresh (each costs 1 credit, including `/v4/
 - **Whole-country view** for Australia is the NEM (every state but WA and the NT); WA is a separate network (`WEM`) with no price or rooftop forecast.
 - Licence: Community data is non-commercial only.
 
-EIA:
+EIA (US support paused, 13 Nov 2026):
+
+- **Paused for launch.** The fuel mix was 16–19 hours behind for every region checked (TEX, ERCO, CISO, PJM, US48), while demand was about 1.5 hours behind. The code stays (translator, URLs, tests) but the setup page, install page and simulator no longer offer the US. Next option to look at: Grid Status's hosted API (real-time ISO fuel mix; free tier reportedly 500,000 rows a month; check terms and per-user keys).
 
 - Can lag several hours to a day. Negative battery values mean charging.
 - Live check 13 Nov 2026 (browser sim): region codes TEX and US48 work; data was 18–19 hours behind; the US48 answer took about 12 s, so the HTTPS timeout is 30 s. US48 includes newer codes (WNB wind+battery, SNB solar+battery, OES/UES storage, PS pumped storage), all mapped.

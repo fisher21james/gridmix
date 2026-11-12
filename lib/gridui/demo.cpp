@@ -92,7 +92,7 @@ DemoScene demo_scene(int i) {
     {"SA \xC2\xB7 Adelaide", "South Australia", {58, 31, 0, 4, 0, 7, 0, 0}, -12, 9, 4, 13 * 60 + 20, false},
     {"SA \xC2\xB7 Adelaide", "South Australia", {0, 64, 0, 14, 0, 22, 0, 0}, 88, 0, 4, 21 * 60 + 40, false},
     {"NSW \xC2\xB7 Sydney", "New South Wales", {4, 6, 8, 5, 0, 9, 68, 0}, 312, 0, 4, 18 * 60 + 15, false},
-    {"Texas", "Texas", {20, 26, 0, 0, 8, 38, 8, 0}, NAN, 0, 4, 15 * 60, true},
+    {"VIC \xC2\xB7 Melbourne", "Victoria", {18, 30, 6, 2, 0, 4, 40, 0}, 142, 0, 4, 8 * 60 + 30, false},
   };
   return SCENES[((i % 4) + 4) % 4];
 }

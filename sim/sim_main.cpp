@@ -112,10 +112,10 @@ int main(int argc, char **argv) {
   const Tariff plan = demo_tariff();
   struct Scenario { std::string name; Model model; int action; };   // action: 0 none, 1 picker, 2 thin bar, 3 detail, 4 tariff
   std::vector<Scenario> list;
-  static const char *DEMO_NAMES[4] = {"01-sa-sunny-afternoon", "02-sa-windy-night", "03-nsw-evening-peak", "04-texas-us"};
+  static const char *DEMO_NAMES[4] = {"01-sa-sunny-afternoon", "02-sa-windy-night", "03-nsw-evening-peak", "04-vic-morning"};
   for (int i = 0; i < demo_count(); i++) list.push_back({DEMO_NAMES[i], demo_model(i), 0});
 
-  // 5-6: real data captured from the APIs
+  // 5: real data captured from Open Electricity
   {
     GridSnapshot s;
     MarketInfo mk;
@@ -125,13 +125,6 @@ int main(int argc, char **argv) {
     Model m = model_build(s, true, SA, 4, 16 * 60 + 5, &plan);
     model_views(m, "South Australia", SUB, "Australia", "East coast grid (NEM)", "Every 10 min", "Updated 9 min ago", FRESH_OK);
     list.push_back({"05-real-sa-12nov-4pm", m, 0});
-  }
-  {
-    GridSnapshot s;
-    parse_eia(EIA_ERCOT, strlen(EIA_ERCOT), s);
-    Model m = model_build(s, true, "Texas", 3, 23 * 60, nullptr);
-    model_views(m, "Texas", "My region \xC2\xB7 EIA", "United States", "Lower 48 states (EIA)", "Hourly", "Updated 1 day ago", FRESH_OK);
-    list.push_back({"06-real-texas-11nov-11pm", m, 0});
   }
 
   // 7-9: states and interactions
@@ -159,8 +152,14 @@ int main(int argc, char **argv) {
   list.push_back({"13-detail-real-sa", list[4].model, 3});
   list.push_back({"14-tariff-sa-afternoon", list[0].model, 4});
   list.push_back({"15-tariff-sa-evening", list[1].model, 4});
-  list.push_back({"16-tariff-flat-us", list[3].model, 4});
-  list.push_back({"17-tariff-no-plan", list[5].model, 4});
+  {
+    Tariff flat;
+    flat.add("Flat", 0, 0, 31.5f);
+    flat.supply_cents_per_day = 98;
+    flat.feed_in_cents = 4;
+    list.push_back({"16-tariff-flat", model_build(list[0].model.snap, true, SA, 4, 13 * 60 + 20, &flat), 4});
+    list.push_back({"17-tariff-no-plan", model_build(list[4].model.snap, true, SA, 4, 16 * 60 + 5, nullptr), 4});
+  }
   {
     Model m = list[4].model;       // data that's falling behind: amber dot next to the clock
     m.freshness = FRESH_LATE;

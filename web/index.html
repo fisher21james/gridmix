@@ -282,7 +282,7 @@
         <button type="button" data-i="0">SA sunny afternoon</button>
         <button type="button" data-i="1">SA windy night</button>
         <button type="button" data-i="2">NSW evening peak</button>
-        <button type="button" data-i="3">Texas (US)</button>
+        <button type="button" data-i="3">VIC morning</button>
       </div>
       <figcaption class="caption">Live preview with sample data. Photos of the real build coming soon.</figcaption>
     </figure>
@@ -295,7 +295,7 @@
       <div class="card"><div class="swatch" style="background:var(--wind)"></div><h3>A living scene</h3><p>Each power source is a little building that comes alive in proportion to how much it's producing: spinning turbines, smoking stacks, a pouring dam, glinting solar panels.</p></div>
       <div class="card"><div class="swatch" style="background:var(--solar)"></div><h3>The mix at a glance</h3><p>A big renewable percentage, plus a colour-matched bar of every source. Tap the bar to switch between a labelled and a slim style.</p></div>
       <div class="card"><div class="swatch" style="background:var(--gas)"></div><h3>Your price, in plain English</h3><p>Enter your own tariff and it shows your rate right now and which time-of-use period you're in. A simple grid status (clean &amp; cheap, normal, busy or under strain) tells you when it's a good time to run big appliances.</p></div>
-      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country. Australia and the US for now, with more countries coming in updates. Each view shows how fresh its data is.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country. Australia for now, with more countries coming in updates. Each view shows how fresh its data is.</p></div>
     </div>
   </section>
 
@@ -352,13 +352,12 @@
 
   <section id="setup" aria-labelledby="setup-h">
     <h2 id="setup-h">Set up</h2>
-    <p class="sub">Once it's on your Wi-Fi, open <code>gridmix.local</code> on your phone (same Wi-Fi) to choose your region and enter your tariff. Supported now: <b>Australia</b> and the <b>United States</b>. More countries are coming in updates. <a href="setup-demo/">Try a demo of the setup page</a>, or <a href="sim/">try the screen in your browser</a>.</p>
+    <p class="sub">Once it's on your Wi-Fi, open <code>gridmix.local</code> on your phone (same Wi-Fi) to choose your region and enter your tariff. Supported now: <b>Australia</b>. More countries are coming in updates. <a href="setup-demo/">Try a demo of the setup page</a>, or <a href="sim/">try the screen in your browser</a>.</p>
     <div class="table-box">
       <table>
         <thead><tr><th scope="col">Where you are</th><th scope="col">Data source</th><th scope="col">Updates</th><th scope="col">Free key</th></tr></thead>
         <tbody>
           <tr><td>Australia</td><td>Open Electricity</td><td>Every 5 minutes</td><td><a href="https://platform.openelectricity.org.au">platform.openelectricity.org.au</a></td></tr>
-          <tr><td>United States</td><td>U.S. EIA Hourly Electric Grid Monitor</td><td>Hourly (can run several hours to a day behind)</td><td><a href="https://www.eia.gov/opendata/">eia.gov/opendata</a></td></tr>
         </tbody>
       </table>
     </div>
@@ -388,31 +387,7 @@
       <p class="tip">Keep your key private, like a password. If it ever ends up somewhere public, delete it on the API Keys page and make a new one.</p>
     </details>
 
-    <details>
-      <summary>United States: U.S. EIA</summary>
-      <ol class="steps">
-        <li>Go to <a href="https://www.eia.gov/opendata/">eia.gov/opendata</a> and click the blue <b>Register</b> button on the right.
-          <figure class="shot">
-            <img src="img/eia-register-button.jpg" width="1400" height="767" loading="lazy" alt="The EIA Open Data page, with the blue Register button in the right-hand column.">
-          </figure>
-        </li>
-        <li>Fill in your first name, last name and email. Leave the category as <b>Private citizen</b>. You can leave <b>Reason</b> blank.
-          <figure class="shot">
-            <img src="img/eia-form.jpg" width="1400" height="767" loading="lazy" alt="The Register for an API key form, with First Name, Last Name, Email and Category fields.">
-          </figure>
-        </li>
-        <li>Scroll down, tick <b>I agree to these terms of service</b>, and click <b>Register</b>.
-          <figure class="shot">
-            <img src="img/eia-agree.jpg" width="1400" height="600" loading="lazy" alt="The bottom of the form, with the I agree checkbox ticked and the Register button.">
-          </figure>
-        </li>
-        <li>Check your email and click the confirmation link. <b>The page it opens may say "Unexpected Error". Don't worry, that's a hiccup on EIA's side and it still works.</b></li>
-        <li>A second email arrives with your API key. Copy it.</li>
-        <li>Paste the key into your display's setup page (<code>gridmix.local</code>) when it asks.</li>
-      </ol>
-      <p class="tip">No email? Check your spam folder. Lost the key? Use <b>Forgot API Key</b> on the same EIA page to have it sent again.</p>
-    </details>
-    <p class="tip">Outside Australia and the US? More countries are planned for future updates, starting with Europe and the UK.</p>
+    <p class="tip">Outside Australia? More countries are planned for future updates, once there's a free source with up-to-date data for them.</p>
   </section>
 
   <section id="faq" aria-labelledby="faq-h">
@@ -420,14 +395,14 @@
     <details><summary>Does my data go anywhere?</summary><p>No. The display talks directly to the data source you pick. There's no account and no cloud service in between, and your tariff stays on the device.</p></details>
     <details><summary>Why do I need my own key?</summary><p>The data sources are free but limit how often each key can ask. Your own key means your display is never slowed down by anyone else's.</p></details>
     <details><summary>Can I use the resistive or no-touch version of the board?</summary><p>Not yet. The firmware is built for the capacitive version. Support for the others may come later.</p></details>
-    <details><summary>Will it work in my country?</summary><p>Right now it supports Australia and the United States. More countries will be added in future updates, starting with Europe and the UK, and you'll get them by clicking Install again.</p></details>
+    <details><summary>Will it work in my country?</summary><p>Right now it supports Australia. More countries will be added in future updates as free, up-to-date data sources are confirmed (the US is first on the list), and you'll get them by clicking Install again.</p></details>
     <details><summary>Why not Safari or Firefox?</summary><p>Installing uses Web Serial, which only Chrome and Edge support on desktop. You only need it once; after that the display updates itself.</p></details>
     <details><summary>Is it open source?</summary><p>Yes. The firmware and this page are on <a href="https://github.com/fisher21james/gridmix">GitHub</a> under the MIT licence.</p></details>
   </section>
 </main>
 
 <footer>
-  Grid data: <a href="https://openelectricity.org.au">Open Electricity</a> (Australia, CC BY-NC 4.0), <a href="https://www.eia.gov/electricity/gridmonitor/">U.S. EIA Hourly Electric Grid Monitor</a> (US).
+  Grid data: <a href="https://openelectricity.org.au">Open Electricity</a> (Australia, CC BY-NC 4.0).
   The preview uses sample data. Source code on <a href="https://github.com/fisher21james/gridmix">GitHub</a>.
 </footer>
 
@@ -458,8 +433,8 @@
       cells: 3, batt: true, status: 'Windy night · turbines doing the heavy lifting', tone: 'ok', rate: '54.0¢', period: 'Peak', band: 'high' },
     { region: 'NSW · Sydney', time: '6:15 pm', sky: 'dusk', price: '$312', level: 'high', renew: 23, mix: { coal: 68, gas: 9, hydro: 8, wind: 6, battery: 5, solar: 4 },
       cells: 1, batt: true, status: 'Evening peak · hold off on big loads', tone: 'bad', rate: '56.4¢', period: 'Peak', band: 'high' },
-    { region: 'ERCOT · Texas', time: '3:00 pm CT', sky: 'day', price: '$34', level: 'mid', renew: 46, mix: { gas: 38, wind: 26, solar: 20, coal: 8, nuclear: 8 },
-      cells: 0, batt: false, status: 'US mode · hourly mix from EIA', tone: 'ok', rate: '14.2¢', period: 'Flat', band: 'flat' }
+    { region: 'VIC · Melbourne', time: '8:30 am', sky: 'day', price: '$142', level: 'mid', renew: 54, mix: { coal: 40, wind: 30, solar: 18, hydro: 6, gas: 4, battery: 2 },
+      cells: 1, batt: true, status: 'Peak rate · wait for cheaper times if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' }
   ];
   const $ = (id) => document.getElementById(id);
   const buttons = Array.from(document.querySelectorAll('.scene-picker button'));

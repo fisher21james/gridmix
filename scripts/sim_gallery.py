@@ -50,7 +50,7 @@ a{{color:#4fb3d9}}
 </style></head><body><main>
 <h1>Grid Mix simulator</h1>
 <p>Rendered on GitHub from the same screen code the display runs{(' (firmware ' + html.escape(version) + ')') if version else ''}.
-Scenes 05 and 06 use real data captured from Open Electricity and the EIA.
+Scene 05 uses real data captured from Open Electricity.
 <a href="../">Try the live simulator</a> · <a href="../../">Back to Grid Mix</a></p>
 <div class="grid">{''.join(cards)}</div>
 </main></body></html>

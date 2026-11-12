@@ -87,7 +87,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card" id="liveCard">
       <h2>Live data</h2>
       <div class="row"><label for="lvCountry">Country</label>
-        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="US">United States</option></select>
+        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option></select>
       </div>
       <div class="row"><label for="lvRegion">Region</label><select id="lvRegion" style="flex:1"></select></div>
       <div class="row"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
@@ -114,9 +114,8 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         <button data-demo="0">SA sunny afternoon</button>
         <button data-demo="1">SA windy night</button>
         <button data-demo="2">NSW evening peak</button>
-        <button data-demo="3">Texas</button>
+        <button data-demo="3">VIC morning</button>
         <button data-real="0">Real: SA 12 Nov</button>
-        <button data-real="1">Real: Texas 11 Nov</button>
       </div>
     </section>
 
@@ -382,10 +381,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     api.historyMode(b.dataset.demo !== undefined ? 0 : 1);
     if (b.dataset.demo !== undefined) {
       const i = +b.dataset.demo;
-      const us = i === 3;
+      const us = false;
       $("plan").value = us ? "flat" : "tou";
       api.hasPlan(1);
-      applySettings({country: us ? "US" : "AU", region: us ? "TEX" : i === 2 ? "NSW1" : "SA1", ...(us ? {tariff: {type: "flat", flat: 14.2, periods: []}} : PLANS.tou)}, true);
+      applySettings({country: us ? "US" : "AU", region: us ? "TEX" : i === 2 ? "NSW1" : i === 3 ? "VIC1" : "SA1", ...(us ? {tariff: {type: "flat", flat: 14.2, periods: []}} : PLANS.tou)}, true);
       api.demo(i);
       api.age(us ? 70 : 2);
     } else {
