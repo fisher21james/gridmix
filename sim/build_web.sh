@@ -24,5 +24,7 @@ em++ -std=c++17 $CFLAGS -Wno-deprecated-declarations \
   -sMODULARIZE=1 -sEXPORT_NAME=GridMixSim -sENVIRONMENT=web -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=33554432 \
   -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPU16 \
   -o "$OUT/gridmix-sim.js"
-cp sim/web/index.html "$OUT/index.html"
+# Stamp the file names with the build so browsers fetch the new simulator after every update
+BUILD_ID=${BUILD_ID:-$(date +%s)}
+sed "s/__BUILD__/$BUILD_ID/g" sim/web/index.html > "$OUT/index.html"
 echo "Browser simulator -> $OUT"

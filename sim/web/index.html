@@ -187,7 +187,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   </aside>
 </main>
 
-<script src="gridmix-sim.js"></script>
+<script src="gridmix-sim.js?b=__BUILD__"></script>
 <script>
 (async () => {
   const SOURCES = [
@@ -211,7 +211,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
 
   let M, localHeader = "";
   try {
-    M = await GridMixSim({onEvent: (kind, v) => {
+    M = await GridMixSim({locateFile: f => f + "?b=__BUILD__", onEvent: (kind, v) => {
       if (kind === "view") {
         log(`Region picker: chose ${v ? "whole country" : "my region"}`);
         // the display changes its header to match

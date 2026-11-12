@@ -50,7 +50,7 @@ jobs:
       - name: Build the browser simulator (WebAssembly)
         run: |
           docker run --rm -v "$PWD":/src -v "$RUNNER_TEMP":/deps -w /src -u "$(id -u):$(id -g)" \
-            -e EM_CACHE=/deps/emcache -e LVGL_DIR=/deps/lvgl -e AJSON_DIR=/deps/ajson -e BUILD_DIR=/deps/web-build \
+            -e EM_CACHE=/deps/emcache -e BUILD_ID="${GITHUB_SHA::8}" -e LVGL_DIR=/deps/lvgl -e AJSON_DIR=/deps/ajson -e BUILD_DIR=/deps/web-build \
             emscripten/emsdk:3.1.74 sim/build_web.sh sim-web
 
       - name: Check the display's root certificates still verify the data APIs
