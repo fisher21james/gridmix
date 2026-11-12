@@ -384,10 +384,30 @@
       <p class="tip">Keep your key private, like a password. If it ever ends up somewhere public, delete it on the API Keys page and make a new one.</p>
     </div>
 
-    <details>
-      <summary>United States: U.S. EIA</summary>
-      <p>Register with your email address at <a href="https://www.eia.gov/opendata/">eia.gov/opendata</a>. Your key is emailed to you. Step-by-step pictures coming soon.</p>
-    </details>
+    <div class="card">
+      <h3 style="margin-top:0">United States: U.S. EIA</h3>
+      <ol class="steps">
+        <li>Go to <a href="https://www.eia.gov/opendata/">eia.gov/opendata</a> and click the blue <b>Register</b> button on the right.
+          <figure class="shot">
+            <img src="img/eia-register-button.jpg" width="1400" height="767" loading="lazy" alt="The EIA Open Data page, with the blue Register button in the right-hand column.">
+          </figure>
+        </li>
+        <li>Fill in your first name, last name and email. Leave the category as <b>Private citizen</b>. You can leave <b>Reason</b> blank.
+          <figure class="shot">
+            <img src="img/eia-form.jpg" width="1400" height="767" loading="lazy" alt="The Register for an API key form, with First Name, Last Name, Email and Category fields.">
+          </figure>
+        </li>
+        <li>Scroll down, tick <b>I agree to these terms of service</b>, and click <b>Register</b>.
+          <figure class="shot">
+            <img src="img/eia-agree.jpg" width="1400" height="600" loading="lazy" alt="The bottom of the form, with the I agree checkbox ticked and the Register button.">
+          </figure>
+        </li>
+        <li>Check your email and click the confirmation link. <b>The page it opens may say "Unexpected Error". Don't worry, that's a hiccup on EIA's side and it still works.</b></li>
+        <li>A second email arrives with your API key. Copy it.</li>
+        <li>Paste the key into your display's setup page (<code>gridmix.local</code>) when it asks.</li>
+      </ol>
+      <p class="tip">No email? Check your spam folder. Lost the key? Use <b>Forgot API Key</b> on the same EIA page to have it sent again.</p>
+    </div>
     <details>
       <summary>Anywhere else: Electricity Maps</summary>
       <p>Create a free account at <a href="https://www.electricitymaps.com/free-tier">electricitymaps.com</a> and copy your key from the dashboard. Step-by-step pictures coming soon.</p>
