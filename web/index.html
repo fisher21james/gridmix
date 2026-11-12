@@ -3,94 +3,503 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Grid Mix Display — Install</title>
-  <meta name="description" content="Install the Grid Mix Display firmware on a JC4827W543 straight from your browser.">
+  <title>Grid Mix Display (beta) — live electricity mix on a 4.3" ESP32 screen</title>
+  <meta name="description" content="An animated desk display that shows what's powering your grid right now, your power price and the wholesale price. Install the firmware straight from your browser.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
   <style>
     :root {
       --bg: #0E1116; --card: #151A21; --line: #232935;
       --text: #E6EAF0; --muted: #A9B1BC; --white: #FFFFFF;
-      --wind: #4FB3D9; --solar: #F5B800; --gas: #F07A3A; --coal: #8C7B6E; --hydro: #2E6FD8; --battery: #9B7BEA;
+      --solar: #F5B800; --wind: #4FB3D9; --hydro: #2E6FD8; --battery: #9B7BEA;
+      --nuclear: #3BB273; --gas: #F07A3A; --coal: #8C7B6E;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 Inter, system-ui, sans-serif; }
-    main { max-width: 680px; margin: 0 auto; padding: 48px 20px 64px; }
-    h1 { font: 700 clamp(30px, 6vw, 42px)/1.1 "Space Grotesk", sans-serif; color: var(--white); margin: 16px 0 8px; }
-    h2 { font: 600 18px/1.3 "Space Grotesk", sans-serif; color: var(--white); margin: 0 0 12px; }
-    p { margin: 0 0 12px; }
-    .muted { color: var(--muted); }
-    .mix { display: flex; gap: 3px; height: 10px; border-radius: 5px; overflow: hidden; max-width: 320px; }
-    .mix span { display: block; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-top: 24px; }
-    .install { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-    .btn { font: 700 16px Inter, system-ui, sans-serif; background: var(--wind); color: #04131B; border: 0; border-radius: 12px;
-           padding: 14px 26px; min-height: 48px; cursor: pointer; }
-    .btn:hover { background: #7CC9E6; }
-    .btn:focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
-    .version { font-size: 14px; color: var(--muted); }
-    .warn { display: block; background: #2A1714; color: #FFD9D2; border-radius: 10px; padding: 12px 14px; font-size: 14px; }
-    ol { margin: 0; padding-left: 22px; }
-    ol li { margin-bottom: 8px; }
-    ul { margin: 0; padding-left: 20px; }
-    ul li { margin-bottom: 6px; }
-    code { background: #0B0E12; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 14px; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; }
     a { color: var(--wind); }
     a:hover { color: #8FD3F0; }
-    footer { margin-top: 32px; font-size: 13px; color: var(--muted); }
+    main { max-width: 1040px; margin: 0 auto; padding: 0 20px 64px; }
+    nav { max-width: 1040px; margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .brand { font: 700 18px "Space Grotesk", sans-serif; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .brand .mix { width: 40px; }
+    nav ul { list-style: none; display: flex; gap: 18px; margin: 0; padding: 0; flex-wrap: wrap; }
+    nav ul a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; }
+    nav ul a:hover { color: var(--white); }
+    .mix { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
+    .mix span { display: block; }
+
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 40px; align-items: center; padding: 32px 0 24px; }
+    @media (max-width: 860px) { .hero { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+    h1 { font: 700 clamp(34px, 5vw, 52px)/1.05 "Space Grotesk", sans-serif; color: var(--white); margin: 0 0 16px; letter-spacing: -0.01em; }
+    .lead { font-size: 18px; color: #C9D0D9; margin: 0 0 24px; }
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; font: 700 16px Inter, system-ui, sans-serif; border: 0; border-radius: 12px;
+           padding: 13px 24px; min-height: 48px; cursor: pointer; text-decoration: none; }
+    .btn-primary { background: var(--wind); color: #04131B; }
+    .btn-primary:hover { background: #7CC9E6; color: #04131B; }
+    .btn-ghost { background: transparent; color: var(--white); border: 1px solid #3A4250; }
+    .btn-ghost:hover { border-color: var(--muted); color: var(--white); }
+    .btn:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
+
+    /* Device preview */
+    .device { background: #05070A; border-radius: 18px; padding: 14px; box-shadow: 0 0 0 1px #1E242D, 0 24px 60px rgba(0,0,0,.45); }
+    .screen-wrap { position: relative; width: 100%; aspect-ratio: 480 / 272; overflow: hidden; border-radius: 6px; }
+    .screen { position: absolute; left: 0; top: 0; width: 480px; height: 272px; transform-origin: 0 0; }
+    .scene-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; justify-content: center; }
+    .scene-picker button { font: 600 13px Inter, system-ui, sans-serif; color: var(--muted); background: var(--card); border: 1px solid var(--line);
+                           border-radius: 999px; padding: 8px 14px; min-height: 40px; cursor: pointer; }
+    .scene-picker button[aria-pressed="true"] { color: #04131B; background: var(--wind); border-color: var(--wind); }
+    .caption { text-align: center; font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+
+    section { padding: 40px 0 0; }
+    h2 { font: 700 28px/1.2 "Space Grotesk", sans-serif; color: var(--white); margin: 0 0 8px; }
+    .sub { color: var(--muted); margin: 0 0 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+    .card h3 { font: 600 16px/1.3 Inter, sans-serif; color: var(--white); margin: 10px 0 6px; }
+    .card p { margin: 0; color: #C9D0D9; font-size: 15px; }
+    .swatch { width: 28px; height: 6px; border-radius: 3px; }
+    .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+    @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+    ol, ul { margin: 0; padding-left: 22px; }
+    li { margin-bottom: 8px; }
+    code { background: #0B0E12; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 14px; }
+    .install-box { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .version { font-size: 14px; color: var(--muted); }
+    .warn { display: block; background: #2A1714; color: #FFD9D2; border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+    .note { background: #1A2230; border: 1px solid #2A3A52; color: #D6E4F5; border-radius: 12px; padding: 14px 16px; font-size: 15px; margin-bottom: 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: 13px; }
+    .table-box { overflow-x: auto; }
+    details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px; margin-bottom: 10px; }
+    summary { cursor: pointer; font-weight: 600; color: var(--white); padding: 12px 0; min-height: 44px; display: flex; align-items: center; }
+    details p { margin: 0 0 14px; color: #C9D0D9; }
+    footer { max-width: 1040px; margin: 0 auto; padding: 32px 20px 48px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+    /* Scene animations (match the device firmware) */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes puff{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:.9}100%{transform:translate(18px,-46px) scale(1.9);opacity:0}}
+    @keyframes vapour{0%{transform:translate(0,0) scale(.5);opacity:0}20%{opacity:.85}100%{transform:translate(-6px,-40px) scale(2.1);opacity:0}}
+    @keyframes flicker{0%,100%{transform:scale(1,1)}25%{transform:scale(.9,1.25)}50%{transform:scale(1.05,.85)}75%{transform:scale(.95,1.15)}}
+    @keyframes glint{0%,70%,100%{opacity:0}80%{opacity:.95}}
+    @keyframes flow{to{stroke-dashoffset:-16}}
+    @keyframes foam{0%,100%{transform:scale(.75);opacity:.55}50%{transform:scale(1.25);opacity:1}}
+    @keyframes ripple{0%,100%{transform:translateX(-2px)}50%{transform:translateX(2px)}}
+    @keyframes charge{0%,100%{opacity:.4}50%{opacity:1}}
+    @keyframes rays{to{transform:rotate(360deg)}}
+    @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+    .rotor{animation:spin linear infinite}
+    .puff{transform-box:fill-box;transform-origin:center;animation:puff 3s ease-out infinite}
+    .vap{transform-box:fill-box;transform-origin:center;animation:vapour 3.6s ease-out infinite}
+    .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker .45s ease-in-out infinite}
+    .glint{animation:glint 4s ease-in-out infinite}
+    .water{animation:flow .5s linear infinite}
+    .river{animation:flow 1.2s linear infinite}
+    .foam{transform-box:fill-box;transform-origin:center;animation:foam .9s ease-in-out infinite}
+    .ripple{animation:ripple 2.4s ease-in-out infinite}
+    .cell{animation:charge 1.6s ease-in-out infinite}
+    .rays{transform-box:fill-box;transform-origin:center;animation:rays 18s linear infinite}
+    .star{animation:twinkle 2.4s ease-in-out infinite}
+    @media (prefers-reduced-motion: reduce) { .screen * { animation-play-state: paused !important; } html { scroll-behavior: auto; } }
   </style>
 </head>
 <body>
-<main>
-  <div class="mix" aria-hidden="true">
-    <span style="flex: 34; background: var(--solar)"></span>
-    <span style="flex: 28; background: var(--wind)"></span>
-    <span style="flex: 14; background: var(--gas)"></span>
-    <span style="flex: 10; background: var(--coal)"></span>
-    <span style="flex: 8; background: var(--hydro)"></span>
-    <span style="flex: 6; background: var(--battery)"></span>
+<!-- BETA BANNER: delete this block when the full firmware is released -->
+<div id="beta-banner" role="note" style="background:#3A2A06;border-bottom:1px solid #6B4E0E;color:#FFE7B0;font-size:15px;line-height:1.5">
+  <div style="max-width:1040px;margin:0 auto;padding:12px 20px;display:flex;gap:12px;align-items:flex-start">
+    <span style="flex-shrink:0;font:700 12px Inter,sans-serif;letter-spacing:.06em;background:#F5B800;color:#2E2300;border-radius:6px;padding:3px 8px;margin-top:1px">BETA</span>
+    <span><b style="color:#FFFFFF">Not ready for use yet.</b> This project is still in development and the firmware is only a hardware test. Please don't buy parts or install it expecting a working display. Check back soon, or follow along on <a href="https://github.com/fisher21james/gridmix" style="color:#FFD166">GitHub</a>.</span>
   </div>
-  <h1>Grid Mix Display</h1>
-  <p class="muted">See what's powering your grid right now, on a 4.3" ESP32-S3 desk display. Install the firmware straight from this page, no software needed.</p>
+</div>
+<nav aria-label="Main">
+  <a class="brand" href="#">
+    <span class="mix" aria-hidden="true">
+      <span style="flex:34;background:var(--solar)"></span><span style="flex:28;background:var(--wind)"></span><span style="flex:14;background:var(--gas)"></span><span style="flex:10;background:var(--coal)"></span><span style="flex:8;background:var(--hydro)"></span>
+    </span>
+    Grid Mix Display
+  </a>
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#need">What you need</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#setup">Set up</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+</nav>
 
-  <section class="card" aria-labelledby="install-h">
-    <h2 id="install-h">Install</h2>
-    <div class="install">
-      <esp-web-install-button manifest="firmware/manifest.json">
-        <button slot="activate" class="btn">Install Grid Mix</button>
-        <span slot="unsupported" class="warn">This browser can't talk to USB devices. Open this page in Chrome or Edge on a Windows, Mac or Linux computer.</span>
-        <span slot="not-allowed" class="warn">Installing needs a secure page. Open this page over https.</span>
-      </esp-web-install-button>
-      <span class="version">Firmware v__VERSION__</span>
+<main>
+  <div class="hero">
+    <div>
+      <h1>See what's powering your grid, right now.</h1>
+      <p class="lead">A 4.3" animated desk display. Turbines spin with the wind, the coal plant smokes when coal is burning, and the header shows what your power costs this minute.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install">Install the firmware</a>
+        <a class="btn btn-ghost" href="#need">What you need</a>
+      </div>
+    </div>
+
+    <figure style="margin:0">
+      <div class="device">
+        <div class="screen-wrap" id="screenWrap">
+          <div class="screen" id="screen" role="img" aria-label="Preview of the Grid Mix Display screen">
+            <div style="width:480px;height:272px;background:#0E1116;color:#E6EAF0;font-family:Inter,system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+              <div style="height:40px;flex-shrink:0;box-sizing:border-box;padding:0 10px 0 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span id="pRegion" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:#fff;white-space:nowrap"></span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 L6 7.5 L9 4.5" fill="none" stroke="#A9B1BC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span id="pTime" style="font-size:12px;color:#A9B1BC;white-space:nowrap"></span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+                  <span style="display:flex;align-items:center;gap:5px">
+                    <span style="font-size:10px;color:#A9B1BC">Your rate</span>
+                    <span id="pRate" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;line-height:1.1;color:#fff"></span>
+                    <span style="font-size:10px;color:#C9D0D9">/kWh</span>
+                    <span id="pPeriod" style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px"></span>
+                  </span>
+                  <span id="pWholesale" style="font-size:10px;font-weight:500;white-space:nowrap"></span>
+                </div>
+              </div>
+
+              <div style="position:relative;width:480px;height:160px;flex-shrink:0">
+                <svg width="480" height="160" viewBox="0 0 480 160" aria-hidden="true" style="display:block">
+                  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop id="skyTop" offset="0"/><stop id="skyBottom" offset="1"/></linearGradient></defs>
+                  <rect width="480" height="160" fill="url(#sky)"/>
+                  <g id="gStars" fill="#fff">
+                    <circle class="star" cx="232" cy="14" r="1.2"/><circle class="star" cx="282" cy="30" r="1" style="animation-delay:-.8s"/>
+                    <circle class="star" cx="330" cy="12" r="1.3" style="animation-delay:-1.6s"/><circle class="star" cx="372" cy="40" r="1" style="animation-delay:-.4s"/>
+                    <circle class="star" cx="392" cy="16" r="1.1" style="animation-delay:-2s"/><circle class="star" cx="470" cy="56" r="1" style="animation-delay:-1.2s"/>
+                    <circle class="star" cx="256" cy="48" r="1" style="animation-delay:-1.9s"/><circle class="star" cx="306" cy="52" r="1.2" style="animation-delay:-.2s"/>
+                  </g>
+                  <g id="gSun">
+                    <g class="rays" stroke="#FFD54A" stroke-width="2.5" stroke-linecap="round">
+                      <line x1="432" y1="11" x2="432" y2="5"/><line x1="432" y1="11" x2="432" y2="5" transform="rotate(45 432 30)"/>
+                      <line x1="432" y1="11" x2="432" y2="5" transform="rotate(90 432 30)"/><line x1="432" y1="11" x2="432" y2="5" transform="rotate(135 432 30)"/>
+                      <line x1="432" y1="11" x2="432" y2="5" transform="rotate(180 432 30)"/><line x1="432" y1="11" x2="432" y2="5" transform="rotate(225 432 30)"/>
+                      <line x1="432" y1="11" x2="432" y2="5" transform="rotate(270 432 30)"/><line x1="432" y1="11" x2="432" y2="5" transform="rotate(315 432 30)"/>
+                    </g>
+                    <circle cx="432" cy="30" r="13" fill="#FFD54A"/>
+                  </g>
+                  <g id="gMoon"><circle cx="432" cy="30" r="11" fill="#ECE7D2"/><circle id="moonShade" cx="438" cy="25" r="10"/></g>
+                  <path id="hill" d="M0 118 Q90 100 180 116 T360 112 T480 116 V160 H0 Z"/>
+
+                  <g id="s-coal">
+                    <rect x="222" y="100" width="54" height="30" fill="#5B524C"/>
+                    <polygon points="222,100 222,92 232,100 232,92 242,100 242,92 252,100" fill="#4A423D"/>
+                    <rect x="228" y="110" width="6" height="6" fill="#F2C46B"/><rect x="240" y="110" width="6" height="6" fill="#F2C46B"/><rect x="252" y="110" width="6" height="6" fill="#F2C46B"/>
+                    <rect x="244" y="74" width="8" height="28" fill="#7A6E66"/><rect x="260" y="60" width="10" height="42" fill="#7A6E66"/><rect x="260" y="66" width="10" height="4" fill="#C8553D"/>
+                    <g id="gSmoke">
+                      <circle class="puff" cx="265" cy="55" r="6"/><circle class="puff" cx="265" cy="55" r="6" style="animation-delay:-1s"/><circle class="puff" cx="265" cy="55" r="6" style="animation-delay:-2s"/>
+                      <circle class="puff" cx="248" cy="70" r="5" style="animation-delay:-.5s"/><circle class="puff" cx="248" cy="70" r="5" style="animation-delay:-1.5s"/><circle class="puff" cx="248" cy="70" r="5" style="animation-delay:-2.5s"/>
+                    </g>
+                  </g>
+                  <g id="s-gas">
+                    <rect x="286" y="108" width="36" height="22" fill="#6E7781"/><rect x="286" y="106" width="36" height="3" fill="#F07A3A"/>
+                    <rect x="292" y="114" width="10" height="16" fill="#F07A3A"/><rect x="310" y="84" width="6" height="26" fill="#8A939C"/>
+                    <g id="gFlame" class="flame"><path d="M313 84 C307 78 310 72 313 64 C316 72 319 78 313 84 Z" fill="#FF8A3D"/><path d="M313 84 C310 80 311 76 313 71 C315 76 316 80 313 84 Z" fill="#FFD166"/></g>
+                  </g>
+                  <g id="s-nuclear">
+                    <g id="gVap" fill="#F4F7FA"><circle class="vap" cx="357" cy="80" r="7"/><circle class="vap" cx="357" cy="80" r="7" style="animation-delay:-1.2s"/><circle class="vap" cx="357" cy="80" r="7" style="animation-delay:-2.4s"/></g>
+                    <path d="M336 130 Q348 106 344 86 L370 86 Q366 106 378 130 Z" fill="#D9E1E7" stroke="#B6C2CC"/>
+                    <ellipse cx="357" cy="86" rx="13" ry="2.5" fill="#AEBAC4"/><polygon points="344.7,93 369.3,93 369.6,98 344.4,98" fill="#3BB273"/>
+                  </g>
+                  <g id="s-hydro">
+                    <polygon points="380,130 382,104 389,93 397,97 398,130" fill="#7D8A7A"/><polygon points="424,130 425,97 433,91 441,101 442,130" fill="#7D8A7A"/>
+                    <polygon points="392,99 393,94 429,94 430,99" fill="#2E6FD8"/>
+                    <g class="ripple hy" stroke="#9FCBFF" stroke-width="1" stroke-linecap="round"><line x1="398" y1="96" x2="406" y2="96"/><line x1="414" y1="97.5" x2="424" y2="97.5"/></g>
+                    <polygon points="394,100 428,100 431,130 391,130" fill="#B4BDC4"/><rect x="392" y="97.5" width="38" height="3" rx="1" fill="#D5DBE0"/>
+                    <line x1="397.5" y1="101" x2="396" y2="130" stroke="#9AA5AE"/><line x1="424.5" y1="101" x2="426" y2="130" stroke="#9AA5AE"/>
+                    <g class="spill"><rect x="401" y="100" width="20" height="30" fill="#4F9BF0"/>
+                      <g stroke="#DDEEFF" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="5 3">
+                        <line class="water hy" x1="404" y1="100" x2="404" y2="130"/><line class="water hy" x1="408" y1="100" x2="408" y2="130" style="animation-delay:-.2s"/>
+                        <line class="water hy" x1="412" y1="100" x2="412" y2="130" style="animation-delay:-.35s"/><line class="water hy" x1="416" y1="100" x2="416" y2="130" style="animation-delay:-.1s"/>
+                        <line class="water hy" x1="419" y1="100" x2="419" y2="130" style="animation-delay:-.3s"/>
+                      </g></g>
+                  </g>
+                  <g id="s-battery">
+                    <rect x="455" y="96" width="10" height="4" fill="#9B7BEA"/><rect x="446" y="100" width="28" height="30" rx="3" fill="#1B1F27" stroke="#9B7BEA" stroke-width="2"/>
+                    <rect class="cell" id="c1" x="450" y="122" width="20" height="5" rx="1"/><rect class="cell" id="c2" x="450" y="114" width="20" height="5" rx="1" style="animation-delay:.2s"/><rect class="cell" id="c3" x="450" y="106" width="20" height="5" rx="1" style="animation-delay:.4s"/>
+                  </g>
+                  <path id="ground" d="M0 128 Q60 120 120 128 T240 128 T360 126 T480 128 V160 H0 Z"/>
+                  <g id="s-hydro2">
+                    <path d="M400 130 L422 130 Q431 142 444 160 L410 160 Q407 142 400 130 Z" fill="#3F86DB"/>
+                    <g class="spill" stroke="#B8DAFF" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="4 4" fill="none">
+                      <path class="river hy" d="M408 133 Q412 146 418 158"/><path class="river hy" d="M416 133 Q423 146 432 158" style="animation-delay:-.6s"/>
+                    </g>
+                    <g class="spill" fill="#EEF7FF"><circle class="foam hy" cx="404" cy="130" r="3.5"/><circle class="foam hy" cx="411" cy="131" r="4" style="animation-delay:-.3s"/><circle class="foam hy" cx="418" cy="130" r="3.5" style="animation-delay:-.6s"/></g>
+                  </g>
+                  <g id="s-solar">
+                    <polygon points="16,130 33,130 37,120 20,120" fill="#1E3A5F" stroke="#F5B800" stroke-width="1.3"/><polygon points="38,130 55,130 59,120 42,120" fill="#1E3A5F" stroke="#F5B800" stroke-width="1.3"/>
+                    <polygon points="60,130 77,130 81,120 64,120" fill="#1E3A5F" stroke="#F5B800" stroke-width="1.3"/><polygon points="82,130 99,130 103,120 86,120" fill="#1E3A5F" stroke="#F5B800" stroke-width="1.3"/>
+                    <g id="gGlint" stroke="#fff" stroke-width="1.6" stroke-linecap="round">
+                      <path class="glint" d="M23 128 L31 121"/><path class="glint" d="M45 128 L53 121" style="animation-delay:-1s"/><path class="glint" d="M67 128 L75 121" style="animation-delay:-2s"/><path class="glint" d="M89 128 L97 121" style="animation-delay:-3s"/>
+                    </g>
+                  </g>
+                  <g id="s-wind">
+                    <polygon points="155,72 157,72 158.5,131 153.5,131" fill="#E9EEF2"/><polygon points="183,56 185,56 186.5,131 181.5,131" fill="#E9EEF2"/><polygon points="209,80 211,80 212,131 208,131" fill="#E9EEF2"/>
+                    <g class="rotor" id="r1" stroke="#F7F9FB" stroke-width="2.6" stroke-linecap="round" style="transform-origin:156px 72px">
+                      <line x1="156" y1="72" x2="156" y2="52"/><line x1="156" y1="72" x2="156" y2="52" transform="rotate(120 156 72)"/><line x1="156" y1="72" x2="156" y2="52" transform="rotate(240 156 72)"/></g>
+                    <g class="rotor" id="r2" stroke="#F7F9FB" stroke-width="2.8" stroke-linecap="round" style="transform-origin:184px 56px;animation-delay:-.7s">
+                      <line x1="184" y1="56" x2="184" y2="32"/><line x1="184" y1="56" x2="184" y2="32" transform="rotate(120 184 56)"/><line x1="184" y1="56" x2="184" y2="32" transform="rotate(240 184 56)"/></g>
+                    <g class="rotor" id="r3" stroke="#F7F9FB" stroke-width="2.4" stroke-linecap="round" style="transform-origin:210px 80px;animation-delay:-1.3s">
+                      <line x1="210" y1="80" x2="210" y2="64"/><line x1="210" y1="80" x2="210" y2="64" transform="rotate(120 210 80)"/><line x1="210" y1="80" x2="210" y2="64" transform="rotate(240 210 80)"/></g>
+                    <circle cx="156" cy="72" r="3.2" fill="#4FB3D9" stroke="#F7F9FB"/><circle cx="184" cy="56" r="3.4" fill="#4FB3D9" stroke="#F7F9FB"/><circle cx="210" cy="80" r="3" fill="#4FB3D9" stroke="#F7F9FB"/>
+                    <rect x="153" y="122" width="6" height="3" fill="#4FB3D9"/><rect x="181" y="122" width="6" height="3" fill="#4FB3D9"/><rect x="207.5" y="122" width="5" height="3" fill="#4FB3D9"/>
+                  </g>
+                </svg>
+                <div style="position:absolute;left:14px;top:8px">
+                  <div id="pRenew" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;line-height:1"></div>
+                  <div id="pRenewSub" style="font-size:12px;font-weight:600;margin-top:3px">renewable right now</div>
+                </div>
+                <div id="pStatus" style="position:absolute;left:14px;bottom:6px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px"></div>
+              </div>
+
+              <div style="flex:1;box-sizing:border-box;padding:8px 16px 10px;display:flex;flex-direction:column;justify-content:space-between">
+                <div id="pBar" style="display:flex;gap:2px;height:32px;border-radius:8px;overflow:hidden;background:#1B1F27"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;height:18px">
+                  <div id="pChips" style="display:flex;gap:12px;min-width:0;overflow:hidden"></div>
+                  <span style="font-size:12px;font-weight:600;color:#E6EAF0;white-space:nowrap">Details ›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scene-picker" role="group" aria-label="Preview scene">
+        <button type="button" data-i="0">SA sunny afternoon</button>
+        <button type="button" data-i="1">SA windy night</button>
+        <button type="button" data-i="2">NSW evening peak</button>
+        <button type="button" data-i="3">Texas (US)</button>
+      </div>
+      <figcaption class="caption">Live preview with sample data. Photos of the real build coming soon.</figcaption>
+    </figure>
+  </div>
+
+  <section id="features" aria-labelledby="features-h">
+    <h2 id="features-h">What it shows</h2>
+    <p class="sub">Everything updates on its own once it's set up.</p>
+    <div class="grid">
+      <div class="card"><div class="swatch" style="background:var(--wind)"></div><h3>A living scene</h3><p>Each power source is a little building that comes alive in proportion to how much it's producing: spinning turbines, smoking stacks, a pouring dam, glinting solar panels.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--solar)"></div><h3>The mix at a glance</h3><p>A big renewable percentage, plus a colour-matched bar of every source. Tap the bar to switch between a labelled and a slim style.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--gas)"></div><h3>Your price, not just the market's</h3><p>Enter your own tariff and it shows your rate right now, which time-of-use period you're in, and warns you before peak starts.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Local, country or world</h3><p>Tap the region name to switch between your state's grid, your whole country, or a global estimate. Each view shows how fresh its data is.</p></div>
     </div>
   </section>
 
-  <section class="card" aria-labelledby="steps-h">
-    <h2 id="steps-h">How it works</h2>
-    <ol>
-      <li>Plug the JC4827W543 into your computer with a USB-C <b>data</b> cable (some cables only charge).</li>
-      <li>Click <b>Install Grid Mix</b> and pick the board from the list. It usually shows as <code>USB JTAG/serial debug unit</code>.</li>
-      <li>Wait about a minute while it installs. Don't unplug it.</li>
-      <li>When asked, enter your Wi-Fi name and password. The display connects and remembers it.</li>
-      <li>Finish setup from your phone at <code>gridmix.local</code> (region, data source, your tariff).</li>
-    </ol>
+  <section id="need" aria-labelledby="need-h">
+    <h2 id="need-h">What you need</h2>
+    <p class="sub">About $25 of parts plus a printed stand.</p>
+    <div class="table-box">
+      <table>
+        <thead><tr><th scope="col">Item</th><th scope="col">Notes</th></tr></thead>
+        <tbody>
+          <tr><td><b>Guition JC4827W543</b> ESP32-S3 4.3" display</td><td>Get the <b>capacitive touch</b> version (often listed as JC4827W543<b>C</b>). Widely sold on AliExpress and similar.</td></tr>
+          <tr><td>USB-C cable</td><td>Must be a data cable, not charge-only.</td></tr>
+          <tr><td>USB power adapter</td><td>Any 5 V phone charger for everyday use.</td></tr>
+          <tr><td>Printed stand</td><td>From the MakerWorld listing. Prints without supports.</td></tr>
+          <tr><td>A computer with Chrome or Edge</td><td>Only for installing. Windows, Mac or Linux.</td></tr>
+          <tr><td>A free data key</td><td>See <a href="#setup">Set up</a> below. Takes a couple of minutes.</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
-  <section class="card" aria-labelledby="help-h">
-    <h2 id="help-h">If it doesn't show up</h2>
-    <ul>
-      <li>Try another USB-C cable or port.</li>
-      <li>Hold the <b>BOOT</b> button on the board while plugging it in, then click Install again.</li>
-      <li>Close anything else using the board, like the Arduino IDE serial monitor.</li>
-      <li>Running Install again later updates to the newest version and keeps your settings.</li>
-    </ul>
+  <section id="install" aria-labelledby="install-h">
+    <h2 id="install-h">Install</h2>
+    <p class="sub">Straight from this page. No software to download.</p>
+    <div class="note" id="early-note"><b>Beta:</b> the current firmware is only a hardware test (a spinning turbine and a touch check). It is not the finished display. The full firmware will install from this same button when it's ready.</div>
+    <div class="two">
+      <div class="card">
+        <div class="install-box">
+          <esp-web-install-button manifest="firmware/manifest.json">
+            <button slot="activate" class="btn btn-primary">Install Grid Mix</button>
+            <span slot="unsupported" class="warn">This browser can't talk to USB devices. Open this page in Chrome or Edge on a Windows, Mac or Linux computer.</span>
+            <span slot="not-allowed" class="warn">Installing needs a secure page. Open this page over https.</span>
+          </esp-web-install-button>
+          <span class="version">Firmware v__VERSION__</span>
+        </div>
+        <ol>
+          <li>Plug the display into your computer with the USB-C data cable.</li>
+          <li>Click <b>Install Grid Mix</b> and pick the board from the list. It usually shows as <code>USB JTAG/serial debug unit</code>.</li>
+          <li>Wait about a minute. Don't unplug it.</li>
+          <li>When asked, choose your Wi-Fi and enter the password. The display remembers it.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">If it doesn't show up</h3>
+        <ul>
+          <li>Try another cable or USB port. Charge-only cables are the most common problem.</li>
+          <li>Hold the <b>BOOT</b> button on the back of the board while plugging it in, then click Install again.</li>
+          <li>Close anything else using the board, like the Arduino IDE.</li>
+          <li>Updating later? Click Install again. Your settings are kept unless you choose to erase.</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
-  <footer>
-    Grid data: Open Electricity (Australia), U.S. EIA Hourly Electric Grid Monitor (US), Electricity Maps (worldwide).
-    Firmware is open source.
-  </footer>
+  <section id="setup" aria-labelledby="setup-h">
+    <h2 id="setup-h">Set up</h2>
+    <p class="sub">Once it's on your Wi-Fi, open <code>gridmix.local</code> on your phone (same Wi-Fi) to choose your region and enter your tariff.</p>
+    <div class="table-box">
+      <table>
+        <thead><tr><th scope="col">Where you are</th><th scope="col">Data source</th><th scope="col">Updates</th><th scope="col">Free key</th></tr></thead>
+        <tbody>
+          <tr><td>Australia</td><td>Open Electricity</td><td>Every 5 minutes</td><td><a href="https://platform.openelectricity.org.au">platform.openelectricity.org.au</a></td></tr>
+          <tr><td>United States</td><td>U.S. EIA Hourly Electric Grid Monitor</td><td>Hourly (about an hour behind)</td><td><a href="https://www.eia.gov/opendata/">eia.gov/opendata</a></td></tr>
+          <tr><td>Anywhere else</td><td>Electricity Maps</td><td>Hourly, carbon intensity</td><td><a href="https://www.electricitymaps.com/free-tier">electricitymaps.com/free-tier</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-h">
+    <h2 id="faq-h">Questions</h2>
+    <details><summary>Does my data go anywhere?</summary><p>No. The display talks directly to the data source you pick. There's no account and no cloud service in between, and your tariff stays on the device.</p></details>
+    <details><summary>Why do I need my own key?</summary><p>The data sources are free but limit how often each key can ask. Your own key means your display is never slowed down by anyone else's.</p></details>
+    <details><summary>Can I use the resistive or no-touch version of the board?</summary><p>Not yet. The firmware is built for the capacitive version. Support for the others may come later.</p></details>
+    <details><summary>Why not Safari or Firefox?</summary><p>Installing uses Web Serial, which only Chrome and Edge support on desktop. You only need it once; after that the display updates itself.</p></details>
+    <details><summary>Is it open source?</summary><p>Yes. The firmware and this page are on <a href="https://github.com/fisher21james/gridmix">GitHub</a> under the MIT licence.</p></details>
+  </section>
 </main>
+
+<footer>
+  Grid data: <a href="https://openelectricity.org.au">Open Electricity</a> (Australia, CC BY-NC 4.0), <a href="https://www.eia.gov/electricity/gridmonitor/">U.S. EIA Hourly Electric Grid Monitor</a> (US), <a href="https://www.electricitymaps.com">Electricity Maps</a> (worldwide).
+  The preview uses sample data. Source code on <a href="https://github.com/fisher21james/gridmix">GitHub</a>.
+</footer>
+
+<script>
+(function () {
+  const SRC = {
+    solar: { name: 'Solar', color: '#F5B800', fg: '#2E2300' },
+    wind: { name: 'Wind', color: '#4FB3D9', fg: '#03202C' },
+    hydro: { name: 'Hydro', color: '#2E6FD8', fg: '#FFFFFF' },
+    battery: { name: 'Battery', color: '#9B7BEA', fg: '#160B33' },
+    nuclear: { name: 'Nuclear', color: '#3BB273', fg: '#03200E' },
+    gas: { name: 'Gas', color: '#F07A3A', fg: '#2B1100' },
+    coal: { name: 'Coal', color: '#8C7B6E', fg: '#1A120C' }
+  };
+  const SKY = {
+    day: { top: '#6EC3F0', bottom: '#CFEFFC', hill: '#8CC071', ground: '#69A156', text: '#0B1B2B', sub: '#1E3346', smoke: '#9AA0A8' },
+    dusk: { top: '#3B3768', bottom: '#F2A06B', hill: '#6C7F4E', ground: '#4D6B43', text: '#FFFFFF', sub: '#F3E9F2', smoke: '#6F6A72' },
+    night: { top: '#0A1430', bottom: '#263A6B', hill: '#2B4A33', ground: '#1E3826', text: '#FFFFFF', sub: '#DCE4F2', smoke: '#5C6270' }
+  };
+  const WHOLESALE = { neg: '#7EE2A8', mid: '#A9B1BC', high: '#FF8A78' };
+  const PERIOD = {
+    'Solar soak': ['#F5D46B', '#3A2C00'], 'Shoulder': ['#E39B3A', '#2B1700'],
+    'Peak': ['#D2453A', '#FFFFFF'], 'Flat': ['#2A303A', '#E6EAF0']
+  };
+  const TONE = { good: ['#DFF5E8', '#10502F'], ok: ['#EEF2F6', '#1C2633'], bad: ['#FFE3DC', '#7A1E10'] };
+  const PRESETS = [
+    { region: 'SA · Adelaide', time: '1:20 pm', sky: 'day', price: '−$12', level: 'neg', renew: 93, mix: { solar: 58, wind: 31, gas: 7, battery: 4 },
+      cells: 2, batt: true, status: 'Negative price · run the dishwasher', tone: 'good', rate: '21.0¢', period: 'Solar soak' },
+    { region: 'SA · Adelaide', time: '9:40 pm', sky: 'night', price: '$88', level: 'mid', renew: 78, mix: { wind: 64, gas: 22, battery: 14 },
+      cells: 3, batt: true, status: 'Windy night · turbines doing the heavy lifting', tone: 'ok', rate: '31.2¢', period: 'Shoulder' },
+    { region: 'NSW · Sydney', time: '6:15 pm', sky: 'dusk', price: '$312', level: 'high', renew: 23, mix: { coal: 68, gas: 9, hydro: 8, wind: 6, battery: 5, solar: 4 },
+      cells: 1, batt: true, status: 'Evening peak · hold off on big loads', tone: 'bad', rate: '56.4¢', period: 'Peak' },
+    { region: 'ERCOT · Texas', time: '3:00 pm CT', sky: 'day', price: '$34', level: 'mid', renew: 46, mix: { gas: 38, wind: 26, solar: 20, coal: 8, nuclear: 8 },
+      cells: 0, batt: false, status: 'US mode · hourly mix from EIA', tone: 'ok', rate: '14.2¢', period: 'Flat' }
+  ];
+  const $ = (id) => document.getElementById(id);
+  const buttons = Array.from(document.querySelectorAll('.scene-picker button'));
+  let current = 0, timer = null;
+
+  function play(el, on) { el.style.animationPlayState = on ? 'running' : 'paused'; }
+
+  function apply(i) {
+    const p = PRESETS[i], sky = SKY[p.sky], pct = (k) => p.mix[k] || 0;
+    current = i;
+    buttons.forEach((b, j) => b.setAttribute('aria-pressed', j === i ? 'true' : 'false'));
+
+    $('pRegion').textContent = p.region;
+    $('pTime').textContent = p.time;
+    $('pRate').textContent = p.rate;
+    const per = PERIOD[p.period];
+    Object.assign($('pPeriod').style, { background: per[0], color: per[1] });
+    $('pPeriod').textContent = p.period;
+    $('pWholesale').textContent = 'Wholesale ' + p.price + '/MWh';
+    $('pWholesale').style.color = WHOLESALE[p.level];
+
+    $('skyTop').setAttribute('stop-color', sky.top);
+    $('skyBottom').setAttribute('stop-color', sky.bottom);
+    $('hill').setAttribute('fill', sky.hill);
+    $('ground').setAttribute('fill', sky.ground);
+    $('moonShade').setAttribute('fill', sky.top);
+    $('gStars').setAttribute('opacity', p.sky === 'night' ? 1 : p.sky === 'dusk' ? .35 : 0);
+    $('gSun').setAttribute('opacity', p.sky === 'day' ? 1 : 0);
+    $('gMoon').setAttribute('opacity', p.sky === 'night' ? 1 : 0);
+
+    Object.keys(SRC).forEach((k) => { const g = $('s-' + k); if (g) g.setAttribute('opacity', pct(k) > 0 ? 1 : .2); });
+    $('s-hydro2').setAttribute('opacity', pct('hydro') > 0 ? 1 : .2);
+
+    $('gSmoke').setAttribute('fill', sky.smoke);
+    $('gSmoke').setAttribute('opacity', pct('coal') > 0 ? Math.min(1, .35 + pct('coal') / 80) : 0);
+    $('gFlame').setAttribute('opacity', pct('gas') > 0 ? Math.min(1, .55 + pct('gas') / 60) : 0);
+    $('gVap').setAttribute('opacity', pct('nuclear') > 0 ? .9 : 0);
+    $('gGlint').setAttribute('opacity', pct('solar') > 0 && p.sky !== 'night' ? 1 : 0);
+    document.querySelectorAll('.spill').forEach((el) => el.setAttribute('opacity', pct('hydro') > 0 ? 1 : 0));
+    document.querySelectorAll('.hy').forEach((el) => play(el, pct('hydro') > 0));
+
+    const w = pct('wind'), base = w > 0 ? Math.max(.9, 5 - w * .06) : 4;
+    [['r1', 1], ['r2', 1.15], ['r3', .9]].forEach(([id, f]) => { const r = $(id); r.style.animationDuration = (base * f).toFixed(2) + 's'; play(r, w > 0); });
+
+    ['c1', 'c2', 'c3'].forEach((id, n) => { const c = $(id); c.setAttribute('fill', p.cells > n ? '#9B7BEA' : '#3A3350'); play(c, p.batt); });
+
+    $('pRenew').textContent = p.renew + '%';
+    $('pRenew').style.color = sky.text;
+    $('pRenewSub').style.color = sky.sub;
+    const tone = TONE[p.tone];
+    Object.assign($('pStatus').style, { background: tone[0], color: tone[1] });
+    $('pStatus').textContent = p.status;
+
+    const keys = Object.keys(p.mix).filter((k) => p.mix[k] > 0).sort((a, b) => p.mix[b] - p.mix[a]);
+    const barW = 448 - (keys.length - 1) * 2;
+    const bar = $('pBar'), chips = $('pChips');
+    bar.innerHTML = ''; chips.innerHTML = '';
+    keys.forEach((k) => {
+      const v = p.mix[k], s = SRC[k], label = v + '%', px = barW * v / 100;
+      const full = (s.name.length + label.length) * 7 + 18 <= px, pctOnly = label.length * 8 + 8 <= px;
+      const seg = document.createElement('span');
+      Object.assign(seg.style, { flex: v + ' 1 0px', minWidth: '0', height: '32px', background: s.color, color: s.fg, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden' });
+      if (full || pctOnly) {
+        seg.innerHTML = (full ? '<span style="font-weight:500">' + s.name + '</span>' : '') +
+          '<span style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;font-size:13px">' + label + '</span>';
+      }
+      bar.appendChild(seg);
+      if (!full) {
+        const chip = document.createElement('span');
+        chip.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap';
+        chip.innerHTML = '<span style="width:8px;height:8px;border-radius:2px;background:' + s.color + '"></span><span style="color:#C9D0D9">' +
+          s.name + '</span><span style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;color:#fff">' + label + '</span>';
+        chips.appendChild(chip);
+      }
+    });
+
+    $('screen').setAttribute('aria-label', 'Preview of the Grid Mix Display: ' + p.region + ', ' + p.renew +
+      '% renewable, your rate ' + p.rate + ' per kWh (' + p.period + '). ' + keys.map((k) => SRC[k].name + ' ' + p.mix[k] + '%').join(', ') + '.');
+  }
+
+  function fit() {
+    const wrap = $('screenWrap');
+    $('screen').style.transform = 'scale(' + (wrap.clientWidth / 480) + ')';
+  }
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function startCycle() {
+    if (reduce) return;
+    clearInterval(timer);
+    timer = setInterval(() => apply((current + 1) % PRESETS.length), 6000);
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => { apply(+b.dataset.i); startCycle(); }));
+  window.addEventListener('resize', fit);
+  if ('ResizeObserver' in window) new ResizeObserver(fit).observe($('screenWrap'));
+  fit();
+  apply(0);
+  startCycle();
+})();
+</script>
 </body>
 </html>
