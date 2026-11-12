@@ -181,10 +181,17 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     $("log").textContent = `${t}  ${msg}\n` + $("log").textContent;
   };
 
-  let M;
+  let M, localHeader = "";
   try {
     M = await GridMixSim({onEvent: (kind, v) => {
-      if (kind === "view") { log(`Region picker: chose ${v ? "whole country" : "my region"}`); rebuild(); }
+      if (kind === "view") {
+        log(`Region picker: chose ${v ? "whole country" : "my region"}`);
+        // the display changes its header to match
+        if (v) { localHeader = $("header").value; $("header").value = api.getSettings().includes('"country":"US"') ? "United States" : "Australia (NEM)"; }
+        else if (localHeader) $("header").value = localHeader;
+        api.header($("header").value);
+        rebuild();
+      }
       if (kind === "scene") log("Tapped the scene (on the display, this skips to the next sample before setup)");
     }});
   } catch (e) {
@@ -245,10 +252,16 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     const r = canvas.getBoundingClientRect();
     return [Math.round((e.clientX - r.left) * 480 / r.width), Math.round((e.clientY - r.top) * 272 / r.height)];
   }
-  canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); api.pointer(...toScreen(e), 1); });
+  // A real finger stays down for 50 ms or more; hold very quick clicks a little so the screen code sees them
+  let downAt = 0;
+  const release = e => {
+    const xy = toScreen(e), wait = Math.max(0, 80 - (performance.now() - downAt));
+    setTimeout(() => api.pointer(...xy, 0), wait);
+  };
+  canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); downAt = performance.now(); api.pointer(...toScreen(e), 1); });
   canvas.addEventListener("pointermove", e => { if (e.buttons) api.pointer(...toScreen(e), 1); });
-  canvas.addEventListener("pointerup", e => api.pointer(...toScreen(e), 0));
-  canvas.addEventListener("pointercancel", e => api.pointer(...toScreen(e), 0));
+  canvas.addEventListener("pointerup", release);
+  canvas.addEventListener("pointercancel", release);
   $("actual").addEventListener("change", e => canvas.classList.toggle("actual", e.target.checked));
 
   // ---------------------------------------------------------------- controls
