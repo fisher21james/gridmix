@@ -46,6 +46,9 @@ button, select, input[type=number], input[type=text], textarea {
 button { padding: 6px 10px; cursor: pointer; }
 button:hover { border-color: var(--accent); }
 button.primary { background: #1c3b4a; border-color: #2c6680; }
+.btn-file span { display: inline-block; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel2); cursor: pointer; }
+.btn-file span:hover { border-color: var(--accent); }
+.drop { outline: 2px dashed var(--accent); outline-offset: 4px; }
 select, input[type=number], input[type=text] { padding: 5px 8px; }
 textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; }
 .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
@@ -81,6 +84,30 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   </div>
 
   <aside>
+    <section class="card" id="liveCard">
+      <h2>Live data</h2>
+      <div class="row"><label for="lvCountry">Country</label>
+        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="US">United States</option></select>
+      </div>
+      <div class="row"><label for="lvRegion">Region</label><select id="lvRegion" style="flex:1"></select></div>
+      <div class="row"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
+      <div class="row"><label for="lvKey">Data key</label><input type="password" id="lvKey" autocomplete="off" spellcheck="false" style="flex:1;min-width:0"></div>
+      <div class="row"><label></label><span class="check"><input type="checkbox" id="lvRemember"> Remember on this computer</span></div>
+
+      <div id="lvUS">
+        <div class="btns"><button id="lvFetch" class="primary">Fetch live data</button></div>
+        <p class="note">The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.</p>
+      </div>
+      <div id="lvAU">
+        <p class="note" style="margin-top:0">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 2 of your 500 daily requests.</p>
+        <div class="row"><label for="lvOS">Computer</label><select id="lvOS" style="flex:1"><option value="mac">Mac or Linux (Terminal)</option><option value="win">Windows (PowerShell)</option></select></div>
+        <textarea id="lvCmd" readonly spellcheck="false" style="min-height:96px"></textarea>
+        <div class="btns"><button id="lvCopy">Copy command</button><label class="btn-file"><input type="file" id="lvFile" accept=".json,application/json" hidden><span>Load gridmix-live.json</span></label></div>
+      </div>
+      <div class="msg" id="lvMsg"></div>
+      <p class="note">Your key stays in this browser. It's only sent to the data service itself.</p>
+    </section>
+
     <section class="card">
       <h2>Scenes</h2>
       <div class="btns" id="scenes">
@@ -214,6 +241,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     problem: M.cwrap("gm_set_problem", null, ["string"]),
     age: M.cwrap("gm_set_age", null, ["number"]),
     hasPlan: M.cwrap("gm_set_has_plan", null, ["number"]),
+    setView: M.cwrap("gm_set_view", null, ["number"]),
     setSettings: M.cwrap("gm_set_settings", "string", ["string"]),
     getSettings: M.cwrap("gm_get_settings", "string", []),
     parse: M.cwrap("gm_parse", "string", ["number", "string"]),
@@ -403,6 +431,141 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     });
   }
   const escapeHtml = s => s.replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+
+  // ---------------------------------------------------------------- live data
+  const getUrl = M.cwrap("gm_url", "string", ["number", "string", "string", "number", "number"]);
+  const REGIONS = {
+    AU: [["SA1", "South Australia", "SA \u00b7 Adelaide", "Australia/Adelaide"], ["NSW1", "New South Wales", "NSW \u00b7 Sydney", "Australia/Sydney"],
+         ["VIC1", "Victoria", "VIC \u00b7 Melbourne", "Australia/Melbourne"], ["QLD1", "Queensland", "QLD \u00b7 Brisbane", "Australia/Brisbane"],
+         ["TAS1", "Tasmania", "TAS \u00b7 Hobart", "Australia/Hobart"], ["WEM", "Western Australia", "WA \u00b7 Perth", "Australia/Perth"]],
+    US: [["CAL", "California", "California", "America/Los_Angeles"], ["CAR", "Carolinas", "Carolinas", "America/New_York"],
+         ["CENT", "Central", "Central", "America/Chicago"], ["FLA", "Florida", "Florida", "America/New_York"],
+         ["MIDA", "Mid-Atlantic", "Mid-Atlantic", "America/New_York"], ["MIDW", "Midwest", "Midwest", "America/Chicago"],
+         ["NE", "New England", "New England", "America/New_York"], ["NY", "New York", "New York", "America/New_York"],
+         ["NW", "Northwest", "Northwest", "America/Los_Angeles"], ["SE", "Southeast", "Southeast", "America/New_York"],
+         ["SW", "Southwest", "Southwest", "America/Phoenix"], ["TEN", "Tennessee", "Tennessee", "America/Chicago"],
+         ["TEX", "Texas", "Texas", "America/Chicago"]],
+  };
+  const store = {
+    get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+    set(k, v) { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} },
+  };
+  const lv = {country: () => $("lvCountry").value, region: () => $("lvRegion").value, whole: () => $("lvWhole").checked};
+  const regionInfo = () => (REGIONS[lv.country()].find(r => r[0] === lv.region()) || REGIONS[lv.country()][0]);
+  function lvMsg(text, ok) { $("lvMsg").className = "msg " + (ok ? "ok" : "err"); $("lvMsg").textContent = text; }
+  function keyName() { return "gridmix-key-" + lv.country(); }
+  function fillRegions() {
+    const c = lv.country();
+    $("lvRegion").innerHTML = REGIONS[c].map(r => `<option value="${r[0]}">${r[1]}</option>`).join("");
+    $("lvRegion").value = c === "AU" ? "SA1" : "TEX";
+    $("lvKey").value = store.get(keyName());
+    $("lvRemember").checked = !!$("lvKey").value;
+    $("lvUS").hidden = c !== "US";
+    $("lvAU").hidden = c !== "AU";
+    $("lvMsg").textContent = "";
+    makeCommand();
+  }
+  function makeCommand() {
+    if (lv.country() !== "AU") return;
+    const now = Date.now() / 1000;
+    const p = getUrl(0, "AU", lv.region(), lv.whole() ? 1 : 0, now);
+    const m = getUrl(1, "AU", lv.region(), lv.whole() ? 1 : 0, now);
+    const key = $("lvKey").value.trim() || "PASTE_YOUR_KEY";
+    if ($("lvOS").value === "mac") {
+      const get = u => `curl -s -H "Authorization: Bearer ${key}" "${u}"`;
+      $("lvCmd").value = `cd ~/Downloads && { printf '{"power":'; ${get(p)}; printf ',"market":'; ${m ? get(m) : "printf null"}; printf '}'; } > gridmix-live.json && echo "Saved gridmix-live.json in Downloads"`;
+    } else {
+      const get = u => `(Invoke-WebRequest -UseBasicParsing -Headers $h '${u}').Content`;
+      $("lvCmd").value = `cd $HOME\\Downloads; $h=@{Authorization='Bearer ${key}'}; $p=${get(p)}; $m=${m ? get(m) : "'null'"}; "{\`"power\`":$p,\`"market\`":$m}" | Out-File -Encoding ascii gridmix-live.json; "Saved gridmix-live.json in Downloads"`;
+    }
+  }
+  function keyChanged() {
+    store.set(keyName(), $("lvRemember").checked ? $("lvKey").value.trim() : "");
+    makeCommand();
+  }
+  $("lvCountry").addEventListener("change", fillRegions);
+  $("lvRegion").addEventListener("change", makeCommand);
+  $("lvWhole").addEventListener("change", makeCommand);
+  $("lvOS").addEventListener("change", makeCommand);
+  $("lvKey").addEventListener("input", keyChanged);
+  $("lvRemember").addEventListener("change", keyChanged);
+  $("lvOS").value = /Win/.test(navigator.platform) ? "win" : "mac";
+  $("lvCopy").addEventListener("click", async () => {
+    makeCommand();   // fresh times
+    if (!$("lvKey").value.trim()) { lvMsg("Add your Open Electricity key first.", false); return; }
+    try { await navigator.clipboard.writeText($("lvCmd").value); lvMsg("Copied. Run it, then load the file it saves.", true); }
+    catch { $("lvCmd").select(); lvMsg("Select the command and copy it with Ctrl+C / Cmd+C.", false); }
+  });
+
+  // After live data arrives: match the screen to that place and the data's own time
+  function showLive(label) {
+    const s = JSON.parse(api.state());
+    const [code, , header, tz] = regionInfo();
+    const us = lv.country() === "US";
+    applySettings({country: lv.country(), region: code}, true);
+    if (us) { $("plan").value = "none"; api.hasPlan(0); }
+    else if ($("plan").value === "none") { $("plan").value = "tou"; api.hasPlan(1); applySettings(PLANS.tou, true); }
+    const when = new Date((s.data_time || Date.now() / 1000) * 1000);
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", {timeZone: tz, weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23"})
+      .formatToParts(when).map(p => [p.type, p.value]));
+    const wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts.weekday);
+    api.time(wd, (+parts.hour % 24) * 60 + +parts.minute);
+    const age = Math.max(0, Math.round((Date.now() / 1000 - s.data_time) / 60));
+    api.age(age);
+    api.problem("");
+    const wholeLabel = us ? "United States" : "Australia (NEM)";
+    api.header(lv.whole() ? wholeLabel : header);
+    api.setView(lv.whole() ? 1 : 0);
+    $("hasData").checked = true;
+    syncFromState();
+    rebuild();
+    const ago = age < 90 ? `${age} min` : age < 2880 ? `${Math.round(age / 60)} h` : `${Math.round(age / 1440)} days`;
+    lvMsg(`${label} Data is from ${when.toLocaleString([], {timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit"})} local time (${ago} ago).`, true);
+    log(`Live: ${label} ${lv.whole() ? wholeLabel : header}, ${ago} old${s.estimated ? ", rooftop solar from AEMO's forecast" : ""}`);
+  }
+
+  $("lvFetch").addEventListener("click", async () => {
+    const key = $("lvKey").value.trim();
+    if (!key) { lvMsg("Add your EIA key first.", false); return; }
+    const url = getUrl(2, "US", lv.region(), lv.whole() ? 1 : 0, Date.now() / 1000) + encodeURIComponent(key);
+    lvMsg("Asking the EIA…", true);
+    let text;
+    try {
+      const r = await fetch(url);
+      text = await r.text();
+      if (r.status === 403 || r.status === 401) { lvMsg("The EIA didn't accept that key. Check it was copied in full from the email.", false); return; }
+      if (!r.ok) { lvMsg(`The EIA answered with error ${r.status}. Try again in a minute.`, false); return; }
+    } catch { lvMsg("Couldn't reach the EIA. Check your internet connection.", false); return; }
+    const res = api.parse(2, text);
+    if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
+    showLive(res);
+  });
+
+  async function loadFile(file) {
+    let obj;
+    try { obj = JSON.parse((await file.text()).replace(/^\uFEFF/, "")); }
+    catch { lvMsg("That file isn't the one the command saves (it isn't valid JSON). Run the command again.", false); return; }
+    const power = obj && obj.power;
+    const err = p => p && (p.detail || p.error || (p.success === false && (p.error || "the request was refused")));
+    if (!power || err(power)) {
+      const why = power ? String(err(power)) : "no generation data in the file";
+      lvMsg(/auth|key|token|credential|401|403/i.test(why) ? "Open Electricity didn't accept that key: " + why : "Open Electricity said: " + why, false);
+      return;
+    }
+    const res = api.parse(0, JSON.stringify(power));
+    if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
+    let extra = "";
+    if (obj.market && !err(obj.market)) { const mres = api.parse(1, JSON.stringify(obj.market)); extra = mres.startsWith("Market") ? " Price and rooftop solar added." : " (market data couldn't be read)"; }
+    // the file can't say which region it was for, so trust the picker
+    showLive(res + extra);
+  }
+  $("lvFile").addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ""; });
+  const card = $("liveCard");
+  card.addEventListener("dragover", e => { e.preventDefault(); card.classList.add("drop"); });
+  card.addEventListener("dragleave", () => card.classList.remove("drop"));
+  card.addEventListener("drop", e => { e.preventDefault(); card.classList.remove("drop"); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+  fillRegions();
 
   // start on the first sample
   $("scenes").querySelector("button").click();

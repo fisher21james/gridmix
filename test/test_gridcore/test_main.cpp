@@ -61,6 +61,24 @@ void test_eia_negative_battery_is_charging() {
   TEST_ASSERT_TRUE(s.battery_is_charging());
 }
 
+// Lower-48 answers carry newer codes (live check, 13 Nov 2026)
+void test_eia_us48_codes() {
+  const char *j = "{\"response\":{\"data\":["
+    "{\"period\":\"2026-11-12T04\",\"fueltype\":\"WND\",\"value\":\"100\"},"
+    "{\"period\":\"2026-11-12T04\",\"fueltype\":\"WNB\",\"value\":\"20\"},"
+    "{\"period\":\"2026-11-12T04\",\"fueltype\":\"SNB\",\"value\":\"30\"},"
+    "{\"period\":\"2026-11-12T04\",\"fueltype\":\"OES\",\"value\":\"10\"},"
+    "{\"period\":\"2026-11-12T04\",\"fueltype\":\"UES\",\"value\":\"-11\"},"
+    "{\"period\":\"2026-11-12T04\",\"fueltype\":\"GEO\",\"value\":\"40\"}]}}";
+  GridSnapshot s;
+  TEST_ASSERT_TRUE(parse_eia(j, strlen(j), s));
+  TEST_ASSERT_EQUAL_FLOAT(120, s.mw[WIND]);
+  TEST_ASSERT_EQUAL_FLOAT(30, s.mw[SOLAR]);
+  TEST_ASSERT_EQUAL_FLOAT(10, s.mw[BATTERY]);
+  TEST_ASSERT_EQUAL_FLOAT(11, s.battery_charging);
+  TEST_ASSERT_EQUAL_FLOAT(40, s.mw[OTHER]);
+}
+
 void test_eia_bad_json_fails_cleanly() {
   GridSnapshot s;
   const char *bad = "{\"error\":\"API_KEY_INVALID\"}";
@@ -195,6 +213,7 @@ int main(int, char **) {
   RUN_TEST(test_eia_parses);
   RUN_TEST(test_eia_mix);
   RUN_TEST(test_eia_negative_battery_is_charging);
+  RUN_TEST(test_eia_us48_codes);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);
   RUN_TEST(test_oe_mix);

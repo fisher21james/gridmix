@@ -154,6 +154,20 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
   return out;
 }
 
+// The exact request the display would send (same code as the firmware). kind: 0 = generation, 1 = market, 2 = EIA.
+// The EIA URL ends with "api_key=" for the page to add the key.
+EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const char *region, int country_view, double now_utc) {
+  const Feed f = feed_for(country, region, country_view);
+  size_t n = 0;
+  if (kind == 2) n = f.source == SRC_EIA ? eia_url(f, out, sizeof out) : 0;
+  else if (f.source == SRC_OPEN_ELECTRICITY) {
+    if (kind == 0) n = oe_power_url(f, (int64_t)now_utc, out, sizeof out);
+    else if (f.has_market) n = oe_market_url(f, (int64_t)now_utc, out, sizeof out);
+  }
+  if (!n) out[0] = 0;
+  return out;
+}
+
 // The two real captures the tests use
 EMSCRIPTEN_KEEPALIVE void gm_load_real(int which) {
   GridSnapshot s;
@@ -217,8 +231,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
 EMSCRIPTEN_KEEPALIVE const char *gm_state() {
   char h[64];
   js_escape(header, h, sizeof h);
-  int n = snprintf(out, sizeof out, "{\"weekday\":%d,\"minute\":%d,\"has_data\":%s,\"has_price\":%s,\"price\":%.1f,\"charging\":%.1f,\"header\":\"%s\",\"mw\":[",
-                   weekday, minute, has_data ? "true" : "false", snap.has_price ? "true" : "false", snap.price, snap.battery_charging, h);
+  int n = snprintf(out, sizeof out, "{\"data_time\":%lld,\"estimated\":%s,\"weekday\":%d,\"minute\":%d,\"has_data\":%s,\"has_price\":%s,\"price\":%.1f,\"charging\":%.1f,\"header\":\"%s\",\"mw\":[",
+                   (long long)snap.data_time, snap.estimated ? "true" : "false", weekday, minute, has_data ? "true" : "false", snap.has_price ? "true" : "false", snap.price, snap.battery_charging, h);
   for (int i = 0; i < SOURCE_COUNT; i++) n += snprintf(out + n, sizeof out - n, "%s%.1f", i ? "," : "", snap.mw[i]);
   snprintf(out + n, sizeof out - n, "]}");
   return out;

@@ -22,14 +22,16 @@ static float as_float(JsonVariantConst v, bool &is_null) {
 // Returns false if the row should be ignored.
 static void add_eia(GridSnapshot &s, const char *code, float v) {
   if (!code) return;
-  if (!strcmp(code, "BAT") || !strcmp(code, "PS")) {         // battery / pumped storage: negative = charging
+  // Storage: battery, pumped storage, other/unknown storage. Negative = charging.
+  const bool battery = !strcmp(code, "BAT") || !strcmp(code, "OES") || !strcmp(code, "UES");
+  if (battery || !strcmp(code, "PS")) {
     if (v < 0) s.battery_charging += -v;
-    else s.mw[!strcmp(code, "BAT") ? BATTERY : HYDRO] += v;
+    else s.mw[battery ? BATTERY : HYDRO] += v;
     return;
   }
   if (v < 0) return;  // any other negative (station load) is not generation
-  if (!strcmp(code, "SUN") || !strcmp(code, "SNB")) s.mw[SOLAR] += v;
-  else if (!strcmp(code, "WND")) s.mw[WIND] += v;
+  if (!strcmp(code, "SUN") || !strcmp(code, "SNB")) s.mw[SOLAR] += v;   // SNB = solar with a battery on site
+  else if (!strcmp(code, "WND") || !strcmp(code, "WNB")) s.mw[WIND] += v;   // WNB = wind with a battery on site
   else if (!strcmp(code, "WAT")) s.mw[HYDRO] += v;
   else if (!strcmp(code, "NUC")) s.mw[NUCLEAR] += v;
   else if (!strcmp(code, "NG")) s.mw[GAS] += v;
