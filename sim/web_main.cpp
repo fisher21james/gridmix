@@ -21,6 +21,8 @@ static uint32_t now_ms = 0;
 static bool flushed = false;
 static int ptr_x = 0, ptr_y = 0;
 static bool ptr_down = false;
+static bool press_seen = false;      // LVGL has read the current press
+static bool release_pending = false; // the mouse came up before LVGL saw the press
 
 // ---- everything the screen is built from (the page changes these)
 static GridSnapshot snap;
@@ -44,6 +46,11 @@ static void pointer_cb(lv_indev_t *, lv_indev_data_t *data) {
   data->point.x = ptr_x;
   data->point.y = ptr_y;
   data->state = ptr_down ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+  // A quick click can go down and up between two LVGL reads; make sure LVGL sees the press first
+  if (ptr_down) {
+    if (press_seen && release_pending) { ptr_down = false; release_pending = false; }
+    press_seen = true;
+  }
 }
 
 static void on_view(bool country) {
@@ -90,7 +97,19 @@ EMSCRIPTEN_KEEPALIVE int gm_tick(int ms) {
   return flushed;
 }
 EMSCRIPTEN_KEEPALIVE uint16_t *gm_fb() { return fb; }
-EMSCRIPTEN_KEEPALIVE void gm_pointer(int x, int y, int down) { ptr_x = x; ptr_y = y; ptr_down = down; }
+EMSCRIPTEN_KEEPALIVE void gm_pointer(int x, int y, int down) {
+  ptr_x = x;
+  ptr_y = y;
+  if (down) {
+    if (!ptr_down) press_seen = false;
+    ptr_down = true;
+    release_pending = false;
+  } else if (ptr_down && !press_seen) {
+    release_pending = true;   // released next read, after LVGL has seen the press
+  } else {
+    ptr_down = false;
+  }
+}
 
 // ---- inputs
 EMSCRIPTEN_KEEPALIVE void gm_set_mw(int src, float mw) { if (src >= 0 && src < SOURCE_COUNT) snap.mw[src] = mw < 0 ? 0 : mw; snap.valid = true; }

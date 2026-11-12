@@ -19,11 +19,11 @@ a { color: var(--accent); }
 header.top { padding: 18px 16px 6px; max-width: 1240px; margin: 0 auto; }
 header.top h1 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
 header.top p { margin: 4px 0 0; color: var(--sub); max-width: 70ch; }
-main { max-width: 1240px; margin: 0 auto; padding: 12px 16px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
-@media (max-width: 960px) { main { grid-template-columns: minmax(0, 1fr); } }
+main { max-width: 1240px; margin: 0 auto; padding: 12px 16px 40px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); gap: 20px; align-items: start; }
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
 
 .device { background: #05070a; border-radius: 18px; padding: 16px; box-shadow: 0 0 0 1px var(--line), 0 20px 50px rgba(0,0,0,.45); position: sticky; top: 12px; }
-@media (max-width: 960px) { .device { position: static; } }
+@media (max-width: 900px) { .device { position: static; } }
 canvas { display: block; width: 100%; height: auto; aspect-ratio: 480 / 272; border-radius: 3px; background: #000; touch-action: none; cursor: pointer; }
 canvas.actual { width: 480px; max-width: 100%; margin: 0 auto; }
 .devbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 12px; color: var(--sub); font-size: 13px; }
