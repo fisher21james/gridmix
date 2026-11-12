@@ -529,7 +529,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     const key = $("lvKey").value.trim();
     if (!key) { lvMsg("Add your EIA key first.", false); return; }
     const url = getUrl(2, "US", lv.region(), lv.whole() ? 1 : 0, Date.now() / 1000) + encodeURIComponent(key);
-    lvMsg("Asking the EIA…", true);
+    lvMsg("Asking the EIA… (the whole-country total can take 15 seconds)", true);
     let text;
     try {
       const r = await fetch(url);

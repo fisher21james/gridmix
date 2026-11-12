@@ -75,6 +75,8 @@ Open Electricity, two requests per refresh (each costs 1 credit, including `/v4/
 EIA:
 
 - Can lag several hours to a day. Negative battery values mean charging.
+- Live check 13 Nov 2026 (browser sim): region codes TEX and US48 work; data was 18–19 hours behind; the US48 answer took about 12 s, so the HTTPS timeout is 30 s. US48 includes newer codes (WNB wind+battery, SNB solar+battery, OES/UES storage, PS pumped storage), all mapped.
+- Open Electricity sends no CORS headers, so a web page can't call it directly (the browser sim uses a copy-paste command instead). The display isn't affected.
 - Checked every 15 minutes (newest 30 rows, sorted newest first). The key goes on the end of the URL, so the serial log cuts it off.
 
 ## Known unknowns

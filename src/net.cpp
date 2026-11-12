@@ -9,7 +9,7 @@ int https_get(const char *url, const char *bearer, String &body) {
   client.setCACert(CA_ROOTS_PEM);
 
   HTTPClient http;
-  http.setTimeout(15000);
+  http.setTimeout(30000);   // the EIA can take 12+ s for the lower-48 total (measured 13 Nov 2026)
   http.setConnectTimeout(10000);
   http.setUserAgent("GridMixDisplay/" FW_VERSION);
   if (!http.begin(client, url)) return -1;
