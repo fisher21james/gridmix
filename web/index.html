@@ -75,7 +75,12 @@
     th { color: var(--muted); font-weight: 600; font-size: 13px; }
     .table-box { overflow-x: auto; }
     details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px; margin-bottom: 10px; }
-    summary { cursor: pointer; font-weight: 600; color: var(--white); padding: 12px 0; min-height: 44px; display: flex; align-items: center; }
+    summary { cursor: pointer; font-weight: 600; color: var(--white); padding: 12px 0; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; list-style: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font: 400 24px/1 Inter, sans-serif; color: var(--muted); flex-shrink: 0; }
+    details[open] > summary::after { content: "\2212"; }
+    #key details { padding-bottom: 4px; }
+    #key details ol { margin: 4px 0 12px; }
     details p { margin: 0 0 14px; color: #C9D0D9; }
     .steps li { margin-bottom: 14px; }
     .shot { margin: 12px 0 4px; }
@@ -362,10 +367,10 @@
 
   <section id="key" aria-labelledby="key-h">
     <h2 id="key-h">Get your free data key</h2>
-    <p class="sub">A one-off job that takes about two minutes. The key is like a library card: it lets your display ask for grid data.</p>
+    <p class="sub">A one-off job that takes about two minutes. The key is like a library card: it lets your display ask for grid data. Open the guide for where you live.</p>
 
-    <div class="card">
-      <h3 style="margin-top:0">Australia: Open Electricity</h3>
+    <details>
+      <summary>Australia: Open Electricity</summary>
       <ol class="steps">
         <li>Go to <a href="https://platform.openelectricity.org.au">platform.openelectricity.org.au</a> and create a free account.</li>
         <li>Click <b>API Keys</b> in the menu on the left, then the button to create a new key.</li>
@@ -382,10 +387,10 @@
         <li>Paste the key into your display's setup page (<code>gridmix.local</code>) when it asks.</li>
       </ol>
       <p class="tip">Keep your key private, like a password. If it ever ends up somewhere public, delete it on the API Keys page and make a new one.</p>
-    </div>
+    </details>
 
-    <div class="card">
-      <h3 style="margin-top:0">United States: U.S. EIA</h3>
+    <details>
+      <summary>United States: U.S. EIA</summary>
       <ol class="steps">
         <li>Go to <a href="https://www.eia.gov/opendata/">eia.gov/opendata</a> and click the blue <b>Register</b> button on the right.
           <figure class="shot">
@@ -407,7 +412,7 @@
         <li>Paste the key into your display's setup page (<code>gridmix.local</code>) when it asks.</li>
       </ol>
       <p class="tip">No email? Check your spam folder. Lost the key? Use <b>Forgot API Key</b> on the same EIA page to have it sent again.</p>
-    </div>
+    </details>
     <details>
       <summary>Anywhere else: Electricity Maps</summary>
       <p>Create a free account at <a href="https://www.electricitymaps.com/free-tier">electricitymaps.com</a> and copy your key from the dashboard. Step-by-step pictures coming soon.</p>
