@@ -6,3 +6,5 @@ __pycache__/
 include/generated/
 sim-out/
 .sim-build/
+sim-web/
+.sim-web-build/

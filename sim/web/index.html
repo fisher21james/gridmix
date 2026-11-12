@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grid Mix Simulator</title>
+<meta name="description" content="The Grid Mix Display's real screen code running in your browser. Change the mix, time, price and power plan, or paste a real API answer.">
+<style>
+:root {
+  --bg: #0e1116; --panel: #151a21; --panel2: #1b222b; --line: #262d37;
+  --text: #e9eef2; --sub: #9aa5b1; --dim: #6b7682; --accent: #4fb3d9;
+  --good: #3bb273; --warn: #e39b3a; --bad: #e0634f;
+  --solar: #f5b800; --wind: #4fb3d9; --hydro: #2e6fd8; --battery: #9b7bea;
+  --nuclear: #3bb273; --gas: #f07a3a; --coal: #7a6e66; --other: #8a939c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent); }
+header.top { padding: 18px 16px 6px; max-width: 1240px; margin: 0 auto; }
+header.top h1 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+header.top p { margin: 4px 0 0; color: var(--sub); max-width: 70ch; }
+main { max-width: 1240px; margin: 0 auto; padding: 12px 16px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+@media (max-width: 960px) { main { grid-template-columns: minmax(0, 1fr); } }
+
+.device { background: #05070a; border-radius: 18px; padding: 16px; box-shadow: 0 0 0 1px var(--line), 0 20px 50px rgba(0,0,0,.45); position: sticky; top: 12px; }
+@media (max-width: 960px) { .device { position: static; } }
+canvas { display: block; width: 100%; height: auto; aspect-ratio: 480 / 272; border-radius: 3px; background: #000; touch-action: none; cursor: pointer; }
+canvas.actual { width: 480px; max-width: 100%; margin: 0 auto; }
+.devbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 12px; color: var(--sub); font-size: 13px; }
+.devbar label { display: inline-flex; gap: 6px; align-items: center; }
+.readout { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 14px; }
+.readout div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.readout b { display: block; font-size: 15px; font-weight: 600; margin-top: 1px; overflow-wrap: anywhere; }
+.readout span { color: var(--dim); font-size: 12px; }
+.log { margin-top: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--sub); height: 96px; overflow: auto; white-space: pre-wrap; }
+#loading { position: absolute; inset: 16px; display: grid; place-items: center; color: var(--sub); }
+
+aside { display: grid; gap: 12px; }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+section.card h2 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--sub); font-weight: 600; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+button, select, input[type=number], input[type=text], textarea {
+  font: inherit; color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 7px;
+}
+button { padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: #1c3b4a; border-color: #2c6680; }
+select, input[type=number], input[type=text] { padding: 5px 8px; }
+textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; }
+.row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.row > label:first-child { flex: 0 0 74px; color: var(--sub); }
+.row input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.row input[type=number] { width: 76px; text-align: right; }
+.row .pct { flex: 0 0 44px; text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12px; }
+.swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+.note { color: var(--dim); font-size: 12px; margin: 6px 0 0; }
+.msg { font-size: 12px; margin-top: 6px; min-height: 1.4em; }
+.msg.ok { color: var(--good); } .msg.err { color: var(--bad); }
+.check { display: inline-flex; gap: 6px; align-items: center; color: var(--sub); }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Grid Mix Simulator</h1>
+  <p>This is the display's real screen code, compiled for your browser. Tap the screen like the real one, change the inputs on the right, or paste a real answer from the data services. <a href="screens/">Every screen as pictures</a> · <a href="../">Back to Grid Mix</a></p>
+</header>
+
+<main>
+  <div>
+    <div class="device" style="position:relative">
+      <canvas id="screen" width="480" height="272" aria-label="Simulated 480 by 272 display"></canvas>
+      <div id="loading">Loading the simulator…</div>
+      <div class="devbar">
+        <label><input type="checkbox" id="actual"> Actual pixel size</label>
+        <span id="fps"></span>
+      </div>
+    </div>
+    <div class="readout" id="readout"></div>
+    <div class="log" id="log" aria-live="polite"></div>
+  </div>
+
+  <aside>
+    <section class="card">
+      <h2>Scenes</h2>
+      <div class="btns" id="scenes">
+        <button data-demo="0">SA sunny afternoon</button>
+        <button data-demo="1">SA windy night</button>
+        <button data-demo="2">NSW evening peak</button>
+        <button data-demo="3">Texas</button>
+        <button data-real="0">Real: SA 12 Nov</button>
+        <button data-real="1">Real: Texas 11 Nov</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Time</h2>
+      <div class="row"><label for="day">Day</label>
+        <select id="day"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+      </div>
+      <div class="row"><label for="time">Time</label><input type="range" id="time" min="0" max="1435" step="5"><span class="pct" id="timeLabel" style="flex-basis:64px"></span></div>
+      <div class="btns"><button id="play">Play a whole day</button></div>
+      <p class="note">Watch the sky, the rate and the advice change through the day.</p>
+    </section>
+
+    <section class="card">
+      <h2>Mix (MW)</h2>
+      <div id="mix"></div>
+      <div class="row"><label for="chg">Charging</label><input type="range" id="chg" min="0" max="1500" step="1"><input type="number" id="chgN" min="0" step="1"><span class="pct"></span></div>
+      <p class="note">Charging = power going into batteries, which isn't counted in the mix.</p>
+    </section>
+
+    <section class="card">
+      <h2>Wholesale price</h2>
+      <div class="row"><label><span class="check"><input type="checkbox" id="hasPrice"> Price</span></label><input type="range" id="price" min="-200" max="1000" step="1"><input type="number" id="priceN" step="1"></div>
+      <p class="note">$/MWh. Below 0 = Clean &amp; cheap, under 150 = Normal, 150–300 = Busy, 300+ = Under strain. The US has no price.</p>
+    </section>
+
+    <section class="card">
+      <h2>Power plan and region</h2>
+      <div class="row"><label for="plan">Plan</label>
+        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
+      </div>
+      <div class="row"><label for="header">Header</label><input type="text" id="header" maxlength="30" style="flex:1"></div>
+      <details>
+        <summary style="cursor:pointer;color:var(--sub)">Settings JSON (same format as the setup page)</summary>
+        <textarea id="settings" spellcheck="false"></textarea>
+        <div class="btns"><button id="applySettings" class="primary">Apply</button></div>
+        <div class="msg" id="settingsMsg"></div>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Connection</h2>
+      <div class="row"><label><span class="check"><input type="checkbox" id="hasData"> Data</span></label><span style="color:var(--sub)">Data has arrived</span></div>
+      <div class="row"><label for="age">Age (min)</label><input type="range" id="age" min="0" max="1800" step="1"><input type="number" id="ageN" min="0" step="1"></div>
+      <div class="row"><label for="problem">Problem</label>
+        <select id="problem" style="flex:1">
+          <option value="">None (waiting for data)</option>
+          <option>No Wi-Fi · reconnect with the installer</option>
+          <option>Data key not accepted · check gridmix.local</option>
+          <option>Out of data requests for today</option>
+          <option>Can't reach the data service · retrying</option>
+          <option>Sample data · finish setup at gridmix.local</option>
+        </select>
+      </div>
+      <p class="note">A problem shows in the pill only while there's no data, as on the display. Data counts as fresh for 25 min (Australia) or 3 h (US).</p>
+    </section>
+
+    <section class="card">
+      <h2>Paste a real API answer</h2>
+      <div class="row"><label for="kind">Type</label>
+        <select id="kind" style="flex:1"><option value="0">Open Electricity generation</option><option value="1">Open Electricity market (add after generation)</option><option value="2">EIA fuel-type data</option></select>
+      </div>
+      <textarea id="paste" spellcheck="false" placeholder='{"version":"4...", "data":[...]}'></textarea>
+      <div class="btns"><button id="parse" class="primary">Read it</button></div>
+      <div class="msg" id="parseMsg"></div>
+      <p class="note">Runs the same translator the display uses, so a response that fails here would fail on the display too. Nothing is sent anywhere.</p>
+    </section>
+  </aside>
+</main>
+
+<script src="gridmix-sim.js"></script>
+<script>
+(async () => {
+  const SOURCES = [
+    ["Solar", "solar"], ["Wind", "wind"], ["Hydro", "hydro"], ["Battery", "battery"],
+    ["Nuclear", "nuclear"], ["Gas", "gas"], ["Coal", "coal"], ["Other", "other"],
+  ];
+  const PLANS = {
+    tou: {tariff: {type: "tou", periods: [
+      {name: "Peak", from: "06:00", to: "10:00", rate: 53.99, days: "all"},
+      {name: "Shoulder", from: "10:00", to: "15:00", rate: 23.78, days: "all"},
+      {name: "Peak", from: "15:00", to: "01:00", rate: 53.99, days: "all"},
+      {name: "Off peak", from: "01:00", to: "06:00", rate: 34.51, days: "all"}],
+      supply: 116.18, feed_in: 1, warn: true}},
+    flat: {tariff: {type: "flat", flat: 30, periods: [], supply: 100, feed_in: 5, warn: false}},
+  };
+  const $ = id => document.getElementById(id);
+  const log = msg => {
+    const t = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+    $("log").textContent = `${t}  ${msg}\n` + $("log").textContent;
+  };
+
+  let M;
+  try {
+    M = await GridMixSim({onEvent: (kind, v) => {
+      if (kind === "view") { log(`Region picker: chose ${v ? "whole country" : "my region"}`); rebuild(); }
+      if (kind === "scene") log("Tapped the scene (on the display, this skips to the next sample before setup)");
+    }});
+  } catch (e) {
+    $("loading").textContent = "The simulator couldn't start in this browser.";
+    throw e;
+  }
+  $("loading").remove();
+  const api = {
+    init: M.cwrap("gm_init", null, []),
+    tick: M.cwrap("gm_tick", "number", ["number"]),
+    fb: M.cwrap("gm_fb", "number", []),
+    pointer: M.cwrap("gm_pointer", null, ["number", "number", "number"]),
+    mw: M.cwrap("gm_set_mw", null, ["number", "number"]),
+    charging: M.cwrap("gm_set_charging", null, ["number"]),
+    price: M.cwrap("gm_set_price", null, ["number", "number"]),
+    time: M.cwrap("gm_set_time", null, ["number", "number"]),
+    hasData: M.cwrap("gm_set_has_data", null, ["number"]),
+    header: M.cwrap("gm_set_header", null, ["string"]),
+    problem: M.cwrap("gm_set_problem", null, ["string"]),
+    age: M.cwrap("gm_set_age", null, ["number"]),
+    hasPlan: M.cwrap("gm_set_has_plan", null, ["number"]),
+    setSettings: M.cwrap("gm_set_settings", "string", ["string"]),
+    getSettings: M.cwrap("gm_get_settings", "string", []),
+    parse: M.cwrap("gm_parse", "string", ["number", "string"]),
+    real: M.cwrap("gm_load_real", null, ["number"]),
+    demo: M.cwrap("gm_load_demo", null, ["number"]),
+    apply: M.cwrap("gm_apply", "string", []),
+    state: M.cwrap("gm_state", "string", []),
+  };
+  api.init();
+
+  // ---------------------------------------------------------------- screen
+  const canvas = $("screen"), ctx = canvas.getContext("2d");
+  const img = ctx.createImageData(480, 272);
+  const LUT5 = new Uint8Array(32).map((_, i) => Math.round(i * 255 / 31));
+  const LUT6 = new Uint8Array(64).map((_, i) => Math.round(i * 255 / 63));
+  function draw() {
+    const px = new Uint16Array(M.HEAPU16.buffer, api.fb(), 480 * 272);
+    const d = img.data;
+    for (let i = 0, j = 0; i < px.length; i++, j += 4) {
+      const p = px[i];
+      d[j] = LUT5[p >> 11]; d[j + 1] = LUT6[(p >> 5) & 63]; d[j + 2] = LUT5[p & 31]; d[j + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  let last = performance.now(), frames = 0, fpsT = last;
+  function frame(now) {
+    const dt = Math.min(100, Math.max(1, Math.round(now - last)));
+    last = now;
+    if (api.tick(dt)) draw();
+    frames++;
+    if (now - fpsT > 1000) { $("fps").textContent = `${frames} fps in the browser`; frames = 0; fpsT = now; }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  function toScreen(e) {
+    const r = canvas.getBoundingClientRect();
+    return [Math.round((e.clientX - r.left) * 480 / r.width), Math.round((e.clientY - r.top) * 272 / r.height)];
+  }
+  canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); api.pointer(...toScreen(e), 1); });
+  canvas.addEventListener("pointermove", e => { if (e.buttons) api.pointer(...toScreen(e), 1); });
+  canvas.addEventListener("pointerup", e => api.pointer(...toScreen(e), 0));
+  canvas.addEventListener("pointercancel", e => api.pointer(...toScreen(e), 0));
+  $("actual").addEventListener("change", e => canvas.classList.toggle("actual", e.target.checked));
+
+  // ---------------------------------------------------------------- controls
+  const mixEl = $("mix");
+  SOURCES.forEach(([name, key], i) => {
+    mixEl.insertAdjacentHTML("beforeend",
+      `<div class="row"><label for="mw${i}"><span class="swatch" style="background:var(--${key})"></span>${name}</label>` +
+      `<input type="range" id="mw${i}" min="0" max="3000" step="1"><input type="number" id="mw${i}N" min="0" step="1" aria-label="${name} MW"><span class="pct" id="pct${i}"></span></div>`);
+  });
+
+  function pair(rangeId, numId, onChange) {
+    const r = $(rangeId), n = $(numId);
+    r.addEventListener("input", () => { n.value = r.value; onChange(+r.value); rebuild(); });
+    n.addEventListener("change", () => { r.value = n.value; onChange(+n.value); rebuild(); });
+  }
+  SOURCES.forEach((_, i) => pair(`mw${i}`, `mw${i}N`, v => api.mw(i, v)));
+  pair("chg", "chgN", v => api.charging(v));
+  pair("price", "priceN", v => api.price($("hasPrice").checked ? 1 : 0, v));
+  pair("age", "ageN", v => api.age(v));
+  $("hasPrice").addEventListener("change", () => { api.price($("hasPrice").checked ? 1 : 0, +$("price").value); rebuild(); });
+  $("hasData").addEventListener("change", () => { api.hasData($("hasData").checked ? 1 : 0); rebuild(); });
+  $("problem").addEventListener("change", () => { api.problem($("problem").value); rebuild(); });
+  $("header").addEventListener("input", () => { api.header($("header").value); rebuild(); });
+
+  const fmtTime = m => { const h = Math.floor(m / 60), h12 = h % 12 || 12; return `${h12}:${String(m % 60).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`; };
+  function setTime() {
+    api.time(+$("day").value, +$("time").value);
+    $("timeLabel").textContent = fmtTime(+$("time").value);
+    rebuild();
+  }
+  $("day").addEventListener("change", setTime);
+  $("time").addEventListener("input", setTime);
+  let playing = null;
+  $("play").addEventListener("click", () => {
+    if (playing) { clearInterval(playing); playing = null; $("play").textContent = "Play a whole day"; return; }
+    $("play").textContent = "Stop";
+    playing = setInterval(() => {
+      let t = +$("time").value + 10;
+      if (t >= 1440) { t = 0; $("day").value = (+$("day").value + 1) % 7; }
+      $("time").value = t;
+      setTime();
+    }, 120);
+  });
+
+  function applySettings(obj, quiet) {
+    const err = api.setSettings(JSON.stringify(obj));
+    $("settingsMsg").className = "msg " + (err ? "err" : "ok");
+    $("settingsMsg").textContent = err || "Applied.";
+    if (!err && !quiet) log("Settings applied");
+    if (!err) $("settings").value = JSON.stringify(JSON.parse(api.getSettings()), null, 2);
+    rebuild();
+    return !err;
+  }
+  $("plan").addEventListener("change", () => {
+    const v = $("plan").value;
+    api.hasPlan(v === "none" ? 0 : 1);
+    if (PLANS[v]) applySettings(PLANS[v], true);
+    else rebuild();
+    if (v === "custom") $("settings").closest("details").open = true;
+  });
+  $("applySettings").addEventListener("click", () => {
+    let obj;
+    try { obj = JSON.parse($("settings").value); }
+    catch { $("settingsMsg").className = "msg err"; $("settingsMsg").textContent = "That isn't valid JSON."; return; }
+    if (obj.keys) delete obj.keys;   // keys aren't needed here and never leave this page anyway
+    $("plan").value = "custom";
+    api.hasPlan(1);
+    applySettings(obj);
+  });
+
+  $("parse").addEventListener("click", () => {
+    const text = $("paste").value.trim();
+    if (!text) return;
+    const res = api.parse(+$("kind").value, text);
+    const ok = res.startsWith("Read OK") || res.startsWith("Market data added");
+    $("parseMsg").className = "msg " + (ok ? "ok" : "err");
+    $("parseMsg").textContent = res;
+    log(res);
+    syncFromState();
+    rebuild();
+  });
+
+  $("scenes").addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.demo !== undefined) {
+      const i = +b.dataset.demo;
+      const us = i === 3;
+      $("plan").value = us ? "flat" : "tou";
+      api.hasPlan(1);
+      applySettings({country: us ? "US" : "AU", region: us ? "TEX" : i === 2 ? "NSW1" : "SA1", ...(us ? {tariff: {type: "flat", flat: 14.2, periods: []}} : PLANS.tou)}, true);
+      api.demo(i);
+      api.age(us ? 70 : 2);
+    } else {
+      const us = b.dataset.real === "1";
+      api.real(+b.dataset.real);
+      applySettings({country: us ? "US" : "AU", region: us ? "TEX" : "SA1", ...(us ? {tariff: {type: "flat", flat: 0, periods: []}} : PLANS.tou)}, true);
+      $("plan").value = us ? "none" : "tou";
+      api.hasPlan(us ? 0 : 1);
+      api.header(us ? "Texas" : "SA · Adelaide");
+      api.time(us ? 3 : 4, us ? 23 * 60 : 16 * 60 + 5);
+      api.age(us ? 1440 : 9);
+    }
+    log(`Scene: ${b.textContent}`);
+    syncFromState();
+    rebuild();
+  });
+
+  function syncFromState() {
+    const s = JSON.parse(api.state());
+    s.mw.forEach((v, i) => { $(`mw${i}`).value = Math.min(3000, v); $(`mw${i}N`).value = Math.round(v); });
+    $("chg").value = s.charging; $("chgN").value = Math.round(s.charging);
+    $("hasPrice").checked = s.has_price; $("price").value = s.price; $("priceN").value = Math.round(s.price);
+    $("hasData").checked = s.has_data;
+    $("day").value = s.weekday; $("time").value = s.minute; $("timeLabel").textContent = fmtTime(s.minute);
+    $("header").value = s.header;
+  }
+
+  // ---------------------------------------------------------------- readout
+  const STATUS_COLOR = {"Clean & cheap": "var(--good)", "Normal": "var(--text)", "Busy": "var(--warn)", "Under strain": "var(--bad)"};
+  const BANDS = ["Cheapest", "Middle", "Dearest"];
+  let pending = false;
+  function rebuild() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      const r = JSON.parse(api.apply());
+      r.shares.forEach((p, i) => { $(`pct${i}`).textContent = p ? `${p.toFixed(p < 10 ? 1 : 0)}%` : ""; });
+      const cells = [
+        ["Renewable", r.total ? `${r.renewable.toFixed(1)}%${r.estimated ? " (part est.)" : ""}` : "–"],
+        ["Total", `${Math.round(r.total).toLocaleString()} MW`],
+        ["Grid status", r.status ? `<b style="color:${STATUS_COLOR[r.status] || "inherit"}">${r.status}</b>` : "No price"],
+        ["Your rate", r.has_rate ? `${r.rate} · ${r.period} (${BANDS[r.band]})` : "No plan"],
+        ["Advice", r.advice],
+      ];
+      $("readout").innerHTML = cells.map(([k, v]) => `<div><span>${k}</span>${v.startsWith("<b") ? v : `<b>${escapeHtml(v)}</b>`}</div>`).join("");
+    });
+  }
+  const escapeHtml = s => s.replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+  // start on the first sample
+  $("scenes").querySelector("button").click();
+  $("log").textContent = "";
+  log("Ready. Tap the region name to open the picker, tap the bar to switch styles.");
+})();
+</script>
+</body>
+</html>

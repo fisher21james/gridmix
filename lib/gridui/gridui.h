@@ -62,7 +62,17 @@ void model_views(Model &m, const char *local, const char *local_sub, const char 
                  const char *freq, const char *ago, bool fresh);
 
 // Sample scenes (shown before the display has a data key, and used by the simulator)
+struct DemoScene {
+  const char *region, *title;
+  float mw[gridcore::SOURCE_COUNT];
+  float price;      // $/MWh, NAN = none
+  float charging;   // MW into batteries
+  int weekday, minute;
+  bool us;          // flat US-style rate instead of the SA time-of-use plan
+};
 int demo_count();
+DemoScene demo_scene(int i);
+gridcore::GridSnapshot demo_snapshot(const DemoScene &d);
 Model demo_model(int i);
 gridcore::Tariff demo_tariff();
 

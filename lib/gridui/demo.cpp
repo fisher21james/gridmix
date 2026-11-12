@@ -54,52 +54,36 @@ Model model_build(const GridSnapshot &snap, bool has_data, const char *region, i
   return m;
 }
 
-static GridSnapshot mix(const float *mw, float price, float charging) {
+GridSnapshot demo_snapshot(const DemoScene &d) {
   GridSnapshot s;
-  for (int i = 0; i < SOURCE_COUNT; i++) s.mw[i] = mw[i];
-  s.battery_charging = charging;
-  if (!isnan(price)) { s.has_price = true; s.price = price; }
+  for (int i = 0; i < SOURCE_COUNT; i++) s.mw[i] = d.mw[i];
+  s.battery_charging = d.charging;
+  if (!isnan(d.price)) { s.has_price = true; s.price = d.price; }
   s.valid = true;
   return s;
 }
 
 int demo_count() { return 4; }
 
+DemoScene demo_scene(int i) {
+  //                                 solar wind hydro batt nuc gas coal other   $/MWh charging day minute
+  static const DemoScene SCENES[4] = {
+    {"SA \xC2\xB7 Adelaide", "South Australia", {58, 31, 0, 4, 0, 7, 0, 0}, -12, 9, 4, 13 * 60 + 20, false},
+    {"SA \xC2\xB7 Adelaide", "South Australia", {0, 64, 0, 14, 0, 22, 0, 0}, 88, 0, 4, 21 * 60 + 40, false},
+    {"NSW \xC2\xB7 Sydney", "New South Wales", {4, 6, 8, 5, 0, 9, 68, 0}, 312, 0, 4, 18 * 60 + 15, false},
+    {"Texas", "Texas", {20, 26, 0, 0, 8, 38, 8, 0}, NAN, 0, 4, 15 * 60, true},
+  };
+  return SCENES[((i % 4) + 4) % 4];
+}
+
 Model demo_model(int i) {
-  static const char *DOT = "\xC2\xB7";
   static const Tariff plan = demo_tariff();
   static Tariff flat;
   if (flat.count == 0) flat.add("Flat", 0, 0, 14.2f);
-  char region[32], sub[40];
-  snprintf(sub, sizeof sub, "My region %s state grid", DOT);
-  //                       solar wind hydro batt  nuc  gas  coal other
-  static const float A[8] = {58,   31,  0,    4,    0,   7,   0,   0};
-  static const float B[8] = {0,    64,  0,    14,   0,   22,  0,   0};
-  static const float C[8] = {4,    6,   8,    5,    0,   9,   68,  0};
-  static const float D[8] = {20,   26,  0,    0,    8,   38,  8,   0};
-  Model m;
-  switch (i % 4) {
-    case 0:
-      snprintf(region, sizeof region, "SA %s Adelaide", DOT);
-      m = model_build(mix(A, -12, 9), true, region, 4, 13 * 60 + 20, &plan);
-      model_views(m, "South Australia", sub, "Australia", "Whole country (NEM + WA)", "Every 10 min", "Sample data", true);
-      break;
-    case 1:
-      snprintf(region, sizeof region, "SA %s Adelaide", DOT);
-      m = model_build(mix(B, 88, 0), true, region, 4, 21 * 60 + 40, &plan);
-      model_views(m, "South Australia", sub, "Australia", "Whole country (NEM + WA)", "Every 10 min", "Sample data", true);
-      break;
-    case 2:
-      snprintf(region, sizeof region, "NSW %s Sydney", DOT);
-      m = model_build(mix(C, 312, 0), true, region, 4, 18 * 60 + 15, &plan);
-      model_views(m, "New South Wales", sub, "Australia", "Whole country (NEM + WA)", "Every 10 min", "Sample data", true);
-      break;
-    default:
-      m = model_build(mix(D, NAN, 0), true, "Texas", 4, 15 * 60, &flat);
-      snprintf(sub, sizeof sub, "My region %s EIA", DOT);
-      model_views(m, "Texas", sub, "United States", "Lower 48 states (EIA)", "Hourly", "Sample data", false);
-      break;
-  }
+  const DemoScene d = demo_scene(i);
+  Model m = model_build(demo_snapshot(d), true, d.region, d.weekday, d.minute, d.us ? &flat : &plan);
+  if (d.us) model_views(m, d.title, "My region \xC2\xB7 EIA", "United States", "Lower 48 states (EIA)", "Hourly", "Sample data", false);
+  else model_views(m, d.title, "My region \xC2\xB7 state grid", "Australia", "East coast grid (NEM)", "Every 10 min", "Sample data", true);
   return m;
 }
 

@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     parse_openelectricity_market(OE_SA1_MARKET, strlen(OE_SA1_MARKET), s.data_time, mk);
     merge_market(s, mk);
     Model m = model_build(s, true, SA, 4, 16 * 60 + 5, &plan);
-    model_views(m, "South Australia", SUB, "Australia", "Whole country (NEM + WA)", "Every 10 min", "Updated 9 min ago", true);
+    model_views(m, "South Australia", SUB, "Australia", "East coast grid (NEM)", "Every 10 min", "Updated 9 min ago", true);
     list.push_back({"05-real-sa-12nov-4pm", m, 0});
   }
   {
