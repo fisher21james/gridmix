@@ -11,8 +11,8 @@ Notes for working on the firmware. For what the project is, see the main [README
 | `include/lv_conf.h` | LVGL 9 settings |
 | `src/main.cpp` | Current firmware: display, touch, LVGL, test turbine, Wi-Fi |
 | `src/improv_serial.*` | Receives Wi-Fi details from the browser installer (Improv protocol) |
-| `lib/gridcore/` | Data translators: Open Electricity and EIA responses → one common `GridSnapshot` |
-| `test/` | Translator tests with real, trimmed API responses in `test/fixtures/` |
+| `lib/gridcore/` | Data translators (Open Electricity, EIA → `GridSnapshot`), grid status, and the tariff engine |
+| `test/` | Tests: translators with real, trimmed API responses (`test/fixtures/`), and the tariff engine with a real SA plan |
 | `scripts/version.py` | Puts the number from `VERSION` into the firmware |
 | `VERSION` | Bump this to release a new version |
 | `web/` | The install page (ESP Web Tools) and its manifest |
