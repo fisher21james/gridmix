@@ -448,20 +448,18 @@
     night: { top: '#0A1430', bottom: '#263A6B', hill: '#2B4A33', ground: '#1E3826', text: '#FFFFFF', sub: '#DCE4F2', smoke: '#5C6270' }
   };
   const GRID = { neg: ['Clean & cheap', '#7EE2A8'], mid: ['Normal', '#C9D0D9'], busy: ['Busy', '#F2B35A'], high: ['Under strain', '#FF8A78'] };
-  const PERIOD = {
-    'Solar soak': ['#F5D46B', '#3A2C00'], 'Shoulder': ['#E39B3A', '#2B1700'],
-    'Peak': ['#D2453A', '#FFFFFF'], 'Flat': ['#2A303A', '#E6EAF0']
-  };
+  // Period tag colour = how cheap the period is on the user's plan, not its name
+  const BAND = { low: ['#3BB273', '#04210F'], mid: ['#E39B3A', '#2B1700'], high: ['#D2453A', '#FFFFFF'], flat: ['#2A303A', '#E6EAF0'] };
   const TONE = { good: ['#DFF5E8', '#10502F'], ok: ['#EEF2F6', '#1C2633'], bad: ['#FFE3DC', '#7A1E10'] };
   const PRESETS = [
     { region: 'SA · Adelaide', time: '1:20 pm', sky: 'day', price: '−$12', level: 'neg', renew: 93, mix: { solar: 58, wind: 31, gas: 7, battery: 4 },
-      cells: 2, batt: true, status: 'Clean & cheap · run the dishwasher', tone: 'good', rate: '21.0¢', period: 'Solar soak' },
+      cells: 2, batt: true, status: 'Clean & cheap · run the dishwasher', tone: 'good', rate: '23.8¢', period: 'Shoulder', band: 'low' },
     { region: 'SA · Adelaide', time: '9:40 pm', sky: 'night', price: '$88', level: 'mid', renew: 78, mix: { wind: 64, gas: 22, battery: 14 },
-      cells: 3, batt: true, status: 'Windy night · turbines doing the heavy lifting', tone: 'ok', rate: '31.2¢', period: 'Shoulder' },
+      cells: 3, batt: true, status: 'Windy night · turbines doing the heavy lifting', tone: 'ok', rate: '54.0¢', period: 'Peak', band: 'high' },
     { region: 'NSW · Sydney', time: '6:15 pm', sky: 'dusk', price: '$312', level: 'high', renew: 23, mix: { coal: 68, gas: 9, hydro: 8, wind: 6, battery: 5, solar: 4 },
-      cells: 1, batt: true, status: 'Evening peak · hold off on big loads', tone: 'bad', rate: '56.4¢', period: 'Peak' },
+      cells: 1, batt: true, status: 'Evening peak · hold off on big loads', tone: 'bad', rate: '56.4¢', period: 'Peak', band: 'high' },
     { region: 'ERCOT · Texas', time: '3:00 pm CT', sky: 'day', price: '$34', level: 'mid', renew: 46, mix: { gas: 38, wind: 26, solar: 20, coal: 8, nuclear: 8 },
-      cells: 0, batt: false, status: 'US mode · hourly mix from EIA', tone: 'ok', rate: '14.2¢', period: 'Flat' }
+      cells: 0, batt: false, status: 'US mode · hourly mix from EIA', tone: 'ok', rate: '14.2¢', period: 'Flat', band: 'flat' }
   ];
   const $ = (id) => document.getElementById(id);
   const buttons = Array.from(document.querySelectorAll('.scene-picker button'));
@@ -477,7 +475,7 @@
     $('pRegion').textContent = p.region;
     $('pTime').textContent = p.time;
     $('pRate').textContent = p.rate;
-    const per = PERIOD[p.period];
+    const per = BAND[p.band];
     Object.assign($('pPeriod').style, { background: per[0], color: per[1] });
     $('pPeriod').textContent = p.period;
     const g = GRID[p.level];
