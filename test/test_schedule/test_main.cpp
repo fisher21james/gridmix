@@ -52,6 +52,12 @@ void test_urls() {
   TEST_ASSERT_NOT_NULL(strstr(u, "/market/network/NEM?metrics=price&metrics=solar_rooftop_forecast"));
   TEST_ASSERT_NOT_NULL(strstr(u, "date_start=2026-11-12T14:55:00&date_end=2026-11-12T16:15:00"));
 
+  // WA runs on its own network in Perth time (UTC+8): 05:35 UTC is 13:35 there; 2 h back
+  f = feed_for("AU", "WEM", false);
+  oe_power_url(f, T0(), u, sizeof u);
+  TEST_ASSERT_NOT_NULL(strstr(u, "/data/network/WEM?"));
+  TEST_ASSERT_NOT_NULL(strstr(u, "date_start=2026-11-12T11:35:00"));
+
   f = feed_for("AU", "SA1", true);
   oe_power_url(f, T0(), u, sizeof u);
   TEST_ASSERT_NULL(strstr(u, "network_region"));

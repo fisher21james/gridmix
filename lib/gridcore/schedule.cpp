@@ -32,8 +32,8 @@ Feed feed_for(const char *country, const char *region, bool country_view) {
   return f;
 }
 
-void nem_time(int64_t utc, char *out, size_t cap) {
-  int64_t t = utc + 10 * HOUR;
+void network_time(int64_t utc, const char *network, char *out, size_t cap) {
+  int64_t t = utc + (network && !strcmp(network, "WEM") ? 8 : 10) * HOUR;
   int64_t days = t >= 0 ? t / DAY : (t - DAY + 1) / DAY;
   int64_t secs = t - days * DAY;
   // civil_from_days (Howard Hinnant)
@@ -54,8 +54,10 @@ void nem_time(int64_t utc, char *out, size_t cap) {
 static size_t finish(int n, size_t cap) { return n > 0 && (size_t)n < cap ? (size_t)n : 0; }
 
 size_t oe_power_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
+  // A few 5-minute points, so rooftop and late rows can be filled in. WA's data can arrive later, so look further back.
   char start[24];
-  nem_time(now_utc - 40 * MIN, start, sizeof start);   // a few 5-minute points, so rooftop/late rows can be filled in
+  const bool wa = !strcmp(f.network, "WEM");
+  network_time(now_utc - (wa ? 120 : 40) * MIN, f.network, start, sizeof start);
   char region[32] = "";
   if (f.region[0]) snprintf(region, sizeof region, "&network_region=%s", f.region);
   return finish(snprintf(out, cap, "%s/data/network/%s?metrics=power&interval=5m%s&secondary_grouping=fueltech&date_start=%s",
@@ -65,8 +67,8 @@ size_t oe_power_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
 size_t oe_market_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
   // Covers the next half hour too, so the rooftop forecast still matches the mix until the next market check
   char start[24], end[24];
-  nem_time(now_utc - 40 * MIN, start, sizeof start);
-  nem_time(now_utc + 40 * MIN, end, sizeof end);
+  network_time(now_utc - 40 * MIN, f.network, start, sizeof start);
+  network_time(now_utc + 40 * MIN, f.network, end, sizeof end);
   char region[32] = "";
   if (f.region[0]) snprintf(region, sizeof region, "&network_region=%s", f.region);
   return finish(snprintf(out, cap,

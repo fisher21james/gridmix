@@ -24,8 +24,10 @@ struct Feed {
 // Which feed to use for a country/region and view. country view = whole NEM / lower 48 states.
 Feed feed_for(const char *country, const char *region, bool country_view);
 
-// "2026-11-12T16:05:00" in NEM time (UTC+10 all year, no daylight saving), as Open Electricity expects.
-void nem_time(int64_t utc, char *out, size_t cap);
+// Open Electricity wants dates in the network's own time, with no time zone and no daylight saving:
+// NEM (east coast) is UTC+10, WEM (WA) is UTC+8. "2026-11-12T16:05:00".
+void network_time(int64_t utc, const char *network, char *out, size_t cap);
+inline void nem_time(int64_t utc, char *out, size_t cap) { network_time(utc, "NEM", out, cap); }
 
 // Return the length written (0 if it didn't fit). The EIA URL ends with "api_key=" so the key can be appended.
 size_t oe_power_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
