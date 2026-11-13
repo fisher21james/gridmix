@@ -10,7 +10,10 @@ Notes for working on the firmware. For what the project is, see the main [README
 | `include/board_config.h` | Pin map. Check against your board before first flash. |
 | `include/lv_conf.h` | LVGL 9 settings |
 | `src/main.cpp` | Firmware: display, touch, LVGL, Wi-Fi, builds the screen from live data (or sample scenes until a key is set) |
-| `src/fetcher.*` | Background task that fetches the mix, on the schedule in `lib/gridcore/schedule.*` |
+| `src/fetcher.*` | Background task that fetches the mix (and the 24 h history once after start-up), on the schedule in `lib/gridcore/schedule.*` |
+| `src/data_cache.*` | Last good data and the 24 h history kept in flash, shown straight away after a restart |
+| `src/health.*` | Wi-Fi recovery, 60 s watchdog, fetcher heartbeat, low-memory restart, "why it last restarted" |
+| `src/ota.*` | Over-the-air updates from `firmware/ota.json` on the Pages site (SHA-256 checked) |
 | `src/setup_server.*`, `src/settings_store.*` | The phone setup page at `gridmix.local`, and saving settings to flash |
 | `src/improv_serial.*` | Receives Wi-Fi details from the browser installer (Improv protocol) |
 | `lib/gridcore/` | Data translators (Open Electricity, EIA → `GridSnapshot`), grid status, tariff engine, settings, refresh timing. No Arduino code, so it's tested on a PC. |
@@ -55,7 +58,10 @@ Uses the community `pioarduino` platform (Arduino core 3.x), which the display l
 - [ ] The installer's Wi-Fi step connects; the pill changes to "finish setup at gridmix.local".
 - [ ] Setup page saves a key and region; within a minute or two the real mix replaces the samples. Serial log shows `[fetch] mix -> 200`.
 - [ ] US: check the EIA region codes (TEX, CAL, ... and US48) return data.
-- [ ] WA: check `/v4/data/network/WEM` works at 5-minute detail.
+- [x] WA: `/v4/data/network/WEM` works at 5-minute detail in Perth time (fixed 13 Nov), includes rooftop solar.
+- [ ] Leave it running a few days; check `/api/status` → `device.heap_min` and `last_restart`.
+- [ ] Try an over-the-air update from the setup page (push any change, wait for the build, press Install).
+- [ ] Pull the power, plug back in: the last data should show straight away with an amber dot.
 
 ## Data notes
 
@@ -80,6 +86,20 @@ EIA (US support paused, 13 Nov 2026):
 - Live check 13 Nov 2026 (browser sim): region codes TEX and US48 work; data was 18–19 hours behind; the US48 answer took about 12 s, so the HTTPS timeout is 30 s. US48 includes newer codes (WNB wind+battery, SNB solar+battery, OES/UES storage, PS pumped storage), all mapped.
 - Open Electricity sends no CORS headers, so a web page can't call it directly (the browser sim uses a copy-paste command instead). The display isn't affected.
 - Checked every 15 minutes (newest 30 rows, sorted newest first). The key goes on the end of the URL, so the serial log cuts it off.
+
+## Updates over Wi-Fi
+
+- Every push publishes `firmware/gridmix-app.bin` and `firmware/ota.json` (version, build = GitHub run number, size, SHA-256).
+- The display checks two minutes after start-up and then daily; it only installs when you press **Install update** on the setup page.
+- The download is hashed while it's written to the spare app slot; on any mismatch or interruption the old version stays.
+- To release: push to `main`. Bump `VERSION` for a version people should notice; the build number alone is enough to trigger the update.
+
+## Unattended running
+
+- Wi-Fi: reconnect after 30 s, restart Wi-Fi after 3 min, restart the board after 20 min (only once Wi-Fi has been set up).
+- Watchdog: 60 s on the screen loop. The fetcher must check in every 3 min. Internal RAM's largest free block under 20 KB for 5 min also restarts it.
+- `/api/status` → `device`: uptime, last restart reason, heap now/minimum/largest block, PSRAM free, Wi-Fi reconnects. Worth watching during the first long run.
+- Last data is saved to flash at most every 30 min (about 50 writes a day, well within the flash's life).
 
 ## Known unknowns
 
