@@ -33,7 +33,9 @@ struct GridSnapshot {
 
   float total() const;
   float share_pct(Source s) const;   // 0..100
-  float renewable_pct() const;       // solar + wind + hydro, 0..100
+  float renewable_pct() const;       // solar + wind + hydro + biomass, 0..100
+  float low_carbon_pct() const;      // renewables + nuclear, 0..100 (imports count as neither: their source is unknown)
+  bool has_nuclear() const { return share_pct(NUCLEAR) >= 0.5f; }   // only then is low-carbon worth showing
   bool battery_is_charging() const { return battery_charging > mw[BATTERY]; }
 };
 

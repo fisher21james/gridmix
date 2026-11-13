@@ -249,6 +249,8 @@ void test_rte_now() {
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 12, s.battery_charging);
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 58689, s.total());
   TEST_ASSERT_FLOAT_WITHIN(0.1f, 21.7f, s.renewable_pct());   // wind + hydro + bioenergy; nuclear isn't renewable
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 97.4f, s.low_carbon_pct());  // ... but it is low-carbon
+  TEST_ASSERT_TRUE(s.has_nuclear());
   // Some figures arrive as strings, and importing shows up as imports
   const char *j = "{\"results\":[{\"date_heure\":\"2026-11-13T05:00:00+00:00\",\"nucleaire\":100,\"hydraulique\":\"50\",\"ech_physiques\":25}]}";
   TEST_ASSERT_TRUE(parse_rte(j, strlen(j), s));

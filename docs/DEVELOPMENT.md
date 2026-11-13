@@ -117,7 +117,10 @@ EIA (US support paused, 13 Nov 2026):
   stockage_batterie (charging), ech_physiques > 0 (Imports). A few columns come back as strings.
 - Polled every 5 minutes (288 small requests a day). Freshness dot: up to 45 min OK, 2 h amber.
 - Rates in euro cents ("27,0c"); time zone `CET-1CEST,M3.5.0,M10.5.0/3`; one region, so no start-up view choice.
-- France is ~70% nuclear, so the pill usually says "Few renewables": the display counts renewables, not low carbon.
+- France is ~70% nuclear. The big number stays renewable (the figure official sources quote), and grids with
+  nuclear also show "97% low-carbon" under it (renewables + nuclear; imports count as neither). The pill treats a
+  grid that's 70%+ low-carbon like a renewable one ("Mostly low-carbon, but your rate is high"), and the detail
+  badge is coloured by the low-carbon share. Australia has no nuclear, so nothing changes there.
 
 ## Screen language (13 Nov 2026)
 

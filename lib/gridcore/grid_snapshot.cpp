@@ -22,6 +22,12 @@ float GridSnapshot::share_pct(Source s) const {
   return (t > 0 && mw[s] > 0) ? mw[s] * 100.0f / t : 0.0f;
 }
 
+float GridSnapshot::low_carbon_pct() const {
+  const float t = total();
+  if (t <= 0) return 0;
+  return renewable_pct() + (mw[NUCLEAR] > 0 ? mw[NUCLEAR] * 100.0f / t : 0);
+}
+
 float GridSnapshot::renewable_pct() const {
   const float t = total();
   if (t <= 0) return 0;

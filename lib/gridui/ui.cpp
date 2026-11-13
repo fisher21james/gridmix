@@ -56,7 +56,7 @@ static lv_obj_t *hdr_left, *lbl_region, *lbl_clock, *clock_dot, *chev;
 static lv_point_precise_t chev_pts[3] = {{0, 0}, {4, 4}, {8, 0}};
 static lv_obj_t *rate_row, *lbl_your, *lbl_rate, *lbl_unit, *pill_period, *lbl_noplan;
 // scene
-static lv_obj_t *scene, *static_img, *lbl_pct, *lbl_pct_sub, *pill_advice;
+static lv_obj_t *scene, *static_img, *lbl_pct, *lbl_pct_sub, *lbl_lowc, *pill_advice;
 static Raster art;
 static lv_obj_t *stars[8], *sun_disc, *moon_disc, *moon_shade;
 static Spoke rays[8];
@@ -510,6 +510,9 @@ static void build_scene() {
   lv_obj_set_pos(lbl_pct, 14, -2);
   lbl_pct_sub = label_tr(scene, &gm_inter_12, 0x1E3346, "renewable right now");
   lv_obj_set_pos(lbl_pct_sub, 15, 46);
+  // Where the grid has nuclear: renewables + nuclear, so a nuclear-heavy grid gets credit for being low-carbon
+  lbl_lowc = label(scene, &gm_inter_11, 0x1E3346);
+  lv_obj_set_pos(lbl_lowc, 15, 61);
   pill_advice = pill(scene, &gm_inter_11);
   lv_obj_set_style_radius(pill_advice, 10, 0);
   lv_obj_set_style_pad_hor(pill_advice, 9, 0);
@@ -760,6 +763,11 @@ void update(const Model &m) {
   lv_label_set_text(lbl_pct, buf);
   lv_obj_set_style_text_color(lbl_pct, hex(sky.text), 0);
   lv_obj_set_style_text_color(lbl_pct_sub, hex(sky.sub), 0);
+  set_hidden(lbl_lowc, !(m.has_data && m.snap.has_nuclear()));
+  if (m.has_data && m.snap.has_nuclear()) {
+    lv_label_set_text_fmt(lbl_lowc, T("%d%% low-carbon"), (int)lroundf(m.snap.low_carbon_pct()));
+    lv_obj_set_style_text_color(lbl_lowc, hex(sky.sub), 0);
+  }
   static const uint32_t TONE_BG[3] = {0xDFF5E8, 0xEEF2F6, 0xFFE3DC}, TONE_FG[3] = {0x10502F, 0x1C2633, 0x7A1E10};
   lv_label_set_text(pill_advice, m.advice);
   lv_obj_set_style_bg_color(pill_advice, hex(TONE_BG[m.tone]), 0);

@@ -42,9 +42,13 @@ void advise(const Model &m, const RateNow *rate, const Tariff *tariff, int now_m
   // renewables because of imports or nuclear, with little gas and no coal at all.
   const float coal = m.snap.share_pct(COAL), gas = m.snap.share_pct(GAS);
   const char *fuel = T(coal >= 1 && gas >= 1 ? "coal & gas" : coal >= 1 ? "coal" : "gas");
-  enum { DIRTY, MIXED, CLEAN } g = renew >= 70 ? CLEAN : (renew < 30 || coal + gas >= 50) ? DIRTY : MIXED;
-  char grid[32];
-  if (g == CLEAN) snprintf(grid, sizeof grid, "%s", T("Mostly renewable"));
+  // Mostly nuclear and renewables (France, sometimes Britain): low-carbon, so it gets the same
+  // treatment as a renewable grid, while the words stay honest about which it is
+  const bool low_carbon = renew < 70 && m.snap.low_carbon_pct() >= 70 && coal + gas < 50;
+  enum { DIRTY, MIXED, CLEAN } g = renew >= 70 || low_carbon ? CLEAN : (renew < 30 || coal + gas >= 50) ? DIRTY : MIXED;
+  char grid[40];
+  if (low_carbon) snprintf(grid, sizeof grid, "%s", T("Mostly low-carbon"));
+  else if (g == CLEAN) snprintf(grid, sizeof grid, "%s", T("Mostly renewable"));
   else if (coal + gas >= 50) snprintf(grid, sizeof grid, T("Mostly %s"), fuel);
   else if (g == DIRTY) snprintf(grid, sizeof grid, "%s", T("Few renewables"));
   else snprintf(grid, sizeof grid, "%s", T("Part renewable"));

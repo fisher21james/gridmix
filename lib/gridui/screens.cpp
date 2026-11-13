@@ -78,7 +78,9 @@ static void build_detail(lv_obj_t *scr) {
   d_waiting = label_tr(detail, &gm_inter_12, MUTED, "Waiting for data\xE2\x80\xA6");
   lv_obj_set_pos(d_waiting, 14, 56);
   d_total = label(detail, &gm_inter_11, MUTED);
-  lv_obj_set_pos(d_total, 14, 248);
+  lv_label_set_long_mode(d_total, LV_LABEL_LONG_MODE_WRAP);
+  lv_obj_set_width(d_total, 452);
+  lv_obj_align(d_total, LV_ALIGN_BOTTOM_LEFT, 14, -8);   // grows upwards when it needs a second line
 
   const int x = 268;
   lv_obj_t *t = label_tr(detail, &gm_inter_11, MUTED, "Renewables \xC2\xB7 last 24 h");
@@ -155,9 +157,12 @@ static void update_detail(const Model &m) {
   lv_obj_set_hidden(d_status, !m.has_data);
   if (m.has_data) {
     const float r = m.snap.renewable_pct();
-    const int lvl = r >= 70 ? 0 : r >= 30 ? 1 : 2;
+    const float g = m.snap.has_nuclear() ? m.snap.low_carbon_pct() : r;   // colour: credit nuclear as low-carbon
+    const int lvl = g >= 70 ? 0 : g >= 30 ? 1 : 2;
     static const uint32_t FG[3] = {0x7EE2A8, 0xC9D0D9, 0xFF8A78}, BGC[3] = {0x16231C, 0x1B222B, 0x2A1714};
-    lv_label_set_text_fmt(d_status_lbl, T("%d%% renewable"), (int)lroundf(r));
+    if (m.snap.has_nuclear())
+      lv_label_set_text_fmt(d_status_lbl, T("%d%% renewable \xC2\xB7 %d%% low-carbon"), (int)lroundf(r), (int)lroundf(m.snap.low_carbon_pct()));
+    else lv_label_set_text_fmt(d_status_lbl, T("%d%% renewable"), (int)lroundf(r));
     lv_obj_set_style_text_color(d_status_lbl, hex(FG[lvl]), 0);
     lv_obj_set_style_bg_color(d_status_dot, hex(FG[lvl]), 0);
     lv_obj_set_style_bg_color(d_status, hex(BGC[lvl]), 0);
@@ -203,7 +208,7 @@ static void update_detail(const Model &m) {
 
   // Footer: total power (when the source gives megawatts), batteries charging, and a note when
   // biomass is part of the renewable share
-  char total[128] = "", mw[24];
+  char total[192] = "", mw[24];
   if (m.has_data) {
     int len = 0;
     if (!m.snap.percent_only) {
@@ -215,7 +220,10 @@ static void update_detail(const Model &m) {
       len += snprintf(total + len, sizeof total - len, T(" \xC2\xB7 batteries charging %s MW"), mw);
     }
     if (m.snap.share_pct(BIOMASS) >= 0.5f)
-      snprintf(total + len, sizeof total - len, T("%sRenewable %% includes biomass"), len ? " \xC2\xB7 " : "");
+      len += snprintf(total + len, sizeof total - len, T("%sRenewable %% includes biomass"), len ? "\n" : "");
+    if (m.snap.has_nuclear() && len < (int)sizeof total)
+      snprintf(total + len, sizeof total - len, T("%sLow-carbon = renewables + nuclear"),
+               !len ? "" : m.snap.share_pct(BIOMASS) >= 0.5f ? " \xC2\xB7 " : "\n");
   }
   lv_label_set_text(d_total, total);
 
