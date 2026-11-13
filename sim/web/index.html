@@ -528,7 +528,8 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     else if ($("plan").value === "none") { $("plan").value = "tou"; api.hasPlan(1); applySettings(PLANS.tou, true); }
     const when = new Date((s.data_time || Date.now() / 1000) * 1000);
     // Like the display: the clock is the real time there, and the dot shows how old the data is
-    liveClock = {tz, dataTime: s.data_time || Date.now() / 1000};
+    // The display uses the time zone set on its setup page (where you live), not the grid region's, so use this computer's
+    liveClock = {tz: Intl.DateTimeFormat().resolvedOptions().timeZone, dataTime: s.data_time || Date.now() / 1000};
     api.historyMode(1);
     tickLiveClock(true);
     const age = Math.max(0, Math.round((Date.now() / 1000 - liveClock.dataTime) / 60));
