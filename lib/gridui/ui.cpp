@@ -84,8 +84,14 @@ static float ghost(Source s) { return cur.has_data && cur.snap.mw[s] > 0 ? 1.0f 
 // Transmission line for imports (Britain only): wires come in over the left hill, across two pylons.
 // Each wire is three sagging spans (start, control, end); sparks run along the upper wire.
 struct Span { Pt a, c, b; };
-static const Span WIRE_TOP[3] = {{{-6, 95}, {22, 101}, {50, 89}}, {{66, 89}, {90, 99}, {112, 95}}, {{124, 95}, {132, 100}, {142, 103}}};
-static const Span WIRE_LOW[3] = {{{-6, 102}, {22, 108}, {52, 96}}, {{64, 96}, {90, 105}, {113, 99}}, {{123, 99}, {132, 104}, {142, 107}}};
+// Big pylon at x 36, smaller one further back at x 100; the last span sags down behind the crest.
+static const Span WIRE_TOP[3] = {{{-6, 82}, {12, 88}, {28, 76}}, {{44, 76}, {70, 90}, {95, 92}}, {{105, 92}, {124, 99}, {142, 118}}};
+static const Span WIRE_LOW[3] = {{{-6, 88}, {14, 94}, {30, 80}}, {{42, 80}, {70, 95}, {97, 95}}, {{103, 95}, {124, 103}, {142, 121}}};
+// Height of the left hill's top edge (same curve as in draw_static_art)
+static float hill_y(float x) {
+  const float t = x / 180, u = 1 - t;
+  return 118 * u * u + 200 * t * u + 116 * t * t;
+}
 static Pt span_at(const Span &s, float t) {
   const float u = 1 - t;
   return {u * u * s.a.x + 2 * u * t * s.c.x + t * t * s.b.x, u * u * s.a.y + 2 * u * t * s.c.y + t * t * s.b.y};
@@ -125,19 +131,21 @@ static void draw_static_art() {
   art.opa = 1;
   Path p;
 
-  // hills
-  p.move(0, 118).quad(90, 100, 180, 116).quad(270, 132, 360, 112).quad(450, 92, 480, 116).line(480, 160).line(0, 160);
-  art.fill(p, sky.hill);
-
-  // transmission line (imports, Britain only), behind everything on the left
+  // transmission line (imports, Britain only). Drawn before the hill, so the pylons stand behind
+  // it and the line drops away over the crest instead of just stopping.
   if (cur.show_imports) {
     art.opa = ghost(IMPORTS);
     const uint32_t steel = cur.sky == SKY_DAY ? 0x4A525C : 0x9AA3AD;
-    draw_pylon(58, 84, 124, 7, 8, steel);
-    draw_pylon(118, 92, 113, 4, 6, steel);
     draw_wire(WIRE_TOP, steel);
     draw_wire(WIRE_LOW, steel);
+    draw_pylon(36, 72, 128, 8, 8, steel);
+    draw_pylon(100, 88, 120, 4, 5, steel);
+    art.opa = 1;
   }
+
+  // hills
+  p.move(0, 118).quad(90, 100, 180, 116).quad(270, 132, 360, 112).quad(450, 92, 480, 116).line(480, 160).line(0, 160);
+  art.fill(p, sky.hill);
 
   // coal plant
   art.opa = ghost(COAL);
@@ -297,8 +305,9 @@ static void spark_exec(void *var, int32_t v) {
   const int k = t >= 3 ? 2 : (int)t;
   const Pt p = span_at(WIRE_TOP[k], t - k);
   lv_obj_set_pos(o, (int)(p.x - 2), (int)(p.y - 2));
-  const float f = t - k;   // brighter mid-span, a little flicker
-  lv_obj_set_style_opa(o, (lv_opa_t)(150 + 105 * sinf(f * 3.1416f) * (0.7f + 0.3f * sinf(v * 0.07f))), 0);
+  const float f = t - k;   // brighter mid-span, a little flicker; gone once the wire drops behind the hill
+  const bool behind = p.y > hill_y(p.x) - 1;
+  lv_obj_set_style_opa(o, behind ? 0 : (lv_opa_t)(150 + 105 * sinf(f * 3.1416f) * (0.7f + 0.3f * sinf(v * 0.07f))), 0);
 }
 
 static void glint_exec(void *var, int32_t v) {
