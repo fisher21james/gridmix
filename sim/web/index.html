@@ -218,8 +218,14 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         else if (localHeader) $("header").value = localHeader;
         api.header($("header").value);
         rebuild();
-        // The display fetches new numbers for the other view; this page can't, so set up the command for it
-        if (liveClock) {
+        // The display fetches new numbers for the other view. Here: use that view's file if one was loaded,
+        // otherwise set up the command for it.
+        const stored = loadedViews[v ? "country" : "local"];
+        if (stored) {
+          $("lvWhole").checked = !!v;
+          makeCommand();
+          applyLoaded(stored);
+        } else if (liveClock) {
           $("lvWhole").checked = !!v;
           makeCommand();
           lvMsg(`Still showing the numbers you loaded. To see ${v ? "the whole east coast" : "your region"}, copy the command again (it's updated), run it and load the file.`, false);
@@ -497,7 +503,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     makeCommand();
   }
   $("lvCountry").addEventListener("change", fillRegions);
-  $("lvRegion").addEventListener("change", makeCommand);
+  $("lvRegion").addEventListener("change", () => { if (typeof loadedViews !== "undefined") loadedViews.local = null; makeCommand(); });
   $("lvWhole").addEventListener("change", makeCommand);
   $("lvOS").addEventListener("change", makeCommand);
   $("lvKey").addEventListener("input", keyChanged);
@@ -581,13 +587,30 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       lvMsg(/auth|key|token|credential|401|403/i.test(why) ? "Open Electricity didn't accept that key: " + why : "Open Electricity said: " + why, false);
       return;
     }
-    const res = api.parse(0, JSON.stringify(power));
-    if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
+    // Which view is this file for? A region request names its region; whole-network ones don't (WA is its own network)
+    const set = (power.data || [])[0] || {};
+    const region = (((set.results || [])[0] || {}).columns || {}).region;
+    const whole = !region && set.network_code === "NEM";
+    if (region || set.network_code === "WEM") $("lvRegion").value = region || "WEM";
+    $("lvWhole").checked = whole;
+    makeCommand();
+    loadedViews[whole ? "country" : "local"] = obj;
+    applyLoaded(obj);
+    const other = loadedViews[whole ? "local" : "country"];
+    if (other) log(`Both views loaded: tap the region name on the screen to switch between ${whole ? "your region" : "the whole east coast"} and this.`);
+  }
+
+  // Keep one file per view, so the screen's picker can switch between them like the display does
+  const loadedViews = {local: null, country: null};
+  function applyLoaded(obj) {
+    const err = p => p && (p.detail || p.error || p.success === false);
+    const res = api.parse(0, JSON.stringify(obj.power));
+    if (!res.startsWith("Read OK")) { lvMsg(res, false); return false; }
     let extra = "";
     if (obj.market && !err(obj.market)) { const mres = api.parse(1, JSON.stringify(obj.market)); extra = mres.startsWith("Market") ? " Price and rooftop solar added." : " (market data couldn't be read)"; }
-    // the file can't say which region it was for, so trust the picker
     showLive(res + extra);
     if (obj.history && !err(obj.history)) { log(api.loadHistory(JSON.stringify(obj.history))); rebuild(); }
+    return true;
   }
   $("lvFile").addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ""; });
   const card = $("liveCard");
