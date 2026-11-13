@@ -55,7 +55,7 @@ jobs:
 
       - name: Check the display's root certificates still verify the data APIs
         run: |
-          for host in api.openelectricity.org.au api.eia.gov; do
+          for host in api.openelectricity.org.au api.eia.gov fisher21james.github.io; do
             echo | openssl s_client -connect $host:443 -servername $host -CAfile data/ca_roots.pem -verify_return_error 2>/dev/null | grep -q "Verify return code: 0 (ok)" \
               && echo "$host: OK" || { echo "::error::$host no longer verifies against data/ca_roots.pem"; exit 1; }
           done
@@ -81,6 +81,12 @@ jobs:
           mkdir -p site/firmware
           cp -r web/* site/
           cp gridmix-merged.bin site/firmware/
+          # Over-the-air update: the app on its own, plus what the display needs to check it
+          APP=.pio/build/jc4827w543/firmware.bin
+          cp $APP site/firmware/gridmix-app.bin
+          printf '{"version":"%s","build":%s,"url":"https://fisher21james.github.io/gridmix/firmware/gridmix-app.bin","size":%s,"sha256":"%s"}\n' \
+            "$VERSION" "$GITHUB_RUN_NUMBER" "$(stat -c %s $APP)" "$(sha256sum $APP | cut -d' ' -f1)" > site/firmware/ota.json
+          cat site/firmware/ota.json
           mkdir -p site/setup-demo
           cp device-web/setup.html site/setup-demo/index.html
           cp -r sim-web site/sim

@@ -8,6 +8,7 @@
 #include "net.h"
 #include "parsers.h"
 #include "health.h"
+#include "ota.h"
 
 using namespace gridcore;
 
@@ -40,6 +41,7 @@ static void task(void *) {
     health_fetch_alive();
     const int64_t now = time(nullptr);
     if (WiFi.status() != WL_CONNECTED || now < 1700000000) continue;   // no Wi-Fi or clock not set yet
+    if (ota_busy()) continue;                                             // leave the memory to the update
 
     Job j;
     xSemaphoreTake(lock, portMAX_DELAY);

@@ -61,6 +61,8 @@ struct Callbacks {
 
 void create(const Callbacks &cb);
 void update(const Model &m);
+// Full-screen "Updating" message over everything (percent < 0 hides it)
+void show_update(int percent, const char *message);
 
 // ---- helpers for building a Model (no LVGL needed)
 Sky sky_for_hour(int hour);

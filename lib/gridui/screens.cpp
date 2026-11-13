@@ -9,7 +9,7 @@ namespace gridui {
 static const uint32_t LINE = 0x1F242D, CARD = 0x151A21, CARD_LINE = 0x232935, FAINT = 0x8C95A1;
 static const int CHART_W = 198, CHART_H = 60;
 
-static lv_obj_t *detail, *tariff_scr;
+static lv_obj_t *detail, *tariff_scr, *upd_scr, *upd_msg, *upd_fill, *upd_pct;
 // detail
 static lv_obj_t *d_region, *d_status, *d_status_dot, *d_status_lbl, *d_rows, *d_waiting, *d_total;
 static lv_obj_t *d_chart_img, *d_chart_note, *d_window_val, *d_price_val;
@@ -380,9 +380,36 @@ static void update_tariff(const Model &m) {
 
 // ---------------------------------------------------------------- entry points
 
+void show_update(int percent, const char *message) {
+  if (percent < 0) { lv_obj_set_hidden(upd_scr, true); return; }
+  lv_obj_set_hidden(upd_scr, false);
+  lv_label_set_text(upd_msg, message);
+  lv_obj_set_width(upd_fill, 3 + percent * 317 / 100);
+  lv_label_set_text_fmt(upd_pct, "%d%%", percent);
+}
+
+static void build_update(lv_obj_t *scr) {
+  upd_scr = box(scr, 0, 0, 480, 272, BG);
+  lv_obj_set_clickable(upd_scr, true);
+  lv_obj_set_hidden(upd_scr, true);
+  lv_obj_t *t = label(upd_scr, &gm_grotesk_17, 0xFFFFFF, "Updating Grid Mix");
+  lv_obj_align(t, LV_ALIGN_CENTER, 0, -40);
+  upd_msg = label(upd_scr, &gm_inter_12, MUTED);
+  lv_obj_align(upd_msg, LV_ALIGN_CENTER, 0, -14);
+  lv_obj_t *track = box(upd_scr, 80, 150, 320, 8, 0x1B1F27);
+  lv_obj_set_style_radius(track, 4, 0);
+  upd_fill = box(track, 0, 0, 3, 8, 0x4FB3D9);
+  lv_obj_set_style_radius(upd_fill, 4, 0);
+  upd_pct = label(upd_scr, &gm_inter_12, TEXT);
+  lv_obj_align(upd_pct, LV_ALIGN_CENTER, 0, 34);
+  lv_obj_t *n = label(upd_scr, &gm_inter_11, FAINT, "Keep it plugged in. It restarts by itself when done.");
+  lv_obj_align(n, LV_ALIGN_BOTTOM_MID, 0, -20);
+}
+
 void screens_build(lv_obj_t *scr) {
   build_detail(scr);
   build_tariff(scr);
+  build_update(scr);
   lv_timer_create(idle_timer, 1000, nullptr);
 }
 

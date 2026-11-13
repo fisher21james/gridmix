@@ -8,6 +8,7 @@
 #include "net.h"
 #include "settings_store.h"
 #include "health.h"
+#include "ota.h"
 #include "generated/setup_html.h"
 
 using gridcore::Settings;
@@ -70,7 +71,9 @@ static void handle_post_settings() {
 
 static void handle_status() {
   JsonDocument doc;
-  doc["fw"] = FW_VERSION;
+  char fw[32];
+  snprintf(fw, sizeof fw, "%s (build %d)", FW_VERSION, FW_BUILD);
+  doc["fw"] = fw;
   doc["ssid"] = WiFi.SSID();
   doc["ip"] = WiFi.localIP().toString();
   doc["rssi"] = WiFi.RSSI();
@@ -132,6 +135,33 @@ static void handle_test_key() {
   }
 }
 
+static void handle_update_status() {
+  OtaStatus s;
+  ota_status(s);
+  static const char *STATES[] = {"idle", "checking", "up_to_date", "available", "downloading", "done", "failed"};
+  JsonDocument doc;
+  doc["state"] = STATES[s.state];
+  doc["current"] = FW_VERSION;
+  doc["current_build"] = FW_BUILD;
+  doc["latest"] = s.latest;
+  doc["latest_build"] = s.latest_build;
+  doc["percent"] = s.percent;
+  doc["message"] = s.message;
+  send_json(200, doc);
+}
+
+static void handle_update_check() {
+  if (!is_json_post()) return;
+  ota_request_check();
+  handle_update_status();
+}
+
+static void handle_update_install() {
+  if (!is_json_post()) return;
+  if (!ota_request_install()) { send_message(409, false, "There's no update to install. Check for updates first."); return; }
+  handle_update_status();
+}
+
 void setup_server_begin() {
   if (started) return;
   static const char *headers[] = {"Content-Type"};
@@ -141,6 +171,9 @@ void setup_server_begin() {
   server.on("/api/settings", HTTP_POST, handle_post_settings);
   server.on("/api/status", HTTP_GET, handle_status);
   server.on("/api/test-key", HTTP_POST, handle_test_key);
+  server.on("/api/update", HTTP_GET, handle_update_status);
+  server.on("/api/update/check", HTTP_POST, handle_update_check);
+  server.on("/api/update/install", HTTP_POST, handle_update_install);
   server.onNotFound([] { server.sendHeader("Location", "/"); server.send(302, "text/plain", ""); });
   server.begin();
   if (MDNS.begin("gridmix")) MDNS.addService("http", "tcp", 80);

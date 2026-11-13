@@ -151,6 +151,20 @@ input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:va
     <label class="check"><input type="checkbox" id="warn"> Warn me 15 minutes before the price goes up</label>
   </section>
 
+  <section class="card" aria-labelledby="sw-h">
+    <h2 id="sw-h">Software</h2>
+    <dl class="status">
+      <dt>This display</dt><dd id="swCur">–</dd>
+      <dt>Newest</dt><dd id="swNew">–</dd>
+    </dl>
+    <p class="hint" id="swMsg" role="status" style="margin:10px 0 12px">The display checks for updates once a day.</p>
+    <div id="swBar" class="hidden" style="height:8px;border-radius:4px;background:#1B1F27;overflow:hidden;margin-bottom:12px"><div id="swFill" style="height:8px;width:0;background:var(--accent)"></div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" class="btn small" id="swCheck">Check for updates</button>
+      <button type="button" class="btn small primary hidden" id="swInstall">Install update</button>
+    </div>
+  </section>
+
   <section class="card" aria-labelledby="disp-h">
     <h2 id="disp-h">Screen</h2>
     <div class="flabel" style="display:flex;justify-content:space-between"><label for="bright" style="display:inline;margin:0">Brightness</label><span id="brightVal" style="color:var(--white)"></span></div>
@@ -213,6 +227,11 @@ function api(method, path, body) {
         var c = JSON.parse(JSON.stringify(body));
         ["oe","eia"].forEach(function (k) { var v = c.keys[k].value; c.keys[k] = v ? {set:true, hint:v.slice(-4)} : demoState.keys[k]; });
         demoState = c; resolve({httpOk:true, ok:true, message:"Saved (demo, nothing was sent)"});
+      } else if (path.indexOf("/api/update") === 0) {
+        if (path === "/api/update/check") demoUpd = {state:"available", latest:"0.2.0 (build 61)", percent:0, message:"Update available"};
+        if (path === "/api/update/install") { demoUpd = {state:"downloading", latest:demoUpd.latest, percent:0, message:"Downloading the update"};
+          var t = setInterval(function () { demoUpd.percent += 20; if (demoUpd.percent >= 100) { clearInterval(t); demoUpd = {state:"up_to_date", latest:demoUpd.latest, percent:100, message:"Up to date"}; demoUpd.current = "0.2.0"; demoUpd.current_build = 61; } }, 700); }
+        resolve(Object.assign({current:"0.1.0", current_build:57}, demoUpd));
       } else if (path === "/api/test-key") {
         var k = body.key || "";
         if (!k && !(demoState.keys[body.provider] || {}).set) resolve({ok:false, message:"Paste a key first."});
@@ -222,6 +241,8 @@ function api(method, path, body) {
     }, 350);
   });
 }
+
+var demoUpd = {state:"up_to_date", latest:"0.1.0 (build 57)", percent:0, message:"Up to date"};
 
 // ---------------------------------------------------------------- state
 var saved = null, cur = null;
@@ -517,12 +538,51 @@ function loadStatus() {
   }).catch(function () { $("stState").textContent = "Couldn't reach the display"; });
 }
 
+// ---------------------------------------------------------------- software updates
+var updPoll = null;
+function showUpdate(u) {
+  if (!u || !u.state) return;
+  $("swCur").textContent = u.current + " (build " + u.current_build + ")";
+  $("swNew").textContent = u.latest || "–";
+  var busy = u.state === "downloading" || u.state === "done" || u.state === "checking";
+  var text = {
+    checking: "Checking…",
+    up_to_date: "This display is up to date.",
+    available: "A new version is ready. Installing takes about a minute; the display restarts by itself.",
+    downloading: "Installing… " + u.percent + "%. Keep the display plugged in.",
+    done: "Installed. The display is restarting; this page will reconnect.",
+    failed: (u.message || "The update didn't work.") + " The display is still on its old version.",
+    idle: "The display checks for updates once a day."
+  }[u.state];
+  $("swMsg").textContent = text;
+  $("swBar").classList.toggle("hidden", u.state !== "downloading" && u.state !== "done");
+  $("swFill").style.width = (u.percent || 0) + "%";
+  $("swInstall").classList.toggle("hidden", u.state !== "available" && !(u.state === "failed" && u.latest_build > u.current_build));
+  $("swCheck").disabled = busy;
+  $("swInstall").disabled = busy;
+  if (busy && !updPoll) updPoll = setInterval(pollUpdate, 1500);
+  if (!busy && updPoll) { clearInterval(updPoll); updPoll = null; }
+}
+function pollUpdate() {
+  api("GET", "/api/update").then(showUpdate).catch(function () {
+    $("swMsg").textContent = "Restarting… this page will reconnect.";   // expected while it reboots
+  });
+}
+$("swCheck").addEventListener("click", function () {
+  api("POST", "/api/update/check", {}).then(function (u) { showUpdate(u); if (!updPoll) updPoll = setInterval(pollUpdate, 1500); });
+});
+$("swInstall").addEventListener("click", function () {
+  if (!confirm("Install the new version now? The display restarts by itself when it's done.")) return;
+  api("POST", "/api/update/install", {}).then(function (u) { if (u.httpOk === false) $("swMsg").textContent = u.message; else showUpdate(u); });
+});
+
 // ---------------------------------------------------------------- start
 if (DEMO) $("demoBanner").classList.remove("hidden");
 api("GET", "/api/settings").then(function (s) { adopt(s); renderAll(); }).catch(function () {
   $("saveNote").textContent = "Couldn't load settings from the display.";
 });
 loadStatus();
+pollUpdate();
 setInterval(function () { if (!document.hidden) loadStatus(); }, 30000);
 })();
 </script>

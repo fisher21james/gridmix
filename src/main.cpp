@@ -19,6 +19,7 @@
 #include "gridui.h"
 #include "data_cache.h"
 #include "health.h"
+#include "ota.h"
 
 #if HAS_GT911_TOUCH
 #include <Wire.h>
@@ -244,6 +245,17 @@ static void screen_tick(lv_timer_t *) {
       saved_once = true;
     }
   }
+  // Update in progress: show its progress over everything
+  static int shown_pct = -2;
+  OtaStatus os;
+  ota_status(os);
+  const bool updating = os.state == OTA_DOWNLOADING || os.state == OTA_DONE;
+  const int pct = updating ? os.percent : -1;
+  if (pct != shown_pct) {
+    gridui::show_update(pct, os.state == OTA_DONE ? "Done. Restarting\xE2\x80\xA6" : "Downloading the new version\xE2\x80\xA6");
+    shown_pct = pct;
+  }
+
   if (d.version != last_version || minute != last_minute || WiFi.status() != last_wifi) dirty = true;
   if (!dirty) return;
   dirty = false;
@@ -299,6 +311,7 @@ void setup() {
   WiFi.begin();
   improv::begin("GridMix", FW_VERSION, "Grid Mix Display", "http://{IP}");
 
+  ota_begin();
   fetcher_begin();
 
   // Show the last data from before the restart (if it's for the same region and view)
