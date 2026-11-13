@@ -232,6 +232,7 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
   const Tariff plan = settings.active_tariff();
   Model m = model_build(snap, has_data, header, weekday, minute, has_plan && settings.has_tariff() ? &plan : nullptr);
   m.view_country = view_country;
+  m.show_imports = ci.imports;
   char ago[24] = "Waiting for data";
   if (has_data) format_ago((int64_t)data_age_min * 60, ago, sizeof ago);
   const Freshness fresh = (Freshness)freshness_level(src, (int64_t)data_age_min * 60);

@@ -184,6 +184,7 @@ static gridui::Model build_model() {
                                         g_settings.has_tariff() ? &tariff : nullptr);
   if (!clock_ok) m.clock[0] = 0;
   m.view_country = view_country;
+  m.show_imports = ci.imports;
 
   char local_sub[40], ago[24] = "Waiting for data";
   snprintf(local_sub, sizeof local_sub, "My region %s %s", DOT, ci.local_sub);

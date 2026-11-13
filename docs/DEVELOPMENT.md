@@ -105,7 +105,7 @@ EIA (US support paused, 13 Nov 2026):
 
 The display is about how renewable the grid is; your own tariff covers cost. The wholesale price, the
 "Grid: Normal/Busy" status and the price line on the detail screen were removed. The advice pill now
-comes from the renewable share (70%+ "Mostly renewable", under 30% "Mostly coal & gas") plus tariff tips.
+comes from the renewable share (70%+ "Mostly renewable", under 30% "Mostly coal & gas" only when coal + gas really are half the mix or more, otherwise "Not many renewables") plus tariff tips.
 
 ## Updates over Wi-Fi
 

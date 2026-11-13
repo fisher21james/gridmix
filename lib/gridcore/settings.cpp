@@ -23,9 +23,9 @@ static const RegionInfo REGIONS[] = {
 };
 
 const CountryInfo &country_info(const char *country) {
-  static const CountryInfo AU = {"Australia", "Australia (NEM)", "East coast grid (NEM)", "state grid", "Every 10 min", false};
-  static const CountryInfo US = {"United States", "United States", "Lower 48 states (EIA)", "EIA", "Hourly", false};
-  static const CountryInfo GB = {"Great Britain", "Great Britain", "England, Scotland & Wales", "local area", "Every 30 min", true};
+  static const CountryInfo AU = {"Australia", "Australia (NEM)", "East coast grid (NEM)", "state grid", "Every 10 min", false, false};
+  static const CountryInfo US = {"United States", "United States", "Lower 48 states (EIA)", "EIA", "Hourly", false, true};
+  static const CountryInfo GB = {"Great Britain", "Great Britain", "England, Scotland & Wales", "local area", "Every 30 min", true, true};
   if (country && country[0] == 'G') return GB;
   if (country && country[0] == 'U') return US;
   return AU;

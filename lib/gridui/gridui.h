@@ -48,6 +48,7 @@ struct Model {
 
   bool view_country = false;
   ViewOption local, country;
+  bool show_imports = false;   // Britain: draw the transmission line bringing power in from abroad
 
   // Detail screen: renewable %, oldest first, last point = now. NAN = no data for that half hour.
   float history[HISTORY_POINTS];

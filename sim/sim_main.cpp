@@ -171,6 +171,7 @@ int main(int argc, char **argv) {
     uk.supply_cents_per_day = 53.4f;
     uk.feed_in_cents = 15.0f;
     Model m = model_build(s, true, "London", 5, 4 * 60 + 40, &uk);
+    m.show_imports = true;
     model_views(m, "London", "My region \xC2\xB7 local area", "Great Britain", "England, Scotland & Wales", "Every 30 min",
                 "Updated 10 min ago", FRESH_OK);
     HistoryPoint pts[64];
@@ -185,6 +186,9 @@ int main(int argc, char **argv) {
     list.push_back({"19-uk-london-real", m, 0});
     list.push_back({"20-uk-london-detail", m, 3});
     list.push_back({"21-uk-london-tariff", m, 4});
+    Model calm = m;   // no power coming in: the line is ghosted and the sparks stop
+    calm.snap.mw[IMPORTS] = 0;
+    list.push_back({"22-uk-no-imports", calm, 0});
   }
   {
     Model m = list[4].model;       // data that's falling behind: amber dot next to the clock

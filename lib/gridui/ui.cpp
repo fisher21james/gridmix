@@ -81,6 +81,44 @@ static uint32_t last_tick = 0;
 
 static float ghost(Source s) { return cur.has_data && cur.snap.mw[s] > 0 ? 1.0f : 0.2f; }
 
+// Transmission line for imports (Britain only): wires come in over the left hill, across two pylons.
+// Each wire is three sagging spans (start, control, end); sparks run along the upper wire.
+struct Span { Pt a, c, b; };
+static const Span WIRE_TOP[3] = {{{-6, 95}, {22, 101}, {50, 89}}, {{66, 89}, {90, 99}, {112, 95}}, {{124, 95}, {132, 100}, {142, 103}}};
+static const Span WIRE_LOW[3] = {{{-6, 102}, {22, 108}, {52, 96}}, {{64, 96}, {90, 105}, {113, 99}}, {{123, 99}, {132, 104}, {142, 107}}};
+static Pt span_at(const Span &s, float t) {
+  const float u = 1 - t;
+  return {u * u * s.a.x + 2 * u * t * s.c.x + t * t * s.b.x, u * u * s.a.y + 2 * u * t * s.c.y + t * t * s.b.y};
+}
+static void draw_wire(const Span *w, uint32_t color) {
+  for (int k = 0; k < 3; k++) {
+    Path p;
+    p.move(w[k].a.x, w[k].a.y).quad(w[k].c.x, w[k].c.y, w[k].b.x, w[k].b.y);
+    art.stroke(p.p, p.n, false, 1, color);
+  }
+}
+static void draw_pylon(float x, float top, float base, float half_base, float arm, uint32_t steel) {
+  const Pt l[] = {{x - half_base, base}, {x - 1.5f, top}}, r[] = {{x + half_base, base}, {x + 1.5f, top}};
+  art.stroke(l, 2, false, 1.2f, steel);
+  art.stroke(r, 2, false, 1.2f, steel);
+  // lattice: zigzag braces between the legs
+  const int n = 5;
+  for (int i = 0; i < n; i++) {
+    const float y0 = base - (base - top) * i / n, y1 = base - (base - top) * (i + 1) / n;
+    const float w0 = half_base - (half_base - 1.5f) * i / n, w1 = half_base - (half_base - 1.5f) * (i + 1) / n;
+    const Pt br[] = {{x - w0, y0}, {x + w1, y1}};
+    art.stroke(br, 2, false, 0.8f, steel);
+  }
+  // two cross-arms with pink insulators at the tips
+  for (int k = 0; k < 2; k++) {
+    const float y = top + 4 + k * (arm * 0.55f), a = arm - k * 2;
+    const Pt bar[] = {{x - a, y}, {x + a, y}};
+    art.stroke(bar, 2, false, 1.2f, steel);
+    art.rect(x - a - 1, y, 2, 3, 0xE07BA0);
+    art.rect(x + a - 1, y, 2, 3, 0xE07BA0);
+  }
+}
+
 static void draw_static_art() {
   const SkyColors &sky = SKIES[cur.sky];
   art.clear();
@@ -90,6 +128,16 @@ static void draw_static_art() {
   // hills
   p.move(0, 118).quad(90, 100, 180, 116).quad(270, 132, 360, 112).quad(450, 92, 480, 116).line(480, 160).line(0, 160);
   art.fill(p, sky.hill);
+
+  // transmission line (imports, Britain only), behind everything on the left
+  if (cur.show_imports) {
+    art.opa = ghost(IMPORTS);
+    const uint32_t steel = cur.sky == SKY_DAY ? 0x4A525C : 0x9AA3AD;
+    draw_pylon(58, 84, 124, 7, 8, steel);
+    draw_pylon(118, 92, 113, 4, 6, steel);
+    draw_wire(WIRE_TOP, steel);
+    draw_wire(WIRE_LOW, steel);
+  }
 
   // coal plant
   art.opa = ghost(COAL);
@@ -239,6 +287,18 @@ static void pulse_exec(void *var, int32_t v) {   // cells and stars
   const float t = ((v + phase_of(o)) % 1000) / 1000.0f;
   const float k = 0.5f - 0.5f * cosf(t * 2 * (float)M_PI);
   lv_obj_set_style_opa(o, (lv_opa_t)(255 * (0.3f + 0.7f * k)), 0);
+}
+
+// Sparks travelling along the upper wire while power is coming in
+static lv_obj_t *sparks[3];
+static void spark_exec(void *var, int32_t v) {
+  lv_obj_t *o = (lv_obj_t *)var;
+  const float t = ((v + phase_of(o)) % 1000) / 1000.0f * 3;   // 0..3 across the three spans
+  const int k = t >= 3 ? 2 : (int)t;
+  const Pt p = span_at(WIRE_TOP[k], t - k);
+  lv_obj_set_pos(o, (int)(p.x - 2), (int)(p.y - 2));
+  const float f = t - k;   // brighter mid-span, a little flicker
+  lv_obj_set_style_opa(o, (lv_opa_t)(150 + 105 * sinf(f * 3.1416f) * (0.7f + 0.3f * sinf(v * 0.07f))), 0);
 }
 
 static void glint_exec(void *var, int32_t v) {
@@ -404,7 +464,7 @@ static void build_scene() {
   // solar glints
   for (int i = 0; i < 4; i++) {
     const float x = 23 + i * 22;
-    glints[i] = lv_line_create(scene);
+    glints[i] = lv_line_create(scene);   // (sparks for the transmission line are made after this loop)
     glint_pts[i][0] = {0, 7};
     glint_pts[i][1] = {8, 0};
     lv_line_set_points(glints[i], glint_pts[i], 2);
@@ -414,7 +474,15 @@ static void build_scene() {
     lv_obj_set_style_line_rounded(glints[i], true, 0);
     lv_obj_set_user_data(glints[i], (void *)(intptr_t)(i * 250));
     anim(glints[i], glint_exec, 4000);
+  }  for (int i = 0; i < 3; i++) {
+    sparks[i] = circle(scene, 0, 0, 2, 0xFFE3EE);
+    lv_obj_set_style_shadow_width(sparks[i], 6, 0);
+    lv_obj_set_style_shadow_color(sparks[i], hex(0xE07BA0), 0);
+    lv_obj_set_style_shadow_opa(sparks[i], LV_OPA_80, 0);
+    lv_obj_set_user_data(sparks[i], (void *)(intptr_t)(i * 333));
+    anim(sparks[i], spark_exec, 2400);
   }
+
 
   // wind turbine blades and hubs
   static const float hx[3] = {156, 184, 210}, hy[3] = {72, 56, 80}, bl[3] = {20, 24, 16}, bw[3] = {2.6f, 2.8f, 2.4f};
@@ -628,7 +696,7 @@ void update(const Model &m) {
 
   // The artwork only changes with the sky and which sources are running, so skip the redraw otherwise
   static int art_key = -1;
-  int key = m.sky;
+  int key = m.sky * 2 + m.show_imports;
   for (int i = 0; i < SOURCE_COUNT; i++) key = key * 2 + (m.has_data && m.snap.mw[i] > 0);
   if (key != art_key) { art_key = key; draw_static_art(); }
 
@@ -653,6 +721,7 @@ void update(const Model &m) {
     else if (!lv_anim_get(cells[i], pulse_exec)) anim(cells[i], pulse_exec, 1600);
   }
   for (auto *gl : glints) set_hidden(gl, !(m.has_data && m.snap.mw[SOLAR] > 0 && m.sky != SKY_NIGHT));
+  for (auto *sp : sparks) set_hidden(sp, !(m.show_imports && m.has_data && m.snap.mw[IMPORTS] > 0));
   rotors_on = wind > 0;
   const float base = wind > 0 ? fmaxf(0.9f, 5 - wind * 0.06f) : 4;
   rotor_period[0] = base; rotor_period[1] = base * 1.15f; rotor_period[2] = base * 0.9f;

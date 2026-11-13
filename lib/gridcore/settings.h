@@ -42,6 +42,7 @@ struct CountryInfo {
   const char *local_sub;       // picker: "state grid"
   const char *freq;            // picker: "Every 10 min"
   bool pence;                  // rates in p/£ instead of ¢/$
+  bool imports;                // grid buys power from abroad (draw the transmission line); never in Australia
 };
 const CountryInfo &country_info(const char *country);
 
