@@ -12,7 +12,7 @@ static const int CHART_W = 198, CHART_H = 60;
 static lv_obj_t *detail, *tariff_scr, *upd_scr, *upd_msg, *upd_fill, *upd_pct;
 // detail
 static lv_obj_t *d_region, *d_status, *d_status_dot, *d_status_lbl, *d_rows, *d_waiting, *d_total;
-static lv_obj_t *d_chart_img, *d_chart_note, *d_window_val, *d_price_val;
+static lv_obj_t *d_chart_img, *d_chart_note, *d_window_val;
 static Raster chart;
 // tariff
 static lv_obj_t *t_kind, *t_body, *t_empty, *t_now, *t_bar, *t_marker, *t_change, *t_change_lbl, *t_cards, *t_footer;
@@ -102,10 +102,6 @@ static void build_detail(lv_obj_t *scr) {
   d_window_val = label(card, &gm_grotesk_15, 0xE9FFF3);
   lv_obj_set_pos(d_window_val, 10, 22);
 
-  lv_obj_t *pl = label(detail, &gm_inter_11, MUTED, "Wholesale price");
-  lv_obj_set_pos(pl, x, 206);
-  d_price_val = label(detail, &gm_grotesk_13, 0xFFFFFF);
-  lv_obj_align(d_price_val, LV_ALIGN_TOP_RIGHT, -14, 204);
 }
 
 static void chart_point(int i, float v, float &px, float &py) {
@@ -155,14 +151,16 @@ static void draw_chart(const Model &m) {
 static void update_detail(const Model &m) {
   lv_label_set_text(d_region, m.region);
 
-  const GridStatus g = m.has_data ? grid_status(m.snap) : GRID_UNKNOWN;
-  lv_obj_set_hidden(d_status, g == GRID_UNKNOWN);
-  if (g != GRID_UNKNOWN) {
-    static const uint32_t FG[5] = {0, 0x7EE2A8, 0xC9D0D9, 0xF2B35A, 0xFF8A78}, BGC[5] = {0, 0x16231C, 0x1B222B, 0x2A2114, 0x2A1714};
-    lv_label_set_text_fmt(d_status_lbl, "Grid: %s", grid_status_label(g));
-    lv_obj_set_style_text_color(d_status_lbl, hex(FG[g]), 0);
-    lv_obj_set_style_bg_color(d_status_dot, hex(FG[g]), 0);
-    lv_obj_set_style_bg_color(d_status, hex(BGC[g]), 0);
+  // Badge: how renewable the grid is right now
+  lv_obj_set_hidden(d_status, !m.has_data);
+  if (m.has_data) {
+    const float r = m.snap.renewable_pct();
+    const int lvl = r >= 70 ? 0 : r >= 30 ? 1 : 2;
+    static const uint32_t FG[3] = {0x7EE2A8, 0xC9D0D9, 0xFF8A78}, BGC[3] = {0x16231C, 0x1B222B, 0x2A1714};
+    lv_label_set_text_fmt(d_status_lbl, "%d%% renewable", (int)lroundf(r));
+    lv_obj_set_style_text_color(d_status_lbl, hex(FG[lvl]), 0);
+    lv_obj_set_style_bg_color(d_status_dot, hex(FG[lvl]), 0);
+    lv_obj_set_style_bg_color(d_status, hex(BGC[lvl]), 0);
   }
 
   // one row per source, biggest first
@@ -226,19 +224,7 @@ static void update_detail(const Model &m) {
     else lv_label_set_text(d_window_val, "Any time (flat rate)");
   }
 
-  if (m.has_data && m.snap.has_price) {
-    const float c = m.snap.price / 10.0f;   // $/MWh -> c/kWh
-    char buf[24];
-    snprintf(buf, sizeof buf, "%s%.1f\xC2\xA2/kWh", c < 0 ? "\xE2\x88\x92" : "", fabsf(c));
-    lv_label_set_text(d_price_val, buf);
-    static const uint32_t FG[5] = {0xFFFFFF, 0x7EE2A8, 0xFFFFFF, 0xF2B35A, 0xFF8A78};
-    lv_obj_set_style_text_color(d_price_val, hex(FG[g]), 0);
-    lv_obj_set_style_text_font(d_price_val, &gm_grotesk_13, 0);
-  } else {
-    lv_label_set_text(d_price_val, "Not available here");
-    lv_obj_set_style_text_color(d_price_val, hex(FAINT), 0);
-    lv_obj_set_style_text_font(d_price_val, &gm_inter_11, 0);
-  }
+
 }
 
 // ---------------------------------------------------------------- tariff

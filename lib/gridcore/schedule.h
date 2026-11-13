@@ -2,8 +2,8 @@
 // Kept free of Arduino code so it can be tested on a PC.
 //
 // Open Electricity (Community plan): about 500 requests a day and 10,000 a month, reset at
-// midnight UTC (10:30 am in Adelaide). One refresh of the mix every 10 minutes plus the price and
-// rooftop-solar forecast every 30 minutes is 144 + 48 = 192 a day, about 5,900 a month.
+// midnight UTC (10:30 am in Adelaide). One refresh of the mix every 10 minutes plus AEMO's rooftop
+// solar estimate every 30 minutes is 144 + 48 = 192 a day, about 5,900 a month.
 // EIA has no practical daily limit, but its data is hourly, so it is checked every 15 minutes.
 #pragma once
 #include <stddef.h>
@@ -18,7 +18,7 @@ struct Feed {
   DataSource source = SRC_OPEN_ELECTRICITY;
   char network[4] = "NEM";   // Open Electricity network: NEM or WEM
   char region[6] = "SA1";    // Open Electricity network_region ("" = whole network) or EIA respondent
-  bool has_market = true;    // Open Electricity price + rooftop forecast (NEM only)
+  bool has_market = true;    // AEMO rooftop solar forecast (NEM only)
 };
 
 // Which feed to use for a country/region and view. country view = whole NEM / lower 48 states.

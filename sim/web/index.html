@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Grid Mix Simulator</title>
-<meta name="description" content="The Grid Mix Display's real screen code running in your browser. Change the mix, time, price and power plan, or paste a real API answer.">
+<meta name="description" content="The Grid Mix Display's real screen code running in your browser. Change the mix, time and power plan, or paste a real API answer.">
 <style>
 :root {
   --bg: #0e1116; --panel: #151a21; --panel2: #1b222b; --line: #262d37;
@@ -137,12 +137,6 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     </section>
 
     <section class="card">
-      <h2>Wholesale price</h2>
-      <div class="row"><label><span class="check"><input type="checkbox" id="hasPrice"> Price</span></label><input type="range" id="price" min="-200" max="1000" step="1"><input type="number" id="priceN" step="1"></div>
-      <p class="note">$/MWh. Below 0 = Clean &amp; cheap, under 150 = Normal, 150–300 = Busy, 300+ = Under strain. The US has no price.</p>
-    </section>
-
-    <section class="card">
       <h2>Power plan and region</h2>
       <div class="row"><label for="plan">Plan</label>
         <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
@@ -246,7 +240,6 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     pointer: M.cwrap("gm_pointer", null, ["number", "number", "number"]),
     mw: M.cwrap("gm_set_mw", null, ["number", "number"]),
     charging: M.cwrap("gm_set_charging", null, ["number"]),
-    price: M.cwrap("gm_set_price", null, ["number", "number"]),
     time: M.cwrap("gm_set_time", null, ["number", "number"]),
     hasData: M.cwrap("gm_set_has_data", null, ["number"]),
     header: M.cwrap("gm_set_header", null, ["string"]),
@@ -322,9 +315,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   }
   SOURCES.forEach((_, i) => pair(`mw${i}`, `mw${i}N`, v => api.mw(i, v)));
   pair("chg", "chgN", v => api.charging(v));
-  pair("price", "priceN", v => api.price($("hasPrice").checked ? 1 : 0, v));
   pair("age", "ageN", v => api.age(v));
-  $("hasPrice").addEventListener("change", () => { api.price($("hasPrice").checked ? 1 : 0, +$("price").value); rebuild(); });
   $("hasData").addEventListener("change", () => { api.hasData($("hasData").checked ? 1 : 0); rebuild(); });
   $("problem").addEventListener("change", () => { api.problem($("problem").value); rebuild(); });
   $("header").addEventListener("input", () => { api.header($("header").value); rebuild(); });
@@ -420,14 +411,12 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     const s = JSON.parse(api.state());
     s.mw.forEach((v, i) => { $(`mw${i}`).value = Math.min(3000, v); $(`mw${i}N`).value = Math.round(v); });
     $("chg").value = s.charging; $("chgN").value = Math.round(s.charging);
-    $("hasPrice").checked = s.has_price; $("price").value = s.price; $("priceN").value = Math.round(s.price);
     $("hasData").checked = s.has_data;
     $("day").value = s.weekday; $("time").value = s.minute; $("timeLabel").textContent = fmtTime(s.minute);
     $("header").value = s.header;
   }
 
   // ---------------------------------------------------------------- readout
-  const STATUS_COLOR = {"Clean & cheap": "var(--good)", "Normal": "var(--text)", "Busy": "var(--warn)", "Under strain": "var(--bad)"};
   const BANDS = ["Cheapest", "Middle", "Dearest"];
   let pending = false;
   function rebuild() {
@@ -440,7 +429,6 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       const cells = [
         ["Renewable", r.total ? `${r.renewable.toFixed(1)}%${r.estimated ? " (part est.)" : ""}` : "–"],
         ["Total", `${Math.round(r.total).toLocaleString()} MW`],
-        ["Grid status", r.status ? `<b style="color:${STATUS_COLOR[r.status] || "inherit"}">${r.status}</b>` : "No price"],
         ["Your rate", r.has_rate ? `${r.rate} · ${r.period} (${BANDS[r.band]})` : "No plan"],
         ["Advice", r.advice],
       ];
@@ -607,7 +595,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     const res = api.parse(0, JSON.stringify(obj.power));
     if (!res.startsWith("Read OK")) { lvMsg(res, false); return false; }
     let extra = "";
-    if (obj.market && !err(obj.market)) { const mres = api.parse(1, JSON.stringify(obj.market)); extra = mres.startsWith("Market") ? " Price and rooftop solar added." : " (market data couldn't be read)"; }
+    if (obj.market && !err(obj.market)) { const mres = api.parse(1, JSON.stringify(obj.market)); extra = mres.startsWith("Rooftop solar estimate added") ? " Rooftop solar estimate added." : ""; }
     showLive(res + extra);
     if (obj.history && !err(obj.history)) { log(api.loadHistory(JSON.stringify(obj.history))); rebuild(); }
     return true;

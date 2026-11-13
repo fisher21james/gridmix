@@ -62,7 +62,6 @@ GridSnapshot demo_snapshot(const DemoScene &d) {
   GridSnapshot s;
   for (int i = 0; i < SOURCE_COUNT; i++) s.mw[i] = d.mw[i];
   s.battery_charging = d.charging;
-  if (!isnan(d.price)) { s.has_price = true; s.price = d.price; }
   s.valid = true;
   return s;
 }
@@ -87,12 +86,12 @@ void demo_history(Model &m) {
 int demo_count() { return 4; }
 
 DemoScene demo_scene(int i) {
-  //                                 solar wind hydro batt nuc gas coal other   $/MWh charging day minute
+  //                                 solar wind hydro batt nuc gas coal other   charging day minute
   static const DemoScene SCENES[4] = {
-    {"SA \xC2\xB7 Adelaide", "South Australia", {58, 31, 0, 4, 0, 7, 0, 0}, -12, 9, 4, 13 * 60 + 20, false},
-    {"SA \xC2\xB7 Adelaide", "South Australia", {0, 64, 0, 14, 0, 22, 0, 0}, 88, 0, 4, 21 * 60 + 40, false},
-    {"NSW \xC2\xB7 Sydney", "New South Wales", {4, 6, 8, 5, 0, 9, 68, 0}, 312, 0, 4, 18 * 60 + 15, false},
-    {"VIC \xC2\xB7 Melbourne", "Victoria", {18, 30, 6, 2, 0, 4, 40, 0}, 142, 0, 4, 8 * 60 + 30, false},
+    {"SA \xC2\xB7 Adelaide", "South Australia", {58, 31, 0, 4, 0, 7, 0, 0}, 9, 4, 13 * 60 + 20, false},
+    {"SA \xC2\xB7 Adelaide", "South Australia", {0, 64, 0, 14, 0, 22, 0, 0}, 0, 4, 21 * 60 + 40, false},
+    {"NSW \xC2\xB7 Sydney", "New South Wales", {4, 6, 8, 5, 0, 9, 68, 0}, 0, 4, 18 * 60 + 15, false},
+    {"VIC \xC2\xB7 Melbourne", "Victoria", {18, 30, 6, 2, 0, 4, 40, 0}, 0, 4, 8 * 60 + 30, false},
   };
   return SCENES[((i % 4) + 4) % 4];
 }

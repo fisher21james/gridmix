@@ -16,7 +16,7 @@ Notes for working on the firmware. For what the project is, see the main [README
 | `src/ota.*` | Over-the-air updates from `firmware/ota.json` on the Pages site (SHA-256 checked) |
 | `src/setup_server.*`, `src/settings_store.*` | The phone setup page at `gridmix.local`, and saving settings to flash |
 | `src/improv_serial.*` | Receives Wi-Fi details from the browser installer (Improv protocol) |
-| `lib/gridcore/` | Data translators (Open Electricity, EIA → `GridSnapshot`), grid status, tariff engine, settings, refresh timing. No Arduino code, so it's tested on a PC. |
+| `lib/gridcore/` | Data translators (Open Electricity, EIA → `GridSnapshot`), tariff engine, settings, refresh timing. No Arduino code, so it's tested on a PC. |
 | `lib/gridui/` | The screens (LVGL). Shared by the firmware and the simulator. Artwork is drawn at start-up by a small anti-aliased rasteriser (`raster.*`), not stored as images. |
 | `lib/gridui/fonts/` | Inter and Space Grotesk, converted by `scripts/make_fonts.py` (OFL licences included) |
 | `sim/` | Desktop simulator: runs `lib/gridui` in memory and saves screenshots |
@@ -68,14 +68,14 @@ Uses the community `pioarduino` platform (Arduino core 3.x), which the display l
 Open Electricity, two requests per refresh (each costs 1 credit, including `/v4/me`):
 
 1. Generation: `/v4/data/network/NEM?metrics=power&interval=5m&network_region=SA1&secondary_grouping=fueltech&date_start=…`
-2. Market: `/v4/market/network/NEM?metrics=price&metrics=solar_rooftop_forecast&interval=5m&network_region=SA1&date_start=…&date_end=…`
+2. Rooftop solar estimate: `/v4/market/network/NEM?metrics=solar_rooftop_forecast&interval=5m&network_region=SA1&date_start=…&date_end=…`
 
 - **Always send `date_start`.** Without it the API returns half the maximum range (4 days of 5-minute data, about 300 KB).
 - **Dates are NEM time without a timezone:** always UTC+10, no daylight saving, regardless of where the display is. Convert from UTC on the board; don't use local time.
 - **Rooftop solar:** 5-minute generation data has no rooftop series at all, so rooftop comes from AEMO's `solar_rooftop_forecast` (30-minute values) for the same interval, and the snapshot is marked estimated. In SA on 12 Nov this moved renewables from 56% to 78%.
 - **Credits:** Community plan, 500 a day (and about 10,000 a month), reset at midnight UTC (10:30 am Adelaide), confirmed 13 Nov 2026 (494 left the day before, 499 just after the reset). 1 credit per request, including `/v4/me`.
-- **Refresh timing** (`lib/gridcore/schedule.*`, tested): mix 90 s after every 10 minutes, price and rooftop forecast every 30 minutes, about 192 requests a day. Under 40 credits left it slows to 30/60 minutes. Failures back off 1, 2, 5, 10, 20 minutes. A rejected key waits 6 hours (or until settings are saved); running out waits for the midnight-UTC reset.
-- **Whole-country view** for Australia is the NEM (every state but WA and the NT); WA is a separate network (`WEM`) with no price or rooftop forecast.
+- **Refresh timing** (`lib/gridcore/schedule.*`, tested): mix 90 s after every 10 minutes, rooftop solar estimate every 30 minutes, about 192 requests a day. Under 40 credits left it slows to 30/60 minutes. Failures back off 1, 2, 5, 10, 20 minutes. A rejected key waits 6 hours (or until settings are saved); running out waits for the midnight-UTC reset.
+- **Whole-country view** for Australia is the NEM (every state but WA and the NT); WA is a separate network (`WEM`); its 5-minute data already includes rooftop solar.
 - Licence: Community data is non-commercial only.
 
 EIA (US support paused, 13 Nov 2026):
@@ -86,6 +86,12 @@ EIA (US support paused, 13 Nov 2026):
 - Live check 13 Nov 2026 (browser sim): region codes TEX and US48 work; data was 18–19 hours behind; the US48 answer took about 12 s, so the HTTPS timeout is 30 s. US48 includes newer codes (WNB wind+battery, SNB solar+battery, OES/UES storage, PS pumped storage), all mapped.
 - Open Electricity sends no CORS headers, so a web page can't call it directly (the browser sim uses a copy-paste command instead). The display isn't affected.
 - Checked every 15 minutes (newest 30 rows, sorted newest first). The key goes on the end of the URL, so the serial log cuts it off.
+
+## No wholesale price (13 Nov 2026)
+
+The display is about how renewable the grid is; your own tariff covers cost. The wholesale price, the
+"Grid: Normal/Busy" status and the price line on the detail screen were removed. The advice pill now
+comes from the renewable share (70%+ "Mostly renewable", under 30% "Mostly coal & gas") plus tariff tips.
 
 ## Updates over Wi-Fi
 

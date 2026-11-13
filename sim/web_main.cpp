@@ -1,5 +1,5 @@
 // Browser simulator: the real screen code (lib/gridui) compiled to WebAssembly with Emscripten.
-// sim/web/index.html drives it: it sets the mix, price, time and plan, and draws the framebuffer on a canvas.
+// sim/web/index.html drives it: it sets the mix, time and plan, and draws the framebuffer on a canvas.
 // Built by sim/build_web.sh (and on GitHub by the workflow).
 #include <emscripten.h>
 #include <math.h>
@@ -116,7 +116,6 @@ EMSCRIPTEN_KEEPALIVE void gm_pointer(int x, int y, int down) {
 // ---- inputs
 EMSCRIPTEN_KEEPALIVE void gm_set_mw(int src, float mw) { if (src >= 0 && src < SOURCE_COUNT) snap.mw[src] = mw < 0 ? 0 : mw; snap.valid = true; }
 EMSCRIPTEN_KEEPALIVE void gm_set_charging(float mw) { snap.battery_charging = mw < 0 ? 0 : mw; }
-EMSCRIPTEN_KEEPALIVE void gm_set_price(int has, float price) { snap.has_price = has; snap.price = price; }
 EMSCRIPTEN_KEEPALIVE void gm_set_time(int wd, int min) { weekday = wd; minute = min; }
 EMSCRIPTEN_KEEPALIVE void gm_set_has_data(int b) { has_data = b; }
 EMSCRIPTEN_KEEPALIVE void gm_set_header(const char *s) { snprintf(header, sizeof header, "%s", s); }
@@ -150,7 +149,7 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
     MarketInfo mk;
     if (!parse_openelectricity_market(json, len, snap.data_time, mk)) { snprintf(out, sizeof out, "Couldn't read that as Open Electricity market data."); return out; }
     merge_market(snap, mk);
-    snprintf(out, sizeof out, "Market data added: price %s, rooftop forecast %s.", mk.has_price ? "yes" : "no", mk.has_rooftop_forecast ? "yes" : "no");
+    snprintf(out, sizeof out, "Rooftop solar estimate %s.", mk.has_rooftop_forecast ? "added" : "not in this answer");
     return out;
   }
   GridSnapshot s;
@@ -245,11 +244,10 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
   char adv[160], per[40];
   js_escape(m.advice, adv, sizeof adv);
   js_escape(m.period, per, sizeof per);
-  const GridStatus g = has_data ? grid_status(snap) : GRID_UNKNOWN;
   int n = snprintf(out, sizeof out,
-                   "{\"renewable\":%.1f,\"total\":%.0f,\"status\":\"%s\",\"has_rate\":%s,\"rate\":\"%s\",\"period\":\"%s\","
+                   "{\"renewable\":%.1f,\"total\":%.0f,\"has_rate\":%s,\"rate\":\"%s\",\"period\":\"%s\","
                    "\"band\":%d,\"advice\":\"%s\",\"tone\":%d,\"sky\":%d,\"clock\":\"%s\",\"estimated\":%s,\"shares\":[",
-                   has_data ? snap.renewable_pct() : 0.0f, snap.total(), g == GRID_UNKNOWN ? "" : grid_status_label(g),
+                   has_data ? snap.renewable_pct() : 0.0f, snap.total(),
                    m.has_rate ? "true" : "false", m.rate, per, (int)m.band, adv, (int)m.tone, (int)m.sky, m.clock,
                    snap.estimated ? "true" : "false");
   for (int i = 0; i < SOURCE_COUNT && n < (int)sizeof out - 16; i++)
@@ -262,8 +260,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
 EMSCRIPTEN_KEEPALIVE const char *gm_state() {
   char h[64];
   js_escape(header, h, sizeof h);
-  int n = snprintf(out, sizeof out, "{\"data_time\":%lld,\"estimated\":%s,\"weekday\":%d,\"minute\":%d,\"has_data\":%s,\"has_price\":%s,\"price\":%.1f,\"charging\":%.1f,\"header\":\"%s\",\"mw\":[",
-                   (long long)snap.data_time, snap.estimated ? "true" : "false", weekday, minute, has_data ? "true" : "false", snap.has_price ? "true" : "false", snap.price, snap.battery_charging, h);
+  int n = snprintf(out, sizeof out, "{\"data_time\":%lld,\"estimated\":%s,\"weekday\":%d,\"minute\":%d,\"has_data\":%s,\"charging\":%.1f,\"header\":\"%s\",\"mw\":[",
+                   (long long)snap.data_time, snap.estimated ? "true" : "false", weekday, minute, has_data ? "true" : "false", snap.battery_charging, h);
   for (int i = 0; i < SOURCE_COUNT; i++) n += snprintf(out + n, sizeof out - n, "%s%.1f", i ? "," : "", snap.mw[i]);
   snprintf(out + n, sizeof out - n, "]}");
   return out;

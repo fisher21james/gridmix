@@ -49,7 +49,7 @@ void test_urls() {
       "https://api.openelectricity.org.au/v4/data/network/NEM?metrics=power&interval=5m&network_region=SA1"
       "&secondary_grouping=fueltech&date_start=2026-11-12T14:55:00", u);
   TEST_ASSERT_TRUE(oe_market_url(f, T0(), u, sizeof u) > 0);
-  TEST_ASSERT_NOT_NULL(strstr(u, "/market/network/NEM?metrics=price&metrics=solar_rooftop_forecast"));
+  TEST_ASSERT_NOT_NULL(strstr(u, "/market/network/NEM?metrics=solar_rooftop_forecast&interval=5m"));
   TEST_ASSERT_NOT_NULL(strstr(u, "date_start=2026-11-12T14:55:00&date_end=2026-11-12T16:15:00"));
 
   // WA runs on its own network in Perth time (UTC+8): 05:35 UTC is 13:35 there; 2 h back

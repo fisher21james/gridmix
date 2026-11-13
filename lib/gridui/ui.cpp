@@ -54,7 +54,7 @@ static lv_obj_t *scr;
 // header
 static lv_obj_t *hdr_left, *lbl_region, *lbl_clock, *clock_dot, *chev;
 static lv_point_precise_t chev_pts[3] = {{0, 0}, {4, 4}, {8, 0}};
-static lv_obj_t *rate_row, *lbl_your, *lbl_rate, *lbl_unit, *pill_period, *grid_row, *grid_dot, *lbl_grid, *lbl_noplan;
+static lv_obj_t *rate_row, *lbl_your, *lbl_rate, *lbl_unit, *pill_period, *lbl_noplan;
 // scene
 static lv_obj_t *scene, *static_img, *lbl_pct, *lbl_pct_sub, *pill_advice;
 static Raster art;
@@ -321,10 +321,6 @@ static void build_header() {
   pill_period = pill(rate_row, &gm_inter_11);
   lbl_noplan = label(right, &gm_inter_11, MUTED, "Add your power plan at gridmix.local");
 
-  grid_row = row(right, 4);
-  grid_dot = box(grid_row, 0, 0, 6, 6, 0xC9D0D9);
-  lv_obj_set_style_radius(grid_dot, 3, 0);
-  lbl_grid = label(grid_row, &gm_inter_11, 0xC9D0D9);
 }
 
 static void build_scene() {
@@ -617,16 +613,6 @@ void update(const Model &m) {
     band_colors(m.band, m.flat_rate, bg, fg);
     lv_obj_set_style_bg_color(pill_period, hex(bg), 0);
     lv_obj_set_style_text_color(pill_period, hex(fg), 0);
-  }
-  const GridStatus g = m.has_data ? grid_status(m.snap) : GRID_UNKNOWN;
-  set_hidden(grid_row, g == GRID_UNKNOWN);
-  if (g != GRID_UNKNOWN) {
-    static const uint32_t GC[5] = {0, 0x7EE2A8, 0xC9D0D9, 0xF2B35A, 0xFF8A78};
-    char buf[32];
-    snprintf(buf, sizeof buf, "Grid: %s", grid_status_label(g));
-    lv_label_set_text(lbl_grid, buf);
-    lv_obj_set_style_text_color(lbl_grid, hex(GC[g]), 0);
-    lv_obj_set_style_bg_color(grid_dot, hex(GC[g]), 0);
   }
 
   // sky and celestial bits

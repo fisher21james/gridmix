@@ -28,11 +28,9 @@ static void clock_text(int minute_of_day, char *out, size_t cap) {
 void advise(const Model &m, const RateNow *rate, const Tariff *tariff, int now_min, char *out, size_t cap, Tone &tone) {
   static const char *DOT = " \xC2\xB7 ";   // " · "
   if (!m.has_data) { snprintf(out, cap, "Waiting for data\xE2\x80\xA6"); tone = TONE_OK; return; }
-  const GridStatus g = grid_status(m.snap);
+  // How green the grid is right now drives everything; your own tariff adds timing tips
   const float renew = m.snap.renewable_pct();
-
-  if (g == GRID_STRAIN) { snprintf(out, cap, "Grid under strain%shold off on big loads", DOT); tone = TONE_BAD; return; }
-  if (g == GRID_CLEAN_CHEAP) { snprintf(out, cap, "Clean & cheap%srun the dishwasher", DOT); tone = TONE_GOOD; return; }
+  const bool clean = renew >= 70, fossil = renew < 30;
 
   if (rate && tariff && rate->index >= 0) {
     if (rate->minutes_to_change > 0 && rate->minutes_to_change <= 30 && rate->next_index >= 0 &&
@@ -43,17 +41,22 @@ void advise(const Model &m, const RateNow *rate, const Tariff *tariff, int now_m
       tone = TONE_GOOD;
       return;
     }
-    if (rate->band == BAND_HIGH) { snprintf(out, cap, "Peak rate%swait for cheaper times if you can", DOT); tone = TONE_BAD; return; }
+    if (rate->band == BAND_HIGH) {
+      if (fossil) snprintf(out, cap, "Peak rate & mostly coal/gas%shold off if you can", DOT);
+      else snprintf(out, cap, "Peak rate%swait for cheaper times if you can", DOT);
+      tone = TONE_BAD;
+      return;
+    }
     if (rate->band == BAND_LOW) {
-      if (renew >= 50) snprintf(out, cap, "Cheapest rate & clean power%srun big loads", DOT);
+      if (clean) snprintf(out, cap, "Cheapest rate & clean power%srun big loads", DOT);
       else snprintf(out, cap, "Cheapest rate%sgood time for big loads", DOT);
       tone = TONE_GOOD;
       return;
     }
   }
-  if (renew >= 70) { snprintf(out, cap, "Mostly renewable right now"); tone = TONE_GOOD; return; }
-  if (g == GRID_BUSY) { snprintf(out, cap, "Grid is busy right now"); tone = TONE_OK; return; }
-  snprintf(out, cap, "Normal grid");
+  if (clean) { snprintf(out, cap, "Mostly renewable right now"); tone = TONE_GOOD; return; }
+  if (fossil) { snprintf(out, cap, "Mostly coal & gas right now"); tone = TONE_BAD; return; }
+  snprintf(out, cap, "Mix of renewables & fossil fuels");
   tone = TONE_OK;
 }
 

@@ -24,7 +24,7 @@ Feed feed_for(const char *country, const char *region, bool country_view) {
   } else if (wa) {
     snprintf(f.network, sizeof f.network, "WEM");
     f.region[0] = 0;
-    f.has_market = false;      // no AEMO rooftop forecast or NEM price for WA
+    f.has_market = false;      // WA reports rooftop solar directly; no AEMO forecast needed
   } else {
     snprintf(f.network, sizeof f.network, "NEM");
     snprintf(f.region, sizeof f.region, "%s", region && *region ? region : "SA1");
@@ -72,7 +72,7 @@ size_t oe_market_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
   char region[32] = "";
   if (f.region[0]) snprintf(region, sizeof region, "&network_region=%s", f.region);
   return finish(snprintf(out, cap,
-                         "%s/market/network/%s?metrics=price&metrics=solar_rooftop_forecast&interval=5m%s&date_start=%s&date_end=%s",
+                         "%s/market/network/%s?metrics=solar_rooftop_forecast&interval=5m%s&date_start=%s&date_end=%s",
                          OE_BASE, f.network, region, start, end), cap);
 }
 

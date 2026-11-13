@@ -2,7 +2,7 @@
 
 > **Beta: not ready for use yet.** The firmware is currently a hardware test, not the finished display.
 
-An animated 4.3" desk display that shows what's powering your electricity grid right now. Turbines spin with the wind, the coal plant smokes when coal is burning, and the header shows your own power price alongside the wholesale price.
+An animated 4.3" desk display that shows what's powering your electricity grid right now. Turbines spin with the wind, the coal plant smokes when coal is burning, and a big number shows how much of your power is renewable right now. Add your own tariff and it shows your rate too.
 
 **[See the live preview and installer →](https://fisher21james.github.io/gridmix/)**
 

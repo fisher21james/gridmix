@@ -83,7 +83,6 @@ void demo_history(Model &m);
 struct DemoScene {
   const char *region, *title;
   float mw[gridcore::SOURCE_COUNT];
-  float price;      // $/MWh, NAN = none
   float charging;   // MW into batteries
   int weekday, minute;
   bool us;          // flat US-style rate instead of the SA time-of-use plan
