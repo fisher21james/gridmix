@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "grid_snapshot.h"
 #include "schedule.h"
+#include "parsers.h"
 
 struct LiveData {
   bool has_data = false;
@@ -13,6 +14,11 @@ struct LiveData {
   bool out_of_credits = false;
   int failures = 0;              // failed requests in a row
   bool from_cache = false;       // shown from flash after a restart; nothing fetched yet
+
+  // Last 24 hours, fetched once after start-up or a change of region (Open Electricity only)
+  gridcore::HistoryPoint history[32];
+  int history_count = 0;
+  uint32_t history_version = 0;
 };
 
 void fetcher_begin();

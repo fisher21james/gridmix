@@ -76,6 +76,15 @@ size_t oe_market_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
                          OE_BASE, f.network, region, start, end), cap);
 }
 
+size_t oe_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
+  char start[24];
+  network_time((now_utc / HOUR - 25) * HOUR, f.network, start, sizeof start);
+  char region[32] = "";
+  if (f.region[0]) snprintf(region, sizeof region, "&network_region=%s", f.region);
+  return finish(snprintf(out, cap, "%s/data/network/%s?metrics=power&interval=1h%s&secondary_grouping=fueltech&date_start=%s",
+                         OE_BASE, f.network, region, start), cap);
+}
+
 size_t eia_url(const Feed &f, char *out, size_t cap) {
   // Newest rows first; 30 rows covers every fuel type for the latest hour. Brackets are percent-encoded.
   return finish(snprintf(out, cap,

@@ -58,6 +58,10 @@ void test_urls() {
   TEST_ASSERT_NOT_NULL(strstr(u, "/data/network/WEM?"));
   TEST_ASSERT_NOT_NULL(strstr(u, "date_start=2026-11-12T11:35:00"));
 
+  f = feed_for("AU", "SA1", false);
+  TEST_ASSERT_TRUE(oe_history_url(f, T0(), u, sizeof u) > 0);   // 05:35 UTC -> from 04:00 UTC the day before, in NEM time
+  TEST_ASSERT_NOT_NULL(strstr(u, "interval=1h&network_region=SA1&secondary_grouping=fueltech&date_start=2026-11-11T14:00:00"));
+
   f = feed_for("AU", "SA1", true);
   oe_power_url(f, T0(), u, sizeof u);
   TEST_ASSERT_NULL(strstr(u, "network_region"));

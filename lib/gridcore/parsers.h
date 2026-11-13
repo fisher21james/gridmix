@@ -15,6 +15,11 @@ bool parse_eia(const char *json, size_t len, GridSnapshot &out);
 // and the snapshot is marked estimated.
 bool parse_openelectricity(const char *json, size_t len, GridSnapshot &out);
 
+// The same endpoint over a longer span (interval=1h, last 24 h): renewable share at each timestamp,
+// oldest first, for the detail screen's chart. Returns how many points were written.
+struct HistoryPoint { int64_t time; float renewable_pct; };
+int parse_openelectricity_history(const char *json, size_t len, HistoryPoint *out, int max);
+
 // Open Electricity v4 /market/network/{NEM}?metrics=price&metrics=solar_rooftop_forecast
 struct MarketInfo {
   bool has_price = false;

@@ -158,6 +158,64 @@ bool parse_openelectricity(const char *json, size_t len, GridSnapshot &out) {
   return out.valid;
 }
 
+int parse_openelectricity_history(const char *json, size_t len, HistoryPoint *out, int max) {
+  JsonDocument filter;
+  filter["success"] = true;
+  filter["data"][0]["metric"] = true;
+  filter["data"][0]["results"][0]["columns"] = true;
+  filter["data"][0]["results"][0]["data"] = true;
+  JsonDocument doc;
+  if (deserializeJson(doc, json, len, DeserializationOption::Filter(filter))) return 0;
+  if (!(doc["success"] | false)) return 0;
+
+  // Collect the timestamps (every series uses the same ones; take them from the longest)
+  static const int MAXT = 64;
+  int64_t times[MAXT];
+  int nt = 0;
+  for (JsonObjectConst set : doc["data"].as<JsonArrayConst>()) {
+    if (strcmp(set["metric"] | "", "power") != 0) continue;
+    for (JsonObjectConst res : set["results"].as<JsonArrayConst>()) {
+      for (JsonArrayConst pt : res["data"].as<JsonArrayConst>()) {
+        const int64_t t = parse_iso_time(pt[0] | "");
+        if (t < 0) continue;
+        bool seen = false;
+        for (int i = 0; i < nt; i++) if (times[i] == t) { seen = true; break; }
+        if (!seen && nt < MAXT) times[nt++] = t;
+      }
+    }
+  }
+  // oldest first
+  for (int i = 1; i < nt; i++)
+    for (int j = i; j > 0 && times[j] < times[j - 1]; j--) { const int64_t x = times[j]; times[j] = times[j - 1]; times[j - 1] = x; }
+
+  // Sum each source at each timestamp
+  static float renew[MAXT], total[MAXT];
+  for (int i = 0; i < nt; i++) renew[i] = total[i] = 0;
+  for (JsonObjectConst set : doc["data"].as<JsonArrayConst>()) {
+    if (strcmp(set["metric"] | "", "power") != 0) continue;
+    for (JsonObjectConst res : set["results"].as<JsonArrayConst>()) {
+      JsonObjectConst cols = res["columns"];
+      const char *key = cols["fueltech"].as<const char *>();
+      if (!key) key = cols["fueltech_group"].as<const char *>();
+      Source src = OTHER;
+      if (classify_oe(key, src) != OE_SOURCE) continue;
+      const bool green = source_is_renewable(src);   // same rule as the live share
+      for (JsonArrayConst pt : res["data"].as<JsonArrayConst>()) {
+        bool is_null;
+        const float v = as_float(pt[1], is_null);
+        if (is_null || v <= 0) continue;
+        const int64_t t = parse_iso_time(pt[0] | "");
+        for (int i = 0; i < nt; i++)
+          if (times[i] == t) { total[i] += v; if (green) renew[i] += v; break; }
+      }
+    }
+  }
+  int n = 0;
+  for (int i = 0; i < nt && n < max; i++)
+    if (total[i] > 0) out[n++] = HistoryPoint{times[i], 100.0f * renew[i] / total[i]};
+  return n;
+}
+
 // ---------------------------------------------------------------- Open Electricity market data
 
 bool parse_openelectricity_market(const char *json, size_t len, int64_t at_time, MarketInfo &out) {

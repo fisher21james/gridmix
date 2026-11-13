@@ -33,6 +33,8 @@ inline void nem_time(int64_t utc, char *out, size_t cap) { network_time(utc, "NE
 size_t oe_power_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
 size_t oe_market_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
 size_t eia_url(const Feed &f, char *out, size_t cap);
+// Hourly mix for the last 25 hours, to fill the 24-hour chart straight after start-up (1 request).
+size_t oe_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
 
 // ---- timing
 enum FetchKind : uint8_t { FETCH_MIX = 0, FETCH_MARKET };

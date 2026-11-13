@@ -33,6 +33,8 @@ static void log_url(const char *what, const char *url) {
 static void task(void *) {
   Scheduler sched;
   uint32_t seen_generation = UINT32_MAX;
+  int history_tries = 0;              // the 24 h history is fetched once per region/view, up to 3 tries
+  int64_t history_next = 0;
   String market_body;                 // last price/rooftop answer, matched to each new mix
   char url[400];
 
@@ -52,6 +54,8 @@ static void task(void *) {
       seen_generation = j.generation;
       sched.reset(j.feed.source, now);
       market_body = "";
+      history_tries = 0;
+      history_next = 0;
     }
 
     const bool oe = j.feed.source == SRC_OPEN_ELECTRICITY;
@@ -65,6 +69,31 @@ static void task(void *) {
         if (code == 200) market_body = body;
       }
       continue;   // one request per pass
+    }
+    // Once the first mix is in, fill the 24-hour chart with one hourly request
+    if (oe && history_tries >= 0 && history_tries < 3 && now >= history_next && sched.next(FETCH_MIX) > now) {
+      if (oe_history_url(j.feed, now, url, sizeof url)) {
+        log_url("history", url);
+        String body;
+        const int code = https_get(url, j.key, body);
+        static HistoryPoint pts[32];
+        const int n = code == 200 ? parse_openelectricity_history(body.c_str(), body.length(), pts, 32) : 0;
+        Serial.printf("[fetch] history -> %d, %d points\n", code, n);
+        if (n > 0) {
+          history_tries = -1;   // done for this region/view
+          xSemaphoreTake(lock, portMAX_DELAY);
+          if (j.generation == job.generation) {
+            for (int i = 0; i < n; i++) live.history[i] = pts[i];
+            live.history_count = n;
+            live.history_version++;
+          }
+          xSemaphoreGive(lock);
+        } else {
+          history_tries++;
+          history_next = now + 10 * 60;
+        }
+      }
+      continue;
     }
     if (!sched.due(FETCH_MIX, now)) continue;
 
@@ -126,9 +155,10 @@ void fetcher_reset(bool country_view) {
   job.generation = gen;
   job.feed = feed_for(g_settings.country, g_settings.region, country_view);
   snprintf(job.key, sizeof job.key, "%s", g_settings.key_for_country());
-  const uint32_t version = live.version + 1;
+  const uint32_t version = live.version + 1, hversion = live.history_version;
   live = LiveData();
   live.version = version;
+  live.history_version = hversion;   // keep counting up, so the screen never mistakes new history for old
   live.source = job.feed.source;
   xSemaphoreGive(lock);
 }

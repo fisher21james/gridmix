@@ -218,6 +218,20 @@ void test_oe_wem() {
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 47.0f, s.renewable_pct());
 }
 
+// History: the 5-minute capture has 14 timestamps; each point's share must match what the live
+// translator gets for that moment (newest point checked; rooftop isn't in this capture).
+void test_oe_history() {
+  HistoryPoint pts[64];
+  const int n = parse_openelectricity_history(OE_SA1_FUELTECH, strlen(OE_SA1_FUELTECH), pts, 64);
+  TEST_ASSERT_EQUAL(14, n);
+  TEST_ASSERT_TRUE(pts[0].time < pts[13].time);
+  GridSnapshot s;
+  parse_openelectricity(OE_SA1_FUELTECH, strlen(OE_SA1_FUELTECH), s);
+  TEST_ASSERT_EQUAL_INT64(s.data_time, pts[13].time);
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, s.renewable_pct(), pts[13].renewable_pct);
+  TEST_ASSERT_EQUAL(0, parse_openelectricity_history("{\"success\":false}", 17, pts, 64));
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_iso_time_utc_hour);
@@ -229,6 +243,7 @@ int main(int, char **) {
   RUN_TEST(test_eia_negative_battery_is_charging);
   RUN_TEST(test_eia_us48_codes);
   RUN_TEST(test_oe_wem);
+  RUN_TEST(test_oe_history);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);
   RUN_TEST(test_oe_mix);

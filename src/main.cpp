@@ -130,6 +130,20 @@ static void history_record(int64_t data_time, float renewable_pct) {
   store.hist[slot % N] = renewable_pct;
   store.hist_slot[slot % N] = slot;
 }
+// Hourly points from the history request fill the half hours they cover, without replacing
+// anything already recorded from live data (which is more detailed)
+static void history_import(const LiveData &d) {
+  const int N = gridui::HISTORY_POINTS;
+  for (int i = 0; i < d.history_count; i++) {
+    for (int half = 0; half < 2; half++) {
+      const int64_t slot = d.history[i].time / 1800 + half;
+      if (store.hist_slot[slot % N] == slot) continue;
+      store.hist[slot % N] = d.history[i].renewable_pct;
+      store.hist_slot[slot % N] = slot;
+    }
+  }
+}
+
 static void history_to_model(gridui::Model &m, int64_t data_time) {
   const int64_t slot = data_time / 1800;
   const int N = gridui::HISTORY_POINTS;
@@ -228,6 +242,12 @@ static void screen_tick(lv_timer_t *) {
   if (demo && millis() - demo_since > 8000) {
     demo_index = (demo_index + 1) % gridui::demo_count();
     demo_since = millis();
+    dirty = true;
+  }
+  static uint32_t last_history = 0;
+  if (d.history_version != last_history) {
+    last_history = d.history_version;
+    history_import(d);
     dirty = true;
   }
   if (d.version != last_version && d.has_data && !d.from_cache) {
