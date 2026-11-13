@@ -218,6 +218,13 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         else if (localHeader) $("header").value = localHeader;
         api.header($("header").value);
         rebuild();
+        // The display fetches new numbers for the other view; this page can't, so set up the command for it
+        if (liveClock) {
+          $("lvWhole").checked = !!v;
+          makeCommand();
+          lvMsg(`Still showing the numbers you loaded. To see ${v ? "the whole east coast" : "your region"}, copy the command again (it's updated), run it and load the file.`, false);
+          log("The display would fetch new data now; here, run the updated command to see it");
+        }
       }
       if (kind === "scene") log("Opened the detail screen (tap ‹ Back, or it returns by itself after a minute)");
     }});
