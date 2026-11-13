@@ -204,6 +204,20 @@ void test_grid_status_from_real_market_data() {
   TEST_ASSERT_EQUAL(GRID_BUSY, grid_status(s));   // $150/MWh
 }
 
+// WA (WEM), live 13 Nov 2026 8:05am Perth: its 5-minute data includes rooftop solar,
+// and the net "battery" series must not be counted on top of charging/discharging.
+void test_oe_wem() {
+  GridSnapshot s;
+  TEST_ASSERT_TRUE(parse_openelectricity(OE_WEM_FUELTECH, strlen(OE_WEM_FUELTECH), s));
+  TEST_ASSERT_EQUAL_INT64(days_from_civil(2026, 11, 13) * 86400 + 5 * 60, s.data_time);   // 08:05+08:00 = 00:05 UTC
+  TEST_ASSERT_TRUE(s.has_rooftop);
+  TEST_ASSERT_FALSE(s.estimated);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 1080.9f, s.mw[SOLAR]);     // 836.9 rooftop + 244.0 utility
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 0.0f, s.mw[BATTERY]);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 488.7f, s.battery_charging);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 47.0f, s.renewable_pct());
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_iso_time_utc_hour);
@@ -214,6 +228,7 @@ int main(int, char **) {
   RUN_TEST(test_eia_mix);
   RUN_TEST(test_eia_negative_battery_is_charging);
   RUN_TEST(test_eia_us48_codes);
+  RUN_TEST(test_oe_wem);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);
   RUN_TEST(test_oe_mix);
