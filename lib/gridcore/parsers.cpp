@@ -184,6 +184,28 @@ int parse_openelectricity_history(const char *json, size_t len, HistoryPoint *ou
       }
     }
   }
+  // Rooftop solar arrives a couple of hours after everything else. Hours past its newest point
+  // would undercount renewables, so leave them out (live readings cover the latest hours).
+  int64_t rooftop_last = -1;
+  for (JsonObjectConst set : doc["data"].as<JsonArrayConst>()) {
+    if (strcmp(set["metric"] | "", "power") != 0) continue;
+    for (JsonObjectConst res : set["results"].as<JsonArrayConst>()) {
+      const char *key = res["columns"]["fueltech"] | "";
+      if (strcmp(key, "solar_rooftop") != 0) continue;
+      for (JsonArrayConst pt : res["data"].as<JsonArrayConst>()) {
+        bool is_null;
+        as_float(pt[1], is_null);
+        const int64_t t = parse_iso_time(pt[0] | "");
+        if (!is_null && t > rooftop_last) rooftop_last = t;
+      }
+    }
+  }
+  if (rooftop_last >= 0) {
+    int k = 0;
+    for (int i = 0; i < nt; i++) if (times[i] <= rooftop_last) times[k++] = times[i];
+    nt = k;
+  }
+
   // oldest first
   for (int i = 1; i < nt; i++)
     for (int j = i; j > 0 && times[j] < times[j - 1]; j--) { const int64_t x = times[j]; times[j] = times[j - 1]; times[j - 1] = x; }

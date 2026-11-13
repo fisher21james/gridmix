@@ -162,7 +162,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
   return out;
 }
 
-// The exact request the display would send (same code as the firmware). kind: 0 = generation, 1 = market, 2 = EIA.
+// The exact request the display would send (same code as the firmware).
+// kind: 0 = generation, 1 = market, 2 = EIA, 3 = 24-hour history.
 // The EIA URL ends with "api_key=" for the page to add the key.
 EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const char *region, int country_view, double now_utc) {
   const Feed f = feed_for(country, region, country_view);
@@ -170,9 +171,28 @@ EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const cha
   if (kind == 2) n = f.source == SRC_EIA ? eia_url(f, out, sizeof out) : 0;
   else if (f.source == SRC_OPEN_ELECTRICITY) {
     if (kind == 0) n = oe_power_url(f, (int64_t)now_utc, out, sizeof out);
+    else if (kind == 3) n = oe_history_url(f, (int64_t)now_utc, out, sizeof out);
     else if (f.has_market) n = oe_market_url(f, (int64_t)now_utc, out, sizeof out);
   }
   if (!n) out[0] = 0;
+  return out;
+}
+
+// The 24-hour history answer (same request the display makes after start-up). Call after the mix.
+EMSCRIPTEN_KEEPALIVE const char *gm_load_history(const char *json) {
+  static HistoryPoint pts[64];
+  const int n = parse_openelectricity_history(json, strlen(json), pts, 64);
+  if (!n) { snprintf(out, sizeof out, "Couldn't read the 24-hour history."); return out; }
+  has_history = true;
+  for (float &h : history) h = NAN;
+  const int64_t end = snap.data_time / 1800;
+  for (int i = 0; i < n; i++)
+    for (int half = 0; half < 2; half++) {
+      const int64_t idx = pts[i].time / 1800 + half - (end - (HISTORY_POINTS - 1));
+      if (idx >= 0 && idx < HISTORY_POINTS) history[idx] = pts[i].renewable_pct;
+    }
+  if (has_data) history[HISTORY_POINTS - 1] = snap.renewable_pct();
+  snprintf(out, sizeof out, "24-hour history: %d hourly points.", n);
   return out;
 }
 

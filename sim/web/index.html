@@ -99,7 +99,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         <p class="note">The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.</p>
       </div>
       <div id="lvAU">
-        <p class="note" style="margin-top:0">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 2 of your 500 daily requests.</p>
+        <p class="note" style="margin-top:0">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 3 of your 500 daily requests.</p>
         <div class="row"><label for="lvOS">Computer</label><select id="lvOS" style="flex:1"><option value="mac">Mac or Linux (Terminal)</option><option value="win">Windows (PowerShell)</option></select></div>
         <textarea id="lvCmd" readonly spellcheck="false" style="min-height:96px"></textarea>
         <div class="btns"><button id="lvCopy">Copy command</button><label class="btn-file"><input type="file" id="lvFile" accept=".json,application/json" hidden><span>Load gridmix-live.json</span></label></div>
@@ -242,6 +242,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     hasPlan: M.cwrap("gm_set_has_plan", null, ["number"]),
     setView: M.cwrap("gm_set_view", null, ["number"]),
     historyMode: M.cwrap("gm_set_history_mode", null, ["number"]),
+    loadHistory: M.cwrap("gm_load_history", "string", ["string"]),
     setSettings: M.cwrap("gm_set_settings", "string", ["string"]),
     getSettings: M.cwrap("gm_get_settings", "string", []),
     parse: M.cwrap("gm_parse", "string", ["number", "string"]),
@@ -473,14 +474,15 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     if (lv.country() !== "AU") return;
     const now = Date.now() / 1000;
     const p = getUrl(0, "AU", lv.region(), lv.whole() ? 1 : 0, now);
+    const h = getUrl(3, "AU", lv.region(), lv.whole() ? 1 : 0, now);
     const m = getUrl(1, "AU", lv.region(), lv.whole() ? 1 : 0, now);
     const key = $("lvKey").value.trim() || "PASTE_YOUR_KEY";
     if ($("lvOS").value === "mac") {
       const get = u => `curl -s -H "Authorization: Bearer ${key}" "${u}"`;
-      $("lvCmd").value = `cd ~/Downloads && { printf '{"power":'; ${get(p)}; printf ',"market":'; ${m ? get(m) : "printf null"}; printf '}'; } > gridmix-live.json && echo "Saved gridmix-live.json in Downloads"`;
+      $("lvCmd").value = `cd ~/Downloads && { printf '{"power":'; ${get(p)}; printf ',"market":'; ${m ? get(m) : "printf null"}; printf ',"history":'; ${get(h)}; printf '}'; } > gridmix-live.json && echo "Saved gridmix-live.json in Downloads"`;
     } else {
       const get = u => `(Invoke-WebRequest -UseBasicParsing -Headers $h '${u}').Content`;
-      $("lvCmd").value = `cd $HOME\\Downloads; $h=@{Authorization='Bearer ${key}'}; $p=${get(p)}; $m=${m ? get(m) : "'null'"}; "{\`"power\`":$p,\`"market\`":$m}" | Out-File -Encoding ascii gridmix-live.json; "Saved gridmix-live.json in Downloads"`;
+      $("lvCmd").value = `cd $HOME\\Downloads; $h=@{Authorization='Bearer ${key}'}; $p=${get(p)}; $m=${m ? get(m) : "'null'"}; $y=${get(h)}; "{\`"power\`":$p,\`"market\`":$m,\`"history\`":$y}" | Out-File -Encoding ascii gridmix-live.json; "Saved gridmix-live.json in Downloads"`;
     }
   }
   function keyChanged() {
@@ -578,6 +580,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     if (obj.market && !err(obj.market)) { const mres = api.parse(1, JSON.stringify(obj.market)); extra = mres.startsWith("Market") ? " Price and rooftop solar added." : " (market data couldn't be read)"; }
     // the file can't say which region it was for, so trust the picker
     showLive(res + extra);
+    if (obj.history && !err(obj.history)) { log(api.loadHistory(JSON.stringify(obj.history))); rebuild(); }
   }
   $("lvFile").addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ""; });
   const card = $("liveCard");

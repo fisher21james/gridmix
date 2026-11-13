@@ -232,6 +232,20 @@ void test_oe_history() {
   TEST_ASSERT_EQUAL(0, parse_openelectricity_history("{\"success\":false}", 17, pts, 64));
 }
 
+// Real hourly answer for SA (13 Nov 2026 10am): 25 hours, rooftop solar stops at 8am,
+// so the last two hours are left out rather than shown too low.
+void test_oe_history_real() {
+  HistoryPoint pts[64];
+  const int n = parse_openelectricity_history(OE_SA1_HISTORY, strlen(OE_SA1_HISTORY), pts, 64);
+  TEST_ASSERT_EQUAL(23, n);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-12T10:00:00+10:00"), pts[0].time);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-13T08:00:00+10:00"), pts[n - 1].time);
+  for (int i = 0; i < n; i++) {
+    TEST_ASSERT_TRUE(pts[i].renewable_pct >= 0 && pts[i].renewable_pct <= 100);
+    if (i) TEST_ASSERT_EQUAL_INT64(3600, pts[i].time - pts[i - 1].time);
+  }
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_iso_time_utc_hour);
@@ -244,6 +258,7 @@ int main(int, char **) {
   RUN_TEST(test_eia_us48_codes);
   RUN_TEST(test_oe_wem);
   RUN_TEST(test_oe_history);
+  RUN_TEST(test_oe_history_real);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);
   RUN_TEST(test_oe_mix);
