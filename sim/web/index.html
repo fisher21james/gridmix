@@ -140,7 +140,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card">
       <h2>Power plan and region</h2>
       <div class="row"><label for="plan">Plan</label>
-        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="uk">UK Economy 7 style (sample)</option><option value="fr">France heures pleines / creuses (sample)</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
+        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="uk">UK Economy 7 style (sample)</option><option value="fr">France peak / off-peak (sample)</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
       </div>
       <div class="row"><label for="header">Header</label><input type="text" id="header" maxlength="30" style="flex:1"></div>
       <details>
@@ -201,10 +201,14 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       {name: "Night", from: "00:00", to: "07:00", rate: 13.5, days: "all"},
       {name: "Day", from: "07:00", to: "00:00", rate: 27.0, days: "all"}],
       supply: 53.4, feed_in: 15, warn: true}},
-    fr: {tariff: {type: "tou", periods: [
-      {name: "Creuses", from: "22:00", to: "06:00", rate: 20.68, days: "all"},
-      {name: "Pleines", from: "06:00", to: "22:00", rate: 27.0, days: "all"}],
-      supply: 51.2, feed_in: 4, warn: true}},
+    // France's sample plan: period names follow the screen language (on a real display you type your own)
+    get fr() {
+      const french = $("langLocal") && $("langLocal").checked;
+      return {tariff: {type: "tou", periods: [
+        {name: french ? "Creuses" : "Off-peak", from: "22:00", to: "06:00", rate: 20.68, days: "all"},
+        {name: french ? "Pleines" : "Peak", from: "06:00", to: "22:00", rate: 27.0, days: "all"}],
+        supply: 51.2, feed_in: 4, warn: true}};
+    },
   };
   const $ = id => document.getElementById(id);
   const log = msg => {
@@ -641,7 +645,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     $("langLocal").checked = !!(st.display && st.display.language === "local");
   }
   $("langLocal").addEventListener("change", () => {
-    applySettings({display: {language: $("langLocal").checked ? "local" : "en"}}, true);
+    applySettings({display: {language: $("langLocal").checked ? "local" : "en"}, ...($("plan").value === "fr" ? PLANS.fr : {})}, true);
     log(`Screen language: ${$("langLocal").checked ? "the country's own" : "English"}`);
   });
 
