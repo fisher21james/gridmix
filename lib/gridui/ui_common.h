@@ -60,6 +60,14 @@ static inline lv_obj_t *label(lv_obj_t *parent, const lv_font_t *font, uint32_t 
   return l;
 }
 
+// A fixed label in English that follows the screen language (see set_language)
+void remember_translation(lv_obj_t *l, const char *en);
+static inline lv_obj_t *label_tr(lv_obj_t *parent, const lv_font_t *font, uint32_t color, const char *en) {
+  lv_obj_t *l = label(parent, font, color, gridcore::T(en));
+  remember_translation(l, en);
+  return l;
+}
+
 static inline lv_obj_t *row(lv_obj_t *parent, int gap) {
   lv_obj_t *o = lv_obj_create(parent);
   lv_obj_remove_style_all(o);

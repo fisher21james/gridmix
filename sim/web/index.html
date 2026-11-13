@@ -76,6 +76,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       <div id="loading">Loading the simulator…</div>
       <div class="devbar">
         <label><input type="checkbox" id="actual"> Actual pixel size</label>
+        <label id="langWrap" hidden><input type="checkbox" id="langLocal"> <span id="langName">En français</span></label>
         <span id="fps"></span>
       </div>
     </div>
@@ -87,10 +88,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card" id="liveCard">
       <h2>Live data</h2>
       <div class="row"><label for="lvCountry">Country</label>
-        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option></select>
+        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option><option value="FR">France</option></select>
       </div>
       <div class="row"><label for="lvRegion">Region</label><select id="lvRegion" style="flex:1"></select></div>
-      <div class="row"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
+      <div class="row" id="lvWholeRow"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
       <div class="row" id="lvKeyRow"><label for="lvKey">Data key</label><input type="password" id="lvKey" autocomplete="off" spellcheck="false" style="flex:1;min-width:0"></div>
       <div class="row" id="lvRememberRow"><label></label><span class="check"><input type="checkbox" id="lvRemember"> Remember on this computer</span></div>
 
@@ -139,7 +140,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card">
       <h2>Power plan and region</h2>
       <div class="row"><label for="plan">Plan</label>
-        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="uk">UK Economy 7 style (sample)</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
+        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="uk">UK Economy 7 style (sample)</option><option value="fr">France heures pleines / creuses (sample)</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
       </div>
       <div class="row"><label for="header">Header</label><input type="text" id="header" maxlength="30" style="flex:1"></div>
       <details>
@@ -200,6 +201,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       {name: "Night", from: "00:00", to: "07:00", rate: 13.5, days: "all"},
       {name: "Day", from: "07:00", to: "00:00", rate: 27.0, days: "all"}],
       supply: 53.4, feed_in: 15, warn: true}},
+    fr: {tariff: {type: "tou", periods: [
+      {name: "Creuses", from: "22:00", to: "06:00", rate: 20.68, days: "all"},
+      {name: "Pleines", from: "06:00", to: "22:00", rate: 27.0, days: "all"}],
+      supply: 51.2, feed_in: 4, warn: true}},
   };
   const $ = id => document.getElementById(id);
   const log = msg => {
@@ -213,7 +218,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       if (kind === "view") {
         log(`Region picker: chose ${v ? "whole country" : "my region"}`);
         // the display changes its header to match
-        if (v) { localHeader = $("header").value; const st = api.getSettings(); $("header").value = st.includes('"country":"US"') ? "United States" : st.includes('"country":"GB"') ? "Great Britain" : "Australia (NEM)"; }
+        if (v) { localHeader = $("header").value; const st = api.getSettings(); $("header").value = st.includes('"country":"US"') ? "United States" : st.includes('"country":"GB"') ? "Great Britain" : st.includes('"country":"FR"') ? "France" : "Australia (NEM)"; }
         else if (localHeader) $("header").value = localHeader;
         api.header($("header").value);
         rebuild();
@@ -352,6 +357,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     $("settingsMsg").textContent = err || "Applied.";
     if (!err && !quiet) log("Settings applied");
     if (!err) $("settings").value = JSON.stringify(JSON.parse(api.getSettings()), null, 2);
+    if (!err && typeof syncLang === "function") syncLang();
     rebuild();
     return !err;
   }
@@ -464,6 +470,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
          ["NW", "Northwest", "Northwest", "America/Los_Angeles"], ["SE", "Southeast", "Southeast", "America/New_York"],
          ["SW", "Southwest", "Southwest", "America/Phoenix"], ["TEN", "Tennessee", "Tennessee", "America/Chicago"],
          ["TEX", "Texas", "Texas", "America/Chicago"]],
+    FR: [["FR", "France", "France", "Europe/Paris"]],
   };
   const store = {
     get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
@@ -476,13 +483,17 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   function fillRegions() {
     const c = lv.country();
     $("lvRegion").innerHTML = REGIONS[c].map(r => `<option value="${r[0]}">${r[1]}</option>`).join("");
-    $("lvRegion").value = c === "AU" ? "SA1" : c === "GB" ? "13" : "TEX";
+    $("lvRegion").value = c === "AU" ? "SA1" : c === "GB" ? "13" : c === "FR" ? "FR" : "TEX";
     $("lvKey").value = store.get(keyName());
     $("lvRemember").checked = !!$("lvKey").value;
-    $("lvUS").hidden = c !== "US" && c !== "GB";
-    $("lvKeyRow").hidden = $("lvRememberRow").hidden = c === "GB";   // Britain's data needs no key
+    $("lvUS").hidden = c !== "US" && c !== "GB" && c !== "FR";
+    $("lvKeyRow").hidden = $("lvRememberRow").hidden = c === "GB" || c === "FR";   // Britain's and France's data need no key
+    $("lvWholeRow").hidden = c === "FR";   // France: national figures only
+    if (c === "FR") $("lvWhole").checked = false;
     $("lvFetchNote").textContent = c === "GB"
       ? "No key needed: the page asks the Carbon Intensity API directly, with the same requests the display sends (the half hour now, and the last 24 hours)."
+      : c === "FR"
+      ? "No key needed: the page asks RTE's éCO2mix data on ODRÉ directly, with the same requests the display sends (the newest quarter hour, and the last 24 hours)."
       : "The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.";
     $("lvAU").hidden = c !== "AU";
     $("lvMsg").textContent = "";
@@ -542,10 +553,11 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   function showLive(label) {
     const s = JSON.parse(api.state());
     const [code, , header, tz] = regionInfo();
-    const us = lv.country() === "US", gb = lv.country() === "GB";
-    applySettings({country: lv.country(), region: code, tz: gb ? "GMT0BST,M3.5.0/1,M10.5.0" : undefined}, true);
+    const us = lv.country() === "US", gb = lv.country() === "GB", fr = lv.country() === "FR";
+    applySettings({country: lv.country(), region: code, tz: gb ? "GMT0BST,M3.5.0/1,M10.5.0" : fr ? "CET-1CEST,M3.5.0,M10.5.0/3" : undefined}, true);
     if (us) { $("plan").value = "none"; api.hasPlan(0); }
     else if (gb && $("plan").value !== "custom") { $("plan").value = "uk"; api.hasPlan(1); applySettings(PLANS.uk, true); }
+    else if (fr && $("plan").value !== "custom") { $("plan").value = "fr"; api.hasPlan(1); applySettings(PLANS.fr, true); }
     else if ($("plan").value === "none") { $("plan").value = "tou"; api.hasPlan(1); applySettings(PLANS.tou, true); }
     const when = new Date((s.data_time || Date.now() / 1000) * 1000);
     // Like the display: the clock is the real time there, and the dot shows how old the data is
@@ -555,7 +567,8 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     tickLiveClock(true);
     const age = Math.max(0, Math.round((Date.now() / 1000 - liveClock.dataTime) / 60));
     api.problem("");
-    const wholeLabel = us ? "United States" : gb ? "Great Britain" : "Australia (NEM)";
+    const wholeLabel = us ? "United States" : gb ? "Great Britain" : fr ? "France" : "Australia (NEM)";
+    syncLang();
     api.header(lv.whole() ? wholeLabel : header);
     api.setView(lv.whole() ? 1 : 0);
     $("hasData").checked = true;
@@ -567,6 +580,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
 
   $("lvFetch").addEventListener("click", async () => {
     if (lv.country() === "GB") return fetchGB();
+    if (lv.country() === "FR") return fetchFR();
     const key = $("lvKey").value.trim();
     if (!key) { lvMsg("Add your EIA key first.", false); return; }
     const url = getUrl(2, "US", lv.region(), lv.whole() ? 1 : 0, Date.now() / 1000) + encodeURIComponent(key);
@@ -599,6 +613,37 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     showLive(res.replace(/[\d,]+ MW total, /, ""));
     if (hist) { log(api.loadHistory(hist)); rebuild(); }
   }
+
+  // France: no key, and ODRÉ allows web pages too
+  async function fetchFR() {
+    const now = Date.now() / 1000;
+    lvMsg("Asking RTE\u2019s \u00e9CO2mix data\u2026", true);
+    let mix, hist;
+    try {
+      const [a, b] = await Promise.all([fetch(getUrl(6, "FR", "FR", 0, now)), fetch(getUrl(7, "FR", "FR", 0, now))]);
+      if (!a.ok) { lvMsg(`ODR\u00c9 answered with error ${a.status}. Try again in a minute.`, false); return; }
+      mix = await a.text();
+      hist = b.ok ? await b.text() : "";
+    } catch { lvMsg("Couldn't reach ODR\u00c9 (RTE's open data). Check your internet connection.", false); return; }
+    const res = api.parse(6, mix);
+    if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
+    showLive(res);
+    if (hist) { log(api.loadHistory(hist)); rebuild(); }
+  }
+
+  // The screen in the country's own language (France: French), like the setup page's "Screen language"
+  const LANG_NAMES = {FR: "En fran\u00e7ais"};
+  function syncLang() {
+    const st = JSON.parse(api.getSettings() || "{}");
+    const name = LANG_NAMES[st.country];
+    $("langWrap").hidden = !name;
+    if (name) $("langName").textContent = name;
+    $("langLocal").checked = !!(st.display && st.display.language === "local");
+  }
+  $("langLocal").addEventListener("change", () => {
+    applySettings({display: {language: $("langLocal").checked ? "local" : "en"}}, true);
+    log(`Screen language: ${$("langLocal").checked ? "the country's own" : "English"}`);
+  });
 
   async function loadFile(file) {
     let obj;

@@ -43,17 +43,15 @@ static lv_obj_t *page(lv_obj_t *scr, const char *title, lv_obj_t **sub) {
   lv_obj_set_style_pad_left(head, 6, 0);
   lv_obj_t *back = box(head, 0, 0, 64, 40, 0, LV_OPA_TRANSP);
   clickable(back, on_back);
-  lv_obj_t *bl = label(back, &gm_inter_13, TEXT, "\xE2\x80\xB9 Back");
+  lv_obj_t *bl = label_tr(back, &gm_inter_13, TEXT, "\xE2\x80\xB9 Back");
   lv_obj_align(bl, LV_ALIGN_LEFT_MID, 8, 0);
-  label(head, &gm_grotesk_15, 0xFFFFFF, title);
+  label_tr(head, &gm_grotesk_15, 0xFFFFFF, title);
   *sub = label(head, &gm_inter_12, MUTED);
   return p;
 }
 
 static void thousands(float v, char *out, size_t cap) {
-  const long n = lroundf(v);
-  if (n >= 1000) snprintf(out, cap, "%ld,%03ld", n / 1000, n % 1000);
-  else snprintf(out, cap, "%ld", n);
+  format_thousands(lroundf(v), out, cap);
 }
 
 // ---------------------------------------------------------------- detail
@@ -77,27 +75,29 @@ static void build_detail(lv_obj_t *scr) {
   lv_obj_set_clickable(d_rows, false);
   lv_obj_set_pos(d_rows, 14, 52);
   lv_obj_set_size(d_rows, 238, 190);
-  d_waiting = label(detail, &gm_inter_12, MUTED, "Waiting for data\xE2\x80\xA6");
+  d_waiting = label_tr(detail, &gm_inter_12, MUTED, "Waiting for data\xE2\x80\xA6");
   lv_obj_set_pos(d_waiting, 14, 56);
   d_total = label(detail, &gm_inter_11, MUTED);
   lv_obj_set_pos(d_total, 14, 248);
 
   const int x = 268;
-  lv_obj_t *t = label(detail, &gm_inter_11, MUTED, "Renewables \xC2\xB7 last 24 h");
+  lv_obj_t *t = label_tr(detail, &gm_inter_11, MUTED, "Renewables \xC2\xB7 last 24 h");
   lv_obj_set_pos(t, x, 50);
   chart.init(CHART_W, CHART_H);
   d_chart_img = lv_image_create(detail);
   lv_obj_set_pos(d_chart_img, x, 68);
-  d_chart_note = label(detail, &gm_inter_11, FAINT, "Builds up over the first day");
+  d_chart_note = label_tr(detail, &gm_inter_11, FAINT, "Builds up over the first day");
   lv_obj_set_pos(d_chart_note, x + 8, 92);
-  lv_obj_t *l0 = label(detail, &gm_inter_11, FAINT, "24 h ago");
+  lv_obj_t *l0 = label_tr(detail, &gm_inter_11, FAINT, "24 h ago");
   lv_obj_set_pos(l0, x, 130);
-  lv_obj_t *l1 = label(detail, &gm_inter_11, FAINT, "now");
-  lv_obj_set_pos(l1, x + CHART_W - 22, 130);
+  lv_obj_t *l1 = label_tr(detail, &gm_inter_11, FAINT, "now");
+  lv_obj_set_width(l1, 80);   // right-aligned to the chart's edge, whatever the language
+  lv_obj_set_style_text_align(l1, LV_TEXT_ALIGN_RIGHT, 0);
+  lv_obj_set_pos(l1, x + CHART_W - 80, 130);
 
   lv_obj_t *card = box(detail, x, 150, CHART_W, 46, 0x16231C);
   lv_obj_set_style_radius(card, 8, 0);
-  lv_obj_t *ct = label(card, &gm_inter_11, 0x9FD8B5, "Cheapest time for big loads");
+  lv_obj_t *ct = label_tr(card, &gm_inter_11, 0x9FD8B5, "Cheapest time for big loads");
   lv_obj_set_pos(ct, 10, 6);
   d_window_val = label(card, &gm_grotesk_15, 0xE9FFF3);
   lv_obj_set_pos(d_window_val, 10, 22);
@@ -157,7 +157,7 @@ static void update_detail(const Model &m) {
     const float r = m.snap.renewable_pct();
     const int lvl = r >= 70 ? 0 : r >= 30 ? 1 : 2;
     static const uint32_t FG[3] = {0x7EE2A8, 0xC9D0D9, 0xFF8A78}, BGC[3] = {0x16231C, 0x1B222B, 0x2A1714};
-    lv_label_set_text_fmt(d_status_lbl, "%d%% renewable", (int)lroundf(r));
+    lv_label_set_text_fmt(d_status_lbl, T("%d%% renewable"), (int)lroundf(r));
     lv_obj_set_style_text_color(d_status_lbl, hex(FG[lvl]), 0);
     lv_obj_set_style_bg_color(d_status_dot, hex(FG[lvl]), 0);
     lv_obj_set_style_bg_color(d_status, hex(BGC[lvl]), 0);
@@ -184,8 +184,8 @@ static void update_detail(const Model &m) {
     lv_obj_t *name = label(r, &gm_inter_12, TEXT, source_name(s));
     lv_obj_set_pos(name, 14, 0);
     const char *note = "";
-    if (s == SOLAR && m.snap.estimated) note = "incl. rooftop (est.)";
-    if (s == BATTERY && m.snap.battery_charging > 0) note = "some charging";
+    if (s == SOLAR && m.snap.estimated) note = T("incl. rooftop (est.)");
+    if (s == BATTERY && m.snap.battery_charging > 0) note = T("some charging");
     if (*note) {
       lv_obj_t *nl = label(r, &gm_inter_11, MUTED, note);
       lv_obj_set_pos(nl, 20 + text_width(source_name(s), &gm_inter_12), 1);
@@ -203,19 +203,19 @@ static void update_detail(const Model &m) {
 
   // Footer: total power (when the source gives megawatts), batteries charging, and a note when
   // biomass is part of the renewable share
-  char total[96] = "", mw[24];
+  char total[128] = "", mw[24];
   if (m.has_data) {
     int len = 0;
     if (!m.snap.percent_only) {
       thousands(m.snap.total(), mw, sizeof mw);
-      len = snprintf(total, sizeof total, "Total %s MW", mw);
+      len = snprintf(total, sizeof total, T("Total %s MW"), mw);
     }
     if (m.snap.battery_charging >= 1 && !m.snap.percent_only) {
       thousands(m.snap.battery_charging, mw, sizeof mw);
-      len += snprintf(total + len, sizeof total - len, " \xC2\xB7 batteries charging %s MW", mw);
+      len += snprintf(total + len, sizeof total - len, T(" \xC2\xB7 batteries charging %s MW"), mw);
     }
     if (m.snap.share_pct(BIOMASS) >= 0.5f)
-      snprintf(total + len, sizeof total - len, "%sRenewable %% includes biomass", len ? " \xC2\xB7 " : "");
+      snprintf(total + len, sizeof total - len, T("%sRenewable %% includes biomass"), len ? " \xC2\xB7 " : "");
   }
   lv_label_set_text(d_total, total);
 
@@ -224,11 +224,11 @@ static void update_detail(const Model &m) {
   char win[40];
   if (!m.has_tariff) {
     lv_obj_set_style_text_font(d_window_val, &gm_inter_12, 0);
-    lv_label_set_text(d_window_val, "Add your plan at gridmix.local");
+    lv_label_set_text(d_window_val, T("Add your plan at gridmix.local"));
   } else {
     lv_obj_set_style_text_font(d_window_val, &gm_grotesk_15, 0);
     if (tariff_cheapest_window(m.tariff, m.weekday, m.minute, win, sizeof win)) lv_label_set_text(d_window_val, win);
-    else lv_label_set_text(d_window_val, "Any time (flat rate)");
+    else lv_label_set_text(d_window_val, T("Any time (flat rate)"));
   }
 
 
@@ -240,13 +240,13 @@ static void build_tariff(lv_obj_t *scr) {
   tariff_scr = page(scr, "Your tariff", &t_kind);
 
   t_empty = box(tariff_scr, 0, 41, 480, 231, BG);
-  lv_obj_t *e1 = label(t_empty, &gm_grotesk_17, 0xFFFFFF, "No power plan yet");
+  lv_obj_t *e1 = label_tr(t_empty, &gm_grotesk_17, 0xFFFFFF, "No power plan yet");
   lv_obj_align(e1, LV_ALIGN_CENTER, 0, -14);
-  lv_obj_t *e2 = label(t_empty, &gm_inter_12, MUTED, "Add your rates at gridmix.local from your phone");
+  lv_obj_t *e2 = label_tr(t_empty, &gm_inter_12, MUTED, "Add your rates at gridmix.local from your phone");
   lv_obj_align(e2, LV_ALIGN_CENTER, 0, 12);
 
   t_body = box(tariff_scr, 14, 50, 452, 216, 0, LV_OPA_TRANSP);
-  lv_obj_t *today = label(t_body, &gm_inter_11, MUTED, "Today");
+  lv_obj_t *today = label_tr(t_body, &gm_inter_11, MUTED, "Today");
   lv_obj_set_pos(today, 0, 0);
   t_now = label(t_body, &gm_inter_11, MUTED);
   lv_obj_align(t_now, LV_ALIGN_TOP_RIGHT, 0, 0);
@@ -262,7 +262,7 @@ static void build_tariff(lv_obj_t *scr) {
 
   static const char *HOURS[5] = {"12am", "6am", "12pm", "6pm", "12am"};
   for (int i = 0; i < 5; i++) {
-    lv_obj_t *h = label(t_body, &gm_inter_11, FAINT, HOURS[i]);
+    lv_obj_t *h = label_tr(t_body, &gm_inter_11, FAINT, HOURS[i]);
     const int w = text_width(HOURS[i], &gm_inter_11);
     int x = i * 113 - w / 2;
     x = x < 0 ? 0 : x + w > 452 ? 452 - w : x;
@@ -278,7 +278,7 @@ static void build_tariff(lv_obj_t *scr) {
 
   t_footer = label(t_body, &gm_inter_11, MUTED);
   lv_obj_set_pos(t_footer, 0, 192);
-  lv_obj_t *edit = label(t_body, &gm_inter_11, MUTED, "Edit at #4FB3D9 gridmix.local#");
+  lv_obj_t *edit = label_tr(t_body, &gm_inter_11, MUTED, "Edit at #4FB3D9 gridmix.local#");
   lv_label_set_recolor(edit, true);
   lv_obj_align(edit, LV_ALIGN_TOP_RIGHT, 0, 192);
 }
@@ -291,12 +291,12 @@ static void update_tariff(const Model &m) {
   RateNow now;
   const bool have_now = tariff_rate_now(t, m.weekday, m.minute, now);
   const bool flat = have_now && now.minutes_to_change < 0;
-  lv_label_set_text(t_kind, flat ? "Flat rate" : "Time of use");
+  lv_label_set_text(t_kind, T(flat ? "Flat rate" : "Time of use"));
 
   char rate[12] = "", clock[12];
   if (have_now) format_rate(now.cents, rate, sizeof rate);
   format_clock(m.minute, clock, sizeof clock);
-  lv_label_set_text_fmt(t_now, "Now %s \xC2\xB7 #FFFFFF %s/kWh#", clock, rate);
+  lv_label_set_text_fmt(t_now, T("Now %s \xC2\xB7 #FFFFFF %s/kWh#"), clock, rate);
 
   // today's bands
   lv_obj_clean(t_bar);
@@ -319,17 +319,17 @@ static void update_tariff(const Model &m) {
 
   // what changes next
   uint32_t bg = 0x1B222B, fg = TEXT;
-  char msg[96];
-  if (!have_now) snprintf(msg, sizeof msg, "No rate set for this time \xC2\xB7 check your plan at gridmix.local");
-  else if (flat) snprintf(msg, sizeof msg, "Same rate all day \xC2\xB7 %s/kWh", rate);
+  char msg[128];
+  if (!have_now) snprintf(msg, sizeof msg, "%s", T("No rate set for this time \xC2\xB7 check your plan at gridmix.local"));
+  else if (flat) snprintf(msg, sizeof msg, T("Same rate all day \xC2\xB7 %s/kWh"), rate);
   else {
     const TariffPeriod &next = t.periods[now.next_index];
     char when[12], nrate[12];
     format_clock((m.minute + now.minutes_to_change) % 1440, when, sizeof when);
     format_rate(next.cents, nrate, sizeof nrate);
     const bool up = next.cents > now.cents;
-    snprintf(msg, sizeof msg, "%s starts at %s \xC2\xB7 %s/kWh, %s", next.name, when, nrate,
-             up ? "run big loads before then" : "wait for it if you can");
+    snprintf(msg, sizeof msg, T("%s starts at %s \xC2\xB7 %s/kWh, %s"), next.name, when, nrate,
+             T(up ? "run big loads before then" : "wait for it if you can"));
     bg = up ? 0x2A1714 : 0x16231C;
     fg = up ? 0xFFD9D2 : 0xC9F2D9;
   }
@@ -365,9 +365,13 @@ static void update_tariff(const Model &m) {
     lv_obj_set_pos(hl, 8, 44);
   }
 
-  char foot[64] = "";
-  if (t.supply_cents_per_day > 0 || t.feed_in_cents > 0)
-    snprintf(foot, sizeof foot, "Supply %.1f%s/day \xC2\xB7 Feed-in %.1f%s/kWh", t.supply_cents_per_day, minor_unit(), t.feed_in_cents, minor_unit());
+  char foot[96] = "";
+  if (t.supply_cents_per_day > 0 || t.feed_in_cents > 0) {
+    char sup[16], fin[16];
+    format_decimal(t.supply_cents_per_day, 1, sup, sizeof sup);
+    format_decimal(t.feed_in_cents, 1, fin, sizeof fin);
+    snprintf(foot, sizeof foot, T("Supply %s%s/day \xC2\xB7 Feed-in %s%s/kWh"), sup, minor_unit(), fin, minor_unit());
+  }
   lv_label_set_text(t_footer, foot);
 }
 
@@ -385,7 +389,7 @@ static void build_update(lv_obj_t *scr) {
   upd_scr = box(scr, 0, 0, 480, 272, BG);
   lv_obj_set_clickable(upd_scr, true);
   lv_obj_set_hidden(upd_scr, true);
-  lv_obj_t *t = label(upd_scr, &gm_grotesk_17, 0xFFFFFF, "Updating Grid Mix");
+  lv_obj_t *t = label_tr(upd_scr, &gm_grotesk_17, 0xFFFFFF, "Updating Grid Mix");
   lv_obj_align(t, LV_ALIGN_CENTER, 0, -40);
   upd_msg = label(upd_scr, &gm_inter_12, MUTED);
   lv_obj_align(upd_msg, LV_ALIGN_CENTER, 0, -14);
@@ -395,7 +399,7 @@ static void build_update(lv_obj_t *scr) {
   lv_obj_set_style_radius(upd_fill, 4, 0);
   upd_pct = label(upd_scr, &gm_inter_12, TEXT);
   lv_obj_align(upd_pct, LV_ALIGN_CENTER, 0, 34);
-  lv_obj_t *n = label(upd_scr, &gm_inter_11, FAINT, "Keep it plugged in. It restarts by itself when done.");
+  lv_obj_t *n = label_tr(upd_scr, &gm_inter_11, FAINT, "Keep it plugged in. It restarts by itself when done.");
   lv_obj_align(n, LV_ALIGN_BOTTOM_MID, 0, -20);
 }
 

@@ -11,6 +11,7 @@
 #include "lvgl.h"
 #include "gridui.h"
 #include "parsers.h"
+#include "schedule.h"
 #include "../test/test_gridcore/fixtures.h"
 
 using namespace gridcore;
@@ -191,13 +192,50 @@ int main(int argc, char **argv) {
     list.push_back({"22-uk-no-imports", calm, 0});
   }
   {
+    // France, real RTE answer (13 Nov 2026, 6:15am Paris time), euro tariff with peak and off-peak hours.
+    // Built twice: in French ("-fr-...-fr") and in English ("-fr-...-en").
+    for (int fr = 1; fr >= 0; fr--) {
+      set_lang(fr ? LANG_FR : LANG_EN);
+      set_currency('E');
+      GridSnapshot s;
+      parse_rte(RTE_FRANCE_NOW, strlen(RTE_FRANCE_NOW), s);
+      Tariff t;
+      t.add(fr ? "Creuses" : "Off-peak", 22 * 60, 6 * 60, 20.7f);
+      t.add(fr ? "Pleines" : "Peak", 6 * 60, 22 * 60, 27.0f);
+      t.supply_cents_per_day = 51.2f;
+      t.feed_in_cents = 4.0f;
+      Model m = model_build(s, true, "France", 5, 6 * 60 + 35, &t);
+      m.show_imports = true;
+      char ago[48], sub[56];
+      format_ago(20 * 60, ago, sizeof ago);
+      snprintf(sub, sizeof sub, T("My region \xC2\xB7 %s"), T("national grid"));
+      model_views(m, "France", sub, "France", T("Whole country"), T("Every 15 min"), ago, FRESH_OK);
+      HistoryPoint pts[64];
+      const int n = parse_rte_history(RTE_FRANCE_HISTORY, strlen(RTE_FRANCE_HISTORY), pts, 64);
+      const int64_t end = s.data_time / 1800;
+      for (int i = 0; i < n; i++) {
+        const int64_t idx = pts[i].time / 1800 - (end - (HISTORY_POINTS - 1));
+        if (idx >= 0 && idx < HISTORY_POINTS) m.history[idx] = pts[i].renewable_pct;
+      }
+      m.history[HISTORY_POINTS - 1] = s.renewable_pct();
+      const char *l = fr ? "fr" : "en";
+      list.push_back({std::string("23-fr-paris-") + l, m, 0});
+      list.push_back({std::string("24-fr-detail-") + l, m, 3});
+      list.push_back({std::string("25-fr-tariff-") + l, m, 4});
+    }
+    set_lang(LANG_EN);
+    set_currency('$');
+  }
+  {
     Model m = list[4].model;       // data that's falling behind: amber dot next to the clock
     m.freshness = FRESH_LATE;
     list.push_back({"18-data-falling-behind", m, 0});
   }
 
   for (Scenario &sc : list) {
-    set_pence(sc.name.find("-uk-") != std::string::npos);
+    const bool france = sc.name.find("-fr-") != std::string::npos;
+    set_currency(sc.name.find("-uk-") != std::string::npos ? 'L' : france ? 'E' : '$');
+    set_language(france && sc.name.compare(sc.name.size() - 3, 3, "-fr") == 0 ? LANG_FR : LANG_EN);
     update(sc.model);
     run(1500);
     if (sc.action == 1) tap(60, 20);

@@ -169,6 +169,25 @@ void test_ago() {
   TEST_ASSERT_EQUAL(2, freshness_level(SRC_EIA, 3 * 86400));
 }
 
+void test_france_feed() {
+  const Feed f = feed_for("FR", "FR", false);
+  TEST_ASSERT_EQUAL(SRC_RTE, f.source);
+  TEST_ASSERT_FALSE(f.has_market);
+  char url[512];
+  TEST_ASSERT_TRUE(rte_url(url, sizeof url) > 0);
+  TEST_ASSERT_NOT_NULL(strstr(url, "eco2mix-national-tr/records?select=date_heure,nucleaire,"));
+  TEST_ASSERT_NOT_NULL(strstr(url, "order_by=date_heure%20desc&limit=1"));
+  const int64_t now = parse_iso_time("2026-11-13T05:35:00Z");
+  TEST_ASSERT_TRUE(rte_history_url(now, url, sizeof url) > 0);
+  TEST_ASSERT_NOT_NULL(strstr(url, "date_heure%3E%3Ddate%272026-11-12T05:35:00Z%27&order_by=date_heure&limit=100"));
+  Scheduler s;
+  s.reset(SRC_RTE, now);
+  s.done(FETCH_MIX, now, 200);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-13T05:40:30Z"), s.next(FETCH_MIX));   // every 5 minutes
+  TEST_ASSERT_EQUAL(0, freshness_level(SRC_RTE, 40 * 60));
+  TEST_ASSERT_EQUAL(1, freshness_level(SRC_RTE, 60 * 60));
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_nem_time_is_utc_plus_10);
@@ -180,5 +199,6 @@ int main(int, char **) {
   RUN_TEST(test_backoff_and_errors);
   RUN_TEST(test_eia_has_no_market_requests);
   RUN_TEST(test_ago);
+  RUN_TEST(test_france_feed);
   return UNITY_END();
 }

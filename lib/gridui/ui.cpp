@@ -384,11 +384,11 @@ static void build_header() {
   lv_obj_set_style_pad_row(right, 1, 0);
 
   rate_row = row(right, 5);
-  lbl_your = label(rate_row, &gm_inter_11, MUTED, "Your rate");
+  lbl_your = label_tr(rate_row, &gm_inter_11, MUTED, "Your rate");
   lbl_rate = label(rate_row, &gm_grotesk_15, 0xFFFFFF);
   lbl_unit = label(rate_row, &gm_inter_11, 0xC9D0D9, "/kWh");
   pill_period = pill(rate_row, &gm_inter_11);
-  lbl_noplan = label(right, &gm_inter_11, MUTED, "Add your power plan at gridmix.local");
+  lbl_noplan = label_tr(right, &gm_inter_11, MUTED, "Add your power plan at gridmix.local");
 
 }
 
@@ -508,7 +508,7 @@ static void build_scene() {
   // text over the scene
   lbl_pct = label(scene, &gm_grotesk_42, 0x0B1B2B);
   lv_obj_set_pos(lbl_pct, 14, -2);
-  lbl_pct_sub = label(scene, &gm_inter_12, 0x1E3346, "renewable right now");
+  lbl_pct_sub = label_tr(scene, &gm_inter_12, 0x1E3346, "renewable right now");
   lv_obj_set_pos(lbl_pct_sub, 15, 46);
   pill_advice = pill(scene, &gm_inter_11);
   lv_obj_set_style_radius(pill_advice, 10, 0);
@@ -539,7 +539,7 @@ static void build_bottom() {
   // "Details ›" in the bottom-right corner (tapping the scene does the same)
   details_btn = box(scr, 380, 240, 100, 32, 0, LV_OPA_TRANSP);
   clickable(details_btn, on_details);
-  lv_obj_t *dl = label(details_btn, &gm_inter_12, TEXT, "Details \xE2\x80\xBA");
+  lv_obj_t *dl = label_tr(details_btn, &gm_inter_12, TEXT, "Details \xE2\x80\xBA");
   lv_obj_align(dl, LV_ALIGN_RIGHT_MID, -16, 0);
 
   chips = row(scr, 12);
@@ -554,7 +554,7 @@ static void build_picker() {
   lv_obj_set_style_border_side(picker, LV_BORDER_SIDE_TOP, 0);
   lv_obj_set_style_border_width(picker, 1, 0);
   lv_obj_set_style_border_color(picker, hex(0x1F242D), 0);
-  lv_obj_t *t = label(picker, &gm_inter_12, MUTED, "Show the grid for");
+  lv_obj_t *t = label_tr(picker, &gm_inter_12, MUTED, "Show the grid for");
   lv_obj_set_pos(t, 14, 12);
   lv_obj_t *close = box(picker, 426, 2, 44, 36, 0, LV_OPA_TRANSP);
   clickable(close, on_close);
@@ -586,6 +586,20 @@ static void build_picker() {
     lv_obj_align(opt_ago[i], LV_ALIGN_TOP_RIGHT, -12, 29);
     opt_fresh[i] = circle(b, 0, 0, 3, 0x3BB273);
   }
+}
+
+// Fixed labels and the English they were made from, so a change of language can re-label them
+struct Translated { lv_obj_t *obj; const char *en; };
+static Translated translated[48];
+static int translated_n = 0;
+void remember_translation(lv_obj_t *l, const char *en) {
+  if (translated_n < (int)(sizeof translated / sizeof translated[0])) translated[translated_n++] = {l, en};
+}
+
+void set_language(Lang l) {
+  if (l == current_lang()) return;
+  set_lang(l);
+  for (int i = 0; i < translated_n; i++) lv_label_set_text(translated[i].obj, T(translated[i].en));
 }
 
 void create(const Callbacks &cb) {

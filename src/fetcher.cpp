@@ -51,7 +51,8 @@ static void task(void *) {
     j = job;
     xSemaphoreGive(lock);
     const bool ci = j.feed.source == SRC_CARBON_INTENSITY;   // Great Britain: no key needed
-    if (!j.key[0] && !ci) continue;
+    const bool rte = j.feed.source == SRC_RTE;               // France: no key needed
+    if (!j.key[0] && !ci && !rte) continue;
     if (j.generation != seen_generation) {
       seen_generation = j.generation;
       sched.reset(j.feed.source, now);
@@ -73,15 +74,17 @@ static void task(void *) {
       continue;   // one request per pass
     }
     // Once the first mix is in, fill the 24-hour chart with one request
-    if ((oe || ci) && history_tries >= 0 && history_tries < 3 && now >= history_next && sched.next(FETCH_MIX) > now) {
-      if (oe ? oe_history_url(j.feed, now, url, sizeof url) : ci_history_url(j.feed, now, url, sizeof url)) {
+    if ((oe || ci || rte) && history_tries >= 0 && history_tries < 3 && now >= history_next && sched.next(FETCH_MIX) > now) {
+      if (oe ? oe_history_url(j.feed, now, url, sizeof url)
+          : ci ? ci_history_url(j.feed, now, url, sizeof url) : rte_history_url(now, url, sizeof url)) {
         log_url("history", url);
         String body;
         const int code = https_get(url, oe ? j.key : nullptr, body);
         static HistoryPoint pts[gridui::HISTORY_POINTS];
         const int n = code != 200 ? 0
                     : oe ? parse_openelectricity_history(body.c_str(), body.length(), pts, gridui::HISTORY_POINTS)
-                         : parse_carbon_intensity_history(body.c_str(), body.length(), pts, gridui::HISTORY_POINTS);
+                    : ci ? parse_carbon_intensity_history(body.c_str(), body.length(), pts, gridui::HISTORY_POINTS)
+                         : parse_rte_history(body.c_str(), body.length(), pts, gridui::HISTORY_POINTS);
         Serial.printf("[fetch] history -> %d, %d points\n", code, n);
         if (n > 0) {
           history_tries = -1;   // done for this region/view
@@ -111,6 +114,10 @@ static void task(void *) {
       if (!ci_url(j.feed, url, sizeof url)) continue;
       log_url("mix", url);
       code = https_get(url, nullptr, body);
+    } else if (rte) {
+      if (!rte_url(url, sizeof url)) continue;
+      log_url("mix", url);
+      code = https_get(url, nullptr, body);
     } else {
       if (!eia_url(j.feed, url, sizeof url)) continue;
       log_url("mix", url);
@@ -124,6 +131,7 @@ static void task(void *) {
     if (code == 200) {
       ok = oe ? parse_openelectricity(body.c_str(), body.length(), snap)
          : ci ? parse_carbon_intensity(body.c_str(), body.length(), snap)
+         : rte ? parse_rte(body.c_str(), body.length(), snap)
               : parse_eia(body.c_str(), body.length(), snap);
       if (ok && oe && market_body.length()) {
         MarketInfo mk;

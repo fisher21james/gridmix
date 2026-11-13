@@ -1,11 +1,12 @@
 #include "grid_snapshot.h"
+#include "i18n.h"
 #include <string.h>
 
 namespace gridcore {
 
 const char *source_name(Source s) {
   static const char *names[SOURCE_COUNT] = {"Solar", "Wind", "Hydro", "Battery", "Nuclear", "Gas", "Coal", "Other", "Biomass", "Imports"};
-  return s < SOURCE_COUNT ? names[s] : "?";
+  return s < SOURCE_COUNT ? T(names[s]) : "?";
 }
 
 bool source_is_renewable(Source s) { return s == SOLAR || s == WIND || s == HYDRO || s == BIOMASS; }

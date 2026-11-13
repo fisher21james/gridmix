@@ -7,6 +7,8 @@
 #include "grid_snapshot.h"
 #include "parsers.h"
 #include "fixtures.h"
+#include "i18n.h"
+#include "tariff.h"
 
 using namespace gridcore;
 
@@ -234,6 +236,58 @@ void test_ci_now() {
   TEST_ASSERT_FALSE(parse_carbon_intensity("{\"data\":[]}", 11, s));
 }
 
+void test_rte_now() {
+  GridSnapshot s;
+  TEST_ASSERT_TRUE(parse_rte(RTE_FRANCE_NOW, strlen(RTE_FRANCE_NOW), s));
+  TEST_ASSERT_FALSE(s.percent_only);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-13T05:15Z"), s.data_time);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 44436, s.mw[NUCLEAR]);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 4158, s.mw[HYDRO]);    // 4206 less 48 MW of pumped storage
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 84, s.mw[OTHER]);      // oil 36 + pumped storage 48
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 969, s.mw[BIOMASS]);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 0, s.mw[IMPORTS]);     // exporting 4578 MW
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 12, s.battery_charging);
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 58689, s.total());
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 21.7f, s.renewable_pct());   // wind + hydro + bioenergy; nuclear isn't renewable
+  // Some figures arrive as strings, and importing shows up as imports
+  const char *j = "{\"results\":[{\"date_heure\":\"2026-11-13T05:00:00+00:00\",\"nucleaire\":100,\"hydraulique\":\"50\",\"ech_physiques\":25}]}";
+  TEST_ASSERT_TRUE(parse_rte(j, strlen(j), s));
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 50, s.mw[HYDRO]);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 25, s.mw[IMPORTS]);
+  TEST_ASSERT_FALSE(parse_rte("{\"results\":[{\"date_heure\":\"2026-11-13T05:30:00+00:00\",\"nucleaire\":null}]}", 64, s));
+}
+
+void test_rte_history() {
+  HistoryPoint p[64];
+  const int n = parse_rte_history(RTE_FRANCE_HISTORY, strlen(RTE_FRANCE_HISTORY), p, 64);
+  TEST_ASSERT_EQUAL(47, n);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-12T06:00Z"), p[0].time);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-13T05:00Z"), p[46].time);
+  for (int i = 1; i < n; i++) TEST_ASSERT_TRUE(p[i].time > p[i - 1].time);
+}
+
+void test_french_text() {
+  set_lang(LANG_FR);
+  TEST_ASSERT_EQUAL_STRING("Surtout renouvelable", T("Mostly renewable"));
+  TEST_ASSERT_EQUAL_STRING("Nucl\xC3\xA9" "aire", source_name(NUCLEAR));
+  TEST_ASSERT_EQUAL_STRING("no translation", T("no translation"));
+  char b[24];
+  format_decimal(20.68f, 1, b, sizeof b);
+  TEST_ASSERT_EQUAL_STRING("20,7", b);
+  format_thousands(58689, b, sizeof b);
+  TEST_ASSERT_EQUAL_STRING("58 689", b);
+  format_header_clock(16 * 60 + 5, b, sizeof b);
+  TEST_ASSERT_EQUAL_STRING("16:05", b);
+  format_clock(22 * 60, b, sizeof b);
+  TEST_ASSERT_EQUAL_STRING("22h", b);
+  set_lang(LANG_EN);
+  TEST_ASSERT_EQUAL_STRING("Nuclear", source_name(NUCLEAR));
+  format_header_clock(16 * 60 + 5, b, sizeof b);
+  TEST_ASSERT_EQUAL_STRING("4:05 pm", b);
+  format_thousands(58689, b, sizeof b);
+  TEST_ASSERT_EQUAL_STRING("58,689", b);
+}
+
 void test_ci_history() {
   HistoryPoint p[64];
   const int n = parse_carbon_intensity_history(CI_LONDON_HISTORY, strlen(CI_LONDON_HISTORY), p, 64);
@@ -258,6 +312,9 @@ int main(int, char **) {
   RUN_TEST(test_oe_history_real);
   RUN_TEST(test_ci_now);
   RUN_TEST(test_ci_history);
+  RUN_TEST(test_rte_now);
+  RUN_TEST(test_rte_history);
+  RUN_TEST(test_french_text);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);
   RUN_TEST(test_oe_mix);

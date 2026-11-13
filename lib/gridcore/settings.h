@@ -25,12 +25,13 @@ struct Settings {
 
   uint8_t brightness = 80;    // percent
   bool night_dim = true;
+  bool local_lang = false;    // show the screen in the country's own language (French in France) instead of English
 
   bool has_tariff() const { return tariff_flat ? flat_cents > 0 : tou.count > 0; }
   Tariff active_tariff() const;   // what the rate engine should use (flat becomes one all-day period)
-  const char *key_for_country() const { return country[0] == 'U' ? key_eia : country[0] == 'G' ? "" : key_oe; }
-  // Great Britain's Carbon Intensity API needs no key
-  bool needs_key() const { return country[0] != 'G'; }
+  // Great Britain's Carbon Intensity API and France's RTE data need no key
+  bool needs_key() const { return country[0] == 'A' || country[0] == 'U'; }
+  const char *key_for_country() const { return country[0] == 'U' ? key_eia : needs_key() ? key_oe : ""; }
   bool ready() const { return !needs_key() || key_for_country()[0]; }   // enough set up to fetch live data
 };
 
@@ -42,6 +43,8 @@ struct CountryInfo {
   const char *local_sub;       // picker: "state grid"
   const char *freq;            // picker: "Every 10 min"
   bool pence;                  // rates in p/£ instead of ¢/$
+  char currency;               // '$' (dollars and cents), 'L' (pounds and pence) or 'E' (euros and cents)
+  const char *lang;            // the country's own language for the screen: "en", "fr"
   bool imports;                // grid buys power from abroad (draw the transmission line); never in Australia
 };
 const CountryInfo &country_info(const char *country);

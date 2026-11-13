@@ -1,4 +1,5 @@
 #include "tariff.h"
+#include "i18n.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -111,6 +112,11 @@ int tariff_day_segments(const Tariff &t, int weekday, DaySegment *out, int max) 
 void format_clock(int minute_of_day, char *out, size_t cap) {
   const int md = ((minute_of_day % DAY_MIN) + DAY_MIN) % DAY_MIN;
   const int h = md / 60, m = md % 60, h12 = h % 12 ? h % 12 : 12;
+  if (current_lang() == LANG_FR) {   // 24-hour clock: "7h", "16h30"
+    if (m) snprintf(out, cap, "%dh%02d", h, m);
+    else snprintf(out, cap, "%dh", h);
+    return;
+  }
   if (m) snprintf(out, cap, "%d:%02d%s", h12, m, h < 12 ? "am" : "pm");
   else snprintf(out, cap, "%d%s", h12, h < 12 ? "am" : "pm");
 }
@@ -126,7 +132,7 @@ static void format_span(int start, int end, char *out, size_t cap) {
   const bool morning = s0 < 720 && e0 > s0 && e0 <= 720;
   const bool afternoon = s0 >= 720 && e0 > s0;
   const size_t la = strlen(a), lb = strlen(b);
-  if ((morning || afternoon) && la > 2 && lb > 2 && !strcmp(a + la - 2, b + lb - 2)) a[la - 2] = 0;
+  if (current_lang() == LANG_EN && (morning || afternoon) && la > 2 && lb > 2 && !strcmp(a + la - 2, b + lb - 2)) a[la - 2] = 0;
   snprintf(out, cap, "%s%s%s", a, DASH, b);
 }
 
@@ -148,7 +154,7 @@ int tariff_cards(const Tariff &t, int weekday, RateCard *out, int max) {
     card.hours[0] = 0;
     // A run that ends at midnight and one that starts at midnight with the same rate are one span ("3pm–1am")
     const bool wraps = ns > 1 && same_rate(t, seg[0].index, seg[ns - 1].index) && same_rate(t, seg[0].index, card.index);
-    if (ns == 1) { snprintf(card.hours, sizeof card.hours, "All day"); continue; }
+    if (ns == 1) { snprintf(card.hours, sizeof card.hours, "%s", T("All day")); continue; }
     for (int j = 0; j < ns; j++) {
       if (!same_rate(t, seg[j].index, card.index)) continue;
       int start = seg[j].start, end = seg[j].end;
@@ -186,10 +192,10 @@ bool tariff_cheapest_window(const Tariff &t, int weekday, int minute, char *out,
   while (end - start < DAY_MIN && cheap_at(end)) end++;
   char a[16], b[16];
   format_clock(end % DAY_MIN, b, sizeof b);
-  if (start == now) { snprintf(out, cap, "Now %s %s", DASH, b); return true; }
+  if (start == now) { snprintf(out, cap, "%s %s %s", T("Now"), DASH, b); return true; }
   format_clock(start % DAY_MIN, a, sizeof a);
   const bool tomorrow = start / DAY_MIN != now / DAY_MIN;
-  snprintf(out, cap, "%s%s %s %s", tomorrow ? "Tomorrow " : "", a, DASH, b);
+  snprintf(out, cap, "%s%s %s %s", tomorrow ? T("Tomorrow ") : "", a, DASH, b);
   return true;
 }
 

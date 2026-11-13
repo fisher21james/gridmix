@@ -15,7 +15,7 @@ struct LiveData {
   int failures = 0;              // failed requests in a row
   bool from_cache = false;       // shown from flash after a restart; nothing fetched yet
 
-  // Last 24 hours, fetched once after start-up or a change of region (Open Electricity only)
+  // Last 24 hours, fetched once after start-up or a change of region
   gridcore::HistoryPoint history[48];   // hourly (Australia) or half-hourly (Great Britain)
   int history_count = 0;
   uint32_t history_version = 0;

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "grid_snapshot.h"
+#include "i18n.h"
 
 namespace gridcore {
 
@@ -15,6 +16,13 @@ Feed feed_for(const char *country, const char *region, bool country_view) {
     f.has_market = false;
     f.network[0] = 0;
     snprintf(f.region, sizeof f.region, "%s", country_view || !region || !*region ? "18" : region);
+    return f;
+  }
+  if (country && country[0] == 'F') {   // France: one national feed
+    f.source = SRC_RTE;
+    f.has_market = false;
+    f.network[0] = 0;
+    snprintf(f.region, sizeof f.region, "FR");
     return f;
   }
   if (country && country[0] == 'U') {
@@ -105,6 +113,26 @@ size_t ci_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
   return finish(snprintf(out, cap, "https://api.carbonintensity.org.uk/regional/intensity/%sZ/pt24h/regionid/%s", t, f.region), cap);
 }
 
+// Only the columns we use, so the answer stays small (about 300 bytes now, 13 KB for 24 hours)
+static const char *RTE_BASE = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-tr/records";
+static const char *RTE_FIELDS = "date_heure,nucleaire,eolien,solaire,hydraulique,hydraulique_step_turbinage,gaz,charbon,fioul,"
+                                "bioenergies,ech_physiques,destockage_batterie,stockage_batterie";
+
+size_t rte_url(char *out, size_t cap) {
+  return finish(snprintf(out, cap, "%s?select=%s&where=nucleaire%%20is%%20not%%20null&order_by=date_heure%%20desc&limit=1",
+                         RTE_BASE, RTE_FIELDS), cap);
+}
+
+size_t rte_history_url(int64_t now_utc, char *out, size_t cap) {
+  // 15-minute points from 24 hours ago (96 rows, under the 100-row limit); the parser keeps the half hours
+  char t[24];
+  network_time(now_utc - DAY, "UTC", t, sizeof t);   // "YYYY-MM-DDTHH:MM:SS"
+  return finish(snprintf(out, cap,
+                         "%s?select=%s&where=nucleaire%%20is%%20not%%20null%%20and%%20date_heure%%3E%%3Ddate%%27%sZ%%27"
+                         "&order_by=date_heure&limit=100",
+                         RTE_BASE, RTE_FIELDS, t), cap);
+}
+
 size_t eia_url(const Feed &f, char *out, size_t cap) {
   // Newest rows first; 30 rows covers every fuel type for the latest hour. Brackets are percent-encoded.
   return finish(snprintf(out, cap,
@@ -131,6 +159,9 @@ int64_t Scheduler::next_regular(FetchKind k, int64_t now) const {
   // Carbon Intensity: half-hourly, published shortly after each half hour. Check every 15 minutes
   // (5 minutes past each quarter): 96 small requests a day, no key or allowance.
   if (src_ == SRC_CARBON_INTENSITY) return (now / (15 * MIN) + 1) * 15 * MIN + 5 * MIN;
+  // RTE: a new quarter hour appears about 15-20 minutes after it starts. Check every 5 minutes
+  // (288 small requests a day, no key) so it's on screen soon after it's published.
+  if (src_ == SRC_RTE) return (now / (5 * MIN) + 1) * 5 * MIN + 30;
   // Open Electricity: just after each 10 (or 30) minutes, when the newest 5-minute point has been published.
   // Slow down when the day's credits are nearly gone.
   int64_t step = k == FETCH_MIX ? 10 * MIN : 30 * MIN;
@@ -171,19 +202,20 @@ void Scheduler::done(FetchKind k, int64_t now, int http) {
 
 void format_ago(int64_t age_s, char *out, size_t cap) {
   if (age_s < 0) age_s = 0;
-  if (age_s < 90) snprintf(out, cap, "Updated just now");
-  else if (age_s < HOUR) snprintf(out, cap, "Updated %d min ago", (int)((age_s + 30) / MIN));
-  else if (age_s < DAY) snprintf(out, cap, "Updated %d h ago", (int)(age_s / HOUR));
+  if (age_s < 90) snprintf(out, cap, "%s", T("Updated just now"));
+  else if (age_s < HOUR) snprintf(out, cap, T("Updated %d min ago"), (int)((age_s + 30) / MIN));
+  else if (age_s < DAY) snprintf(out, cap, T("Updated %d h ago"), (int)(age_s / HOUR));
   else {
     const int d = (int)(age_s / DAY);
-    snprintf(out, cap, "Updated %d day%s ago", d, d == 1 ? "" : "s");
+    snprintf(out, cap, T(d == 1 ? "Updated %d day ago" : "Updated %d days ago"), d);
   }
 }
 
 int freshness_level(DataSource src, int64_t age_s) {
   // Carbon Intensity's newest half hour is normally under 30 minutes old (its end time is used)
-  const int64_t ok = src == SRC_EIA ? 24 * HOUR : src == SRC_CARBON_INTENSITY ? 45 * MIN : 25 * MIN;
-  const int64_t late = src == SRC_EIA ? 48 * HOUR : src == SRC_CARBON_INTENSITY ? 2 * HOUR : 90 * MIN;
+  const bool half_hourish = src == SRC_CARBON_INTENSITY || src == SRC_RTE;
+  const int64_t ok = src == SRC_EIA ? 24 * HOUR : half_hourish ? 45 * MIN : 25 * MIN;
+  const int64_t late = src == SRC_EIA ? 48 * HOUR : half_hourish ? 2 * HOUR : 90 * MIN;
   return age_s <= ok ? 0 : age_s <= late ? 1 : 2;
 }
 

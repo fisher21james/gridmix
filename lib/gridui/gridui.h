@@ -6,6 +6,7 @@
 #include "lvgl.h"
 #include "grid_snapshot.h"
 #include "tariff.h"
+#include "i18n.h"
 
 namespace gridui {
 
@@ -17,9 +18,9 @@ enum Freshness : uint8_t { FRESH_OK = 0, FRESH_LATE, FRESH_OLD };
 
 struct ViewOption {
   char title[32] = "";   // "South Australia"
-  char sub[40] = "";     // "My region · state grid"
-  char freq[24] = "";    // "Every 10 min"
-  char ago[24] = "";     // "Updated 2 min ago"
+  char sub[56] = "";     // "My region · state grid"
+  char freq[32] = "";    // "Every 10 min"
+  char ago[48] = "";     // "Updated 2 min ago"
   Freshness freshness = FRESH_OK;
 };
 
@@ -43,7 +44,7 @@ struct Model {
   bool has_tariff = false;     // for the tariff screen
   gridcore::Tariff tariff;
 
-  char advice[64] = "";        // status pill in the scene
+  char advice[96] = "";        // status pill in the scene
   Tone tone = TONE_OK;
 
   bool view_country = false;
@@ -68,9 +69,12 @@ void show_update(int percent, const char *message);
 // ---- helpers for building a Model (no LVGL needed)
 Sky sky_for_hour(int hour);
 void format_rate(float cents, char *out, size_t cap);   // 23.78 -> "23.8¢" (or "23.8p" in Britain)
-// Britain: rates in pence and pounds instead of cents and dollars
-void set_pence(bool pence);
-const char *minor_unit();   // "¢" or "p"
+// Money: '$' dollars and cents (¢), 'L' pounds and pence (p), 'E' euros and cents (c)
+void set_currency(char c);
+void set_pence(bool pence);   // older name: true = 'L', false = '$'
+const char *minor_unit();     // "¢", "p" or "c"
+// Screen language: re-labels everything already on screen. Call before update().
+void set_language(gridcore::Lang l);
 // Plain-English advice for the status pill. now_min = local minutes after midnight.
 void advise(const Model &m, const gridcore::RateNow *rate, const gridcore::Tariff *tariff, int now_min,
             char *out, size_t cap, Tone &tone);

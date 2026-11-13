@@ -27,6 +27,12 @@ int parse_openelectricity_history(const char *json, size_t len, HistoryPoint *ou
 bool parse_carbon_intensity(const char *json, size_t len, GridSnapshot &out);
 int parse_carbon_intensity_history(const char *json, size_t len, HistoryPoint *out, int max);
 
+// France: RTE eCO2mix real-time data via ODRÉ (opendatasoft), MW per fuel every 15 minutes.
+// {"results":[{"date_heure":"2026-11-13T05:15:00+00:00","nucleaire":44436,"eolien":7612,...}]}
+bool parse_rte(const char *json, size_t len, GridSnapshot &out);
+// Same request shape over 24 hours, oldest first; only the :00 and :30 points are kept (half-hour chart)
+int parse_rte_history(const char *json, size_t len, HistoryPoint *out, int max);
+
 // Open Electricity v4 /market/network/{NEM}?metrics=solar_rooftop_forecast (AEMO's rooftop solar estimate).
 // Any other metrics in the answer (such as price) are ignored.
 struct MarketInfo {

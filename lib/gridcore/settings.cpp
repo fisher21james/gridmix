@@ -20,13 +20,17 @@ static const RegionInfo REGIONS[] = {
   {"GB", "10", "East England"}, {"GB", "11", "South West England"}, {"GB", "12", "South England"},
   {"GB", "13", "London"}, {"GB", "14", "South East England"}, {"GB", "15", "England"},
   {"GB", "16", "Scotland"}, {"GB", "17", "Wales"}, {"GB", "18", "Great Britain"},
+  // France: national figures only (RTE's regional data runs about 45 minutes behind)
+  {"FR", "FR", "France"},
 };
 
 const CountryInfo &country_info(const char *country) {
-  static const CountryInfo AU = {"Australia", "Australia (NEM)", "East coast grid (NEM)", "state grid", "Every 10 min", false, false};
-  static const CountryInfo US = {"United States", "United States", "Lower 48 states (EIA)", "EIA", "Hourly", false, true};
-  static const CountryInfo GB = {"Great Britain", "Great Britain", "England, Scotland & Wales", "local area", "Every 30 min", true, true};
+  static const CountryInfo AU = {"Australia", "Australia (NEM)", "East coast grid (NEM)", "state grid", "Every 10 min", false, '$', "en", false};
+  static const CountryInfo US = {"United States", "United States", "Lower 48 states (EIA)", "EIA", "Hourly", false, '$', "en", true};
+  static const CountryInfo GB = {"Great Britain", "Great Britain", "England, Scotland & Wales", "local area", "Every 30 min", true, 'L', "en", true};
+  static const CountryInfo FR = {"France", "France", "Whole country", "national grid", "Every 15 min", false, 'E', "fr", true};
   if (country && country[0] == 'G') return GB;
+  if (country && country[0] == 'F') return FR;
   if (country && country[0] == 'U') return US;
   return AU;
 }
@@ -102,6 +106,7 @@ size_t settings_to_json(const Settings &s, bool public_view, char *out, size_t c
 
   doc["display"]["brightness"] = s.brightness;
   doc["display"]["night_dim"] = s.night_dim;
+  doc["display"]["language"] = s.local_lang ? "local" : "en";
 
   const size_t need = measureJson(doc);
   if (need + 1 > cap) return 0;
@@ -132,7 +137,7 @@ bool settings_from_json(const char *json, size_t len, Settings &out, char *err, 
 
   Settings s = out;   // work on a copy so a bad save changes nothing
 
-  if (!copy_str(doc["country"] | s.country, s.country, sizeof s.country) || (strcmp(s.country, "AU") && strcmp(s.country, "US") && strcmp(s.country, "GB")))
+  if (!copy_str(doc["country"] | s.country, s.country, sizeof s.country) || (strcmp(s.country, "AU") && strcmp(s.country, "US") && strcmp(s.country, "GB") && strcmp(s.country, "FR")))
     return fail(err, err_len, "Unknown country.");
   if (!copy_str(doc["region"] | s.region, s.region, sizeof s.region) || !region_is_valid(s.country, s.region))
     return fail(err, err_len, "That region isn't in the country chosen.");
@@ -183,6 +188,8 @@ bool settings_from_json(const char *json, size_t len, Settings &out, char *err, 
     int b = d["brightness"] | (int)s.brightness;
     s.brightness = (uint8_t)(b < 10 ? 10 : b > 100 ? 100 : b);
     s.night_dim = d["night_dim"] | s.night_dim;
+    const char *lang = d["language"] | (s.local_lang ? "local" : "en");
+    s.local_lang = !strcmp(lang, "local");
   }
 
   out = s;

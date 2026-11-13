@@ -344,4 +344,62 @@ int parse_carbon_intensity_history(const char *json, size_t len, HistoryPoint *o
   return n;
 }
 
+// ---------------------------------------------------------------- France: RTE eCO2mix (ODRÉ)
+
+// ODRÉ returns most figures as numbers but a few as strings ("3178"); accept both, null = 0
+static float num(JsonVariantConst v) {
+  if (v.is<const char *>()) return (float)atof(v.as<const char *>());
+  return v | 0.0f;
+}
+
+static bool rte_entry(JsonObjectConst r, GridSnapshot &s) {
+  s = GridSnapshot();
+  if (r["nucleaire"].isNull()) return false;   // the newest quarter-hour can be half filled in
+  const float step = num(r["hydraulique_step_turbinage"]);   // pumped storage giving back stored power
+  float hydro = num(r["hydraulique"]) - step;
+  s.mw[NUCLEAR] = num(r["nucleaire"]);
+  s.mw[WIND] = num(r["eolien"]);
+  s.mw[SOLAR] = num(r["solaire"]);
+  s.mw[HYDRO] = hydro > 0 ? hydro : 0;
+  s.mw[GAS] = num(r["gaz"]);
+  s.mw[COAL] = num(r["charbon"]);
+  s.mw[OTHER] = num(r["fioul"]) + (step > 0 ? step : 0);   // oil, and pumped storage (not a new source)
+  s.mw[BIOMASS] = num(r["bioenergies"]);
+  s.mw[BATTERY] = num(r["destockage_batterie"]);
+  const float exch = num(r["ech_physiques"]);   // positive = importing
+  s.mw[IMPORTS] = exch > 0 ? exch : 0;
+  const float charging = -num(r["stockage_batterie"]);
+  s.battery_charging = charging > 0 ? charging : 0;
+  for (float &v : s.mw) if (v < 0) v = 0;
+  s.has_rooftop = true;   // RTE's solar figure includes rooftop panels (estimated)
+  s.data_time = parse_iso_time(r["date_heure"] | "");
+  s.valid = s.total() > 0 && s.data_time > 0;
+  return s.valid;
+}
+
+bool parse_rte(const char *json, size_t len, GridSnapshot &out) {
+  out = GridSnapshot();
+  JsonDocument doc;
+  if (deserializeJson(doc, json, len)) return false;
+  bool ok = false;
+  for (JsonObjectConst r : doc["results"].as<JsonArrayConst>()) {
+    GridSnapshot s;
+    if (rte_entry(r, s) && (!ok || s.data_time > out.data_time)) { out = s; ok = true; }
+  }
+  return ok;
+}
+
+int parse_rte_history(const char *json, size_t len, HistoryPoint *out, int max) {
+  JsonDocument doc;
+  if (deserializeJson(doc, json, len)) return 0;
+  int n = 0;
+  for (JsonObjectConst r : doc["results"].as<JsonArrayConst>()) {
+    GridSnapshot s;
+    if (n < max && rte_entry(r, s) && s.data_time % 1800 == 0) out[n++] = HistoryPoint{s.data_time, s.renewable_pct()};
+  }
+  for (int i = 1; i < n; i++)   // oldest first
+    for (int j = i; j > 0 && out[j].time < out[j - 1].time; j--) { const HistoryPoint x = out[j]; out[j] = out[j - 1]; out[j - 1] = x; }
+  return n;
+}
+
 }  // namespace gridcore

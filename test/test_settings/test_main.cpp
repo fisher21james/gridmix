@@ -116,6 +116,26 @@ void test_garbage_refused() {
   TEST_ASSERT_FALSE(settings_from_json("{nope", 5, s, err, sizeof err));
 }
 
+void test_france_and_language() {
+  Settings s;
+  char err[96];
+  const char *j = "{\"country\":\"FR\",\"region\":\"FR\",\"tz\":\"CET-1CEST,M3.5.0,M10.5.0/3\",\"display\":{\"language\":\"local\"}}";
+  TEST_ASSERT_TRUE_MESSAGE(settings_from_json(j, strlen(j), s, err, sizeof err), err);
+  TEST_ASSERT_FALSE(s.needs_key());
+  TEST_ASSERT_TRUE(s.ready());
+  TEST_ASSERT_TRUE(s.local_lang);
+  TEST_ASSERT_EQUAL_STRING("fr", country_info("FR").lang);
+  TEST_ASSERT_EQUAL('E', country_info("FR").currency);
+  char out[2048];
+  TEST_ASSERT_TRUE(settings_to_json(s, true, out, sizeof out) > 0);
+  TEST_ASSERT_NOT_NULL(strstr(out, "\"language\":\"local\""));
+  Settings back;
+  TEST_ASSERT_TRUE(settings_from_json(out, strlen(out), back, err, sizeof err));
+  TEST_ASSERT_TRUE(back.local_lang);
+  const char *bad = "{\"country\":\"FR\",\"region\":\"SA1\"}";
+  TEST_ASSERT_FALSE(settings_from_json(bad, strlen(bad), s, err, sizeof err));
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_reads_page_json);
@@ -128,5 +148,6 @@ int main(int, char **) {
   RUN_TEST(test_key_with_spaces_refused);
   RUN_TEST(test_brightness_clamped);
   RUN_TEST(test_garbage_refused);
+  RUN_TEST(test_france_and_language);
   return UNITY_END();
 }

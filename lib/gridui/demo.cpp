@@ -39,8 +39,8 @@ Model model_build(const GridSnapshot &snap, bool has_data, const char *region, i
   m.has_data = has_data;
   m.snap = snap;
   snprintf(m.region, sizeof m.region, "%s", region);
-  const int h = (minute / 60) % 24, mi = minute % 60, h12 = h % 12 ? h % 12 : 12;
-  snprintf(m.clock, sizeof m.clock, "%d:%02d %s", h12, mi, h < 12 ? "am" : "pm");
+  const int h = (minute / 60) % 24;
+  format_header_clock(minute, m.clock, sizeof m.clock);
   m.sky = sky_for_hour(h);
   m.weekday = weekday;
   m.minute = minute;

@@ -29,6 +29,13 @@ jobs:
           curl -sf "https://api.carbonintensity.org.uk/regional/intensity/$(date -u +%Y-%m-%dT%H:%MZ)/pt24h/regionid/18" -o cih.json
           ./check_api cih cih.json
 
+      - name: France (RTE eCO2mix on ODRÉ, no key)
+        run: |
+          curl -sf "$(./check_api url fr)" -o fr.json
+          ./check_api fr fr.json
+          curl -sf "$(./check_api url frh)" -o frh.json
+          ./check_api frh frh.json
+
       - name: Australia (Open Electricity, uses the OE_KEY secret if it's set)
         env:
           OE_KEY: ${{ secrets.OE_KEY }}

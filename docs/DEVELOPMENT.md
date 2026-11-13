@@ -101,6 +101,34 @@ EIA (US support paused, 13 Nov 2026):
 - Northern Ireland isn't covered (separate grid). Rates are in pence; time zone `GMT0BST,M3.5.0/1,M10.5.0`.
 - Live check 13 Nov 2026: London 42-45% renewable early morning (wind ~37%, imports ~30%).
 
+## France: RTE éCO2mix on ODRÉ (13 Nov 2026)
+
+- Rule for new countries: free data no more than ~30 minutes behind, with a real fuel breakdown.
+  Checked 13 Nov 2026: Energy-Charts / ENTSO-E (all of Europe) 1h40-3h behind; Belgium (Elia) ~50 min;
+  France's regions ~45 min; Denmark (Energinet, 5 min) and Finland (Fingrid, 3 min, key) lump power
+  stations together, so their renewable % would be a guess. Only France nationally passed.
+- `odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-tr/records`, no key, CORS allowed,
+  Licence Ouverte / Etalab 2.0. MW per fuel every 15 minutes; the newest quarter hour appears ~15-20 min after
+  it starts (the row exists earlier with nulls, hence `where=nucleaire is not null`).
+- Now: `select=<our columns>&order_by=date_heure desc&limit=1` (~300 bytes). History: same columns,
+  `date_heure>=date'<24 h ago>Z'`, oldest first, `limit=100` (96 rows, ~27 KB); the parser keeps :00 and :30.
+- Mapping: nucleaire, eolien, solaire (includes rooftop), hydraulique minus hydraulique_step_turbinage (pumped
+  storage, counted as Other), gaz, charbon, fioul (Other), bioenergies (Biomass), destockage_batterie (Battery),
+  stockage_batterie (charging), ech_physiques > 0 (Imports). A few columns come back as strings.
+- Polled every 5 minutes (288 small requests a day). Freshness dot: up to 45 min OK, 2 h amber.
+- Rates in euro cents ("27,0c"); time zone `CET-1CEST,M3.5.0,M10.5.0/3`; one region, so no start-up view choice.
+- France is ~70% nuclear, so the pill usually says "Few renewables": the display counts renewables, not low carbon.
+
+## Screen language (13 Nov 2026)
+
+- `lib/gridcore/i18n.*`: English is written in the code; `T("...")` returns the translation for the chosen
+  language (French so far), falling back to English. Format strings keep the same % codes.
+- Setting `display.language`: "en" or "local" (the country's own language, from `CountryInfo.lang`).
+  Shown on the setup page only for countries whose language isn't English.
+- French also switches the clock to 24 hours ("16:05", tariff times "22h"), decimal commas and space thousands.
+- Fixed labels made with `label_tr()` are re-labelled by `gridui::set_language()`; everything else is rebuilt on update.
+- Fonts include accented Latin letters (French, plus Danish/Norwegian/Swedish ready) and €.
+
 ## No wholesale price (13 Nov 2026)
 
 The display is about how renewable the grid is; your own tariff covers cost. The wholesale price, the

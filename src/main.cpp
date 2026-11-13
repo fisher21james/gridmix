@@ -111,8 +111,8 @@ static void header_for(char *out, size_t cap) {
 }
 
 static void setup_hint(char *out, size_t cap) {
-  if (WiFi.status() != WL_CONNECTED) snprintf(out, cap, "Sample data %s connect Wi-Fi with the installer", DOT);
-  else snprintf(out, cap, "Sample data %s finish setup at gridmix.local", DOT);
+  snprintf(out, cap, "%s", T(WiFi.status() != WL_CONNECTED ? "Sample data \xC2\xB7 connect Wi-Fi with the installer"
+                                                            : "Sample data \xC2\xB7 finish setup at gridmix.local"));
 }
 
 static int demo_index = 0;
@@ -161,7 +161,8 @@ static void feed_key(char *out, size_t cap) {
 
 static gridui::Model build_model() {
   const CountryInfo &ci = country_info(g_settings.country);
-  gridui::set_pence(ci.pence);
+  gridui::set_currency(ci.currency);
+  gridui::set_language(g_settings.local_lang ? lang_from_code(ci.lang) : LANG_EN);   // before any text is made
 
   if (!g_settings.ready()) {   // not set up yet: play the sample scenes so the display isn't blank on day one
     gridui::Model m = gridui::demo_model(demo_index);
@@ -186,8 +187,9 @@ static gridui::Model build_model() {
   m.view_country = view_country;
   m.show_imports = ci.imports;
 
-  char local_sub[40], ago[24] = "Waiting for data";
-  snprintf(local_sub, sizeof local_sub, "My region %s %s", DOT, ci.local_sub);
+  char local_sub[56], ago[48];
+  snprintf(ago, sizeof ago, "%s", T("Waiting for data"));
+  snprintf(local_sub, sizeof local_sub, T("My region \xC2\xB7 %s"), T(ci.local_sub));
   gridui::Freshness fresh = gridui::FRESH_OLD;
   if (d.has_data && clock_ok) {
     const int64_t age = (int64_t)now - d.snap.data_time;
@@ -195,14 +197,14 @@ static gridui::Model build_model() {
     fresh = (gridui::Freshness)freshness_level(d.source, age);
   } else if (d.has_data) {
     // Saved before a restart and the clock isn't set yet: we can't say how old it is
-    snprintf(ago, sizeof ago, "Saved before restart");
+    snprintf(ago, sizeof ago, "%s", T("Saved before restart"));
     fresh = gridui::FRESH_LATE;
   }
   if (d.from_cache && fresh == gridui::FRESH_OK) fresh = gridui::FRESH_LATE;   // amber until a fetch confirms it
   m.freshness = fresh;
   if (d.has_data) history_to_model(m, d.snap.data_time);
   gridui::model_views(m, region_label(g_settings.country, g_settings.region), local_sub,
-                      ci.name, ci.whole_sub, ci.freq, ago, fresh);
+                      ci.name, T(ci.whole_sub), T(ci.freq), ago, fresh);
 
   // Say plainly why there's nothing to show
   if (!d.has_data) {
@@ -212,7 +214,7 @@ static gridui::Model build_model() {
     else if (d.out_of_credits) why = "Out of data requests for today";
     else if (d.failures >= 3) why = "Can't reach the data service \xC2\xB7 retrying";
     if (why) {
-      snprintf(m.advice, sizeof m.advice, "%s", why);
+      snprintf(m.advice, sizeof m.advice, "%s", T(why));
       m.tone = gridui::TONE_BAD;
     }
   }
@@ -273,7 +275,7 @@ static void screen_tick(lv_timer_t *) {
   const bool updating = os.state == OTA_DOWNLOADING || os.state == OTA_DONE;
   const int pct = updating ? os.percent : -1;
   if (pct != shown_pct) {
-    gridui::show_update(pct, os.state == OTA_DONE ? "Done. Restarting\xE2\x80\xA6" : "Downloading the new version\xE2\x80\xA6");
+    gridui::show_update(pct, T(os.state == OTA_DONE ? "Done. Restarting\xE2\x80\xA6" : "Downloading the new version\xE2\x80\xA6"));
     shown_pct = pct;
   }
 
