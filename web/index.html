@@ -430,15 +430,15 @@
   const TONE = { good: ['#DFF5E8', '#10502F'], ok: ['#EEF2F6', '#1C2633'], bad: ['#FFE3DC', '#7A1E10'] };
   const PRESETS = [
     { region: 'SA · Adelaide', time: '1:20 pm', sky: 'day', renew: 93, mix: { solar: 58, wind: 31, gas: 7, battery: 4 },
-      cells: 2, batt: true, status: 'Cheapest rate & clean power · run big loads', tone: 'good', rate: '23.8¢', period: 'Shoulder', band: 'low' },
+      cells: 2, batt: true, status: 'Mostly renewable · cheap rate, good for big loads', tone: 'good', rate: '23.8¢', period: 'Shoulder', band: 'low' },
     { region: 'SA · Adelaide', time: '9:40 pm', sky: 'night', renew: 78, mix: { wind: 64, gas: 22, battery: 14 },
-      cells: 3, batt: true, status: 'Peak rate · wait for cheaper times if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' },
+      cells: 3, batt: true, status: 'Mostly renewable, but your rate is high', tone: 'ok', rate: '54.0¢', period: 'Peak', band: 'high' },
     { region: 'NSW · Sydney', time: '6:15 pm', sky: 'dusk', renew: 23, mix: { coal: 68, gas: 9, hydro: 8, wind: 6, battery: 5, solar: 4 },
-      cells: 1, batt: true, status: 'Peak rate & mostly coal & gas · hold off if you can', tone: 'bad', rate: '56.4¢', period: 'Peak', band: 'high' },
+      cells: 1, batt: true, status: 'Mostly coal & gas · peak rate, hold off if you can', tone: 'bad', rate: '56.4¢', period: 'Peak', band: 'high' },
     { region: 'VIC · Melbourne', time: '8:30 am', sky: 'day', renew: 54, mix: { coal: 40, wind: 30, solar: 18, hydro: 6, gas: 4, battery: 2 },
-      cells: 1, batt: true, status: 'Peak rate · wait for cheaper times if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' },
+      cells: 1, batt: true, status: 'Part renewable · peak rate, hold off if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' },
     { region: 'London', time: '4:40 am', sky: 'night', renew: 42, mix: { wind: 37, imports: 33, nuclear: 14, gas: 12, biomass: 5 },
-      cells: 0, batt: false, status: 'Cheapest rate · good time for big loads', tone: 'good', rate: '13.5p', period: 'Night', band: 'low' }
+      cells: 0, batt: false, status: 'Part renewable · cheap rate, good for big loads', tone: 'good', rate: '13.5p', period: 'Night', band: 'low' }
   ];
   const $ = (id) => document.getElementById(id);
   const buttons = Array.from(document.querySelectorAll('.scene-picker button'));
