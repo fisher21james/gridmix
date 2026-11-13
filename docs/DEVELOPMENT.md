@@ -67,7 +67,7 @@ Open Electricity, two requests per refresh (each costs 1 credit, including `/v4/
 - **Always send `date_start`.** Without it the API returns half the maximum range (4 days of 5-minute data, about 300 KB).
 - **Dates are NEM time without a timezone:** always UTC+10, no daylight saving, regardless of where the display is. Convert from UTC on the board; don't use local time.
 - **Rooftop solar:** 5-minute generation data has no rooftop series at all, so rooftop comes from AEMO's `solar_rooftop_forecast` (30-minute values) for the same interval, and the snapshot is marked estimated. In SA on 12 Nov this moved renewables from 56% to 78%.
-- **Credits:** Community plan, 500 a day (and about 10,000 a month), reset at midnight UTC (10:30 am Adelaide). 1 credit per request, including `/v4/me`.
+- **Credits:** Community plan, 500 a day (and about 10,000 a month), reset at midnight UTC (10:30 am Adelaide), confirmed 13 Nov 2026 (494 left the day before, 499 just after the reset). 1 credit per request, including `/v4/me`.
 - **Refresh timing** (`lib/gridcore/schedule.*`, tested): mix 90 s after every 10 minutes, price and rooftop forecast every 30 minutes, about 192 requests a day. Under 40 credits left it slows to 30/60 minutes. Failures back off 1, 2, 5, 10, 20 minutes. A rejected key waits 6 hours (or until settings are saved); running out waits for the midnight-UTC reset.
 - **Whole-country view** for Australia is the NEM (every state but WA and the NT); WA is a separate network (`WEM`) with no price or rooftop forecast.
 - Licence: Community data is non-commercial only.
