@@ -60,6 +60,7 @@ Uses the community `pioarduino` platform (Arduino core 3.x), which the display l
 - [ ] US: check the EIA region codes (TEX, CAL, ... and US48) return data.
 - [x] WA: `/v4/data/network/WEM` works at 5-minute detail in Perth time (fixed 13 Nov), includes rooftop solar.
 - [ ] Leave it running a few days; check `/api/status` → `device.heap_min` and `last_restart`.
+- [ ] UK: pick London on the setup page; the key card should disappear and data arrive within 15 minutes.
 - [ ] Try an over-the-air update from the setup page (push any change, wait for the build, press Install).
 - [ ] Pull the power, plug back in: the last data should show straight away with an amber dot.
 
@@ -86,6 +87,19 @@ EIA (US support paused, 13 Nov 2026):
 - Live check 13 Nov 2026 (browser sim): region codes TEX and US48 work; data was 18–19 hours behind; the US48 answer took about 12 s, so the HTTPS timeout is 30 s. US48 includes newer codes (WNB wind+battery, SNB solar+battery, OES/UES storage, PS pumped storage), all mapped.
 - Open Electricity sends no CORS headers, so a web page can't call it directly (the browser sim uses a copy-paste command instead). The display isn't affected.
 - Checked every 15 minutes (newest 30 rows, sorted newest first). The key goes on the end of the URL, so the serial log cuts it off.
+
+## Great Britain: Carbon Intensity API (13 Nov 2026)
+
+- `api.carbonintensity.org.uk`, run by NESO with the University of Oxford. CC BY 4.0, no key, allows web pages (CORS).
+- Current mix: `/regional/regionid/{id}` (ids 1-14 are DNO areas, 15-17 England/Scotland/Wales, 18 all of GB).
+  History: `/regional/intensity/{to}/pt24h/regionid/{id}` gives the 48 half hours before `{to}` (UTC).
+- Shares (%) per fuel, not MW: biomass, coal, imports, gas, nuclear, other, hydro, solar, wind. Solar includes
+  rooftops and small farms (NESO estimates). Snapshot time = the half hour's end; it's normally 0-30 min old.
+- Polled every 15 minutes (5 past each quarter): 96 small requests a day.
+- Biomass counts as renewable (as official AU and UK figures do); the detail screen says "Renewable % includes
+  biomass" when it's in the mix. Imports have their own colour and don't count as renewable.
+- Northern Ireland isn't covered (separate grid). Rates are in pence; time zone `GMT0BST,M3.5.0/1,M10.5.0`.
+- Live check 13 Nov 2026: London 42-45% renewable early morning (wind ~37%, imports ~30%).
 
 ## No wholesale price (13 Nov 2026)
 

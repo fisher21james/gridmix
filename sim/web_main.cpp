@@ -196,7 +196,7 @@ EMSCRIPTEN_KEEPALIVE const char *gm_load_history(const char *json) {
       if (idx >= 0 && idx < HISTORY_POINTS) history[idx] = pts[i].renewable_pct;
     }
   if (has_data) history[HISTORY_POINTS - 1] = snap.renewable_pct();
-  snprintf(out, sizeof out, "24-hour history: %d hourly points.", n);
+  snprintf(out, sizeof out, "24-hour history: %d points.", n);
   return out;
 }
 

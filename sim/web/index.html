@@ -433,7 +433,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       r.shares.forEach((p, i) => { $(`pct${i}`).textContent = p ? `${p.toFixed(p < 10 ? 1 : 0)}%` : ""; });
       const cells = [
         ["Renewable", r.total ? `${r.renewable.toFixed(1)}%${r.estimated ? " (part est.)" : ""}` : "–"],
-        ["Total", `${Math.round(r.total).toLocaleString()} MW`],
+        ["Total", lv.country() === "GB" ? "Shares only (no MW)" : `${Math.round(r.total).toLocaleString()} MW`],
         ["Your rate", r.has_rate ? `${r.rate} · ${r.period} (${BANDS[r.band]})` : "No plan"],
         ["Advice", r.advice],
       ];
