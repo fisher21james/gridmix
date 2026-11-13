@@ -11,7 +11,7 @@
   --text: #e9eef2; --sub: #9aa5b1; --dim: #6b7682; --accent: #4fb3d9;
   --good: #3bb273; --warn: #e39b3a; --bad: #e0634f;
   --solar: #f5b800; --wind: #4fb3d9; --hydro: #2e6fd8; --battery: #9b7bea;
-  --nuclear: #3bb273; --gas: #f07a3a; --coal: #7a6e66; --other: #8a939c;
+  --nuclear: #3bb273; --gas: #f07a3a; --coal: #7a6e66; --other: #8a939c; --biomass: #8DB255; --imports: #E07BA0;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -87,16 +87,16 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card" id="liveCard">
       <h2>Live data</h2>
       <div class="row"><label for="lvCountry">Country</label>
-        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option></select>
+        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option></select>
       </div>
       <div class="row"><label for="lvRegion">Region</label><select id="lvRegion" style="flex:1"></select></div>
       <div class="row"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
-      <div class="row"><label for="lvKey">Data key</label><input type="password" id="lvKey" autocomplete="off" spellcheck="false" style="flex:1;min-width:0"></div>
-      <div class="row"><label></label><span class="check"><input type="checkbox" id="lvRemember"> Remember on this computer</span></div>
+      <div class="row" id="lvKeyRow"><label for="lvKey">Data key</label><input type="password" id="lvKey" autocomplete="off" spellcheck="false" style="flex:1;min-width:0"></div>
+      <div class="row" id="lvRememberRow"><label></label><span class="check"><input type="checkbox" id="lvRemember"> Remember on this computer</span></div>
 
       <div id="lvUS">
         <div class="btns"><button id="lvFetch" class="primary">Fetch live data</button></div>
-        <p class="note">The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.</p>
+        <p class="note" id="lvFetchNote">The page asks the data service directly, with the same request the display sends.</p>
       </div>
       <div id="lvAU">
         <p class="note" style="margin-top:0">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 3 of your 500 daily requests.</p>
@@ -139,7 +139,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card">
       <h2>Power plan and region</h2>
       <div class="row"><label for="plan">Plan</label>
-        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
+        <select id="plan"><option value="tou">SA time of use (sample)</option><option value="flat">Flat 30¢</option><option value="uk">UK Economy 7 style (sample)</option><option value="none">No plan entered</option><option value="custom">Custom (JSON below)</option></select>
       </div>
       <div class="row"><label for="header">Header</label><input type="text" id="header" maxlength="30" style="flex:1"></div>
       <details>
@@ -186,6 +186,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   const SOURCES = [
     ["Solar", "solar"], ["Wind", "wind"], ["Hydro", "hydro"], ["Battery", "battery"],
     ["Nuclear", "nuclear"], ["Gas", "gas"], ["Coal", "coal"], ["Other", "other"],
+    ["Biomass", "biomass"], ["Imports", "imports"],
   ];
   const PLANS = {
     tou: {tariff: {type: "tou", periods: [
@@ -195,6 +196,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       {name: "Off peak", from: "01:00", to: "06:00", rate: 34.51, days: "all"}],
       supply: 116.18, feed_in: 1, warn: true}},
     flat: {tariff: {type: "flat", flat: 30, periods: [], supply: 100, feed_in: 5, warn: false}},
+    uk: {tariff: {type: "tou", periods: [
+      {name: "Night", from: "00:00", to: "07:00", rate: 13.5, days: "all"},
+      {name: "Day", from: "07:00", to: "00:00", rate: 27.0, days: "all"}],
+      supply: 53.4, feed_in: 15, warn: true}},
   };
   const $ = id => document.getElementById(id);
   const log = msg => {
@@ -208,7 +213,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       if (kind === "view") {
         log(`Region picker: chose ${v ? "whole country" : "my region"}`);
         // the display changes its header to match
-        if (v) { localHeader = $("header").value; $("header").value = api.getSettings().includes('"country":"US"') ? "United States" : "Australia (NEM)"; }
+        if (v) { localHeader = $("header").value; const st = api.getSettings(); $("header").value = st.includes('"country":"US"') ? "United States" : st.includes('"country":"GB"') ? "Great Britain" : "Australia (NEM)"; }
         else if (localHeader) $("header").value = localHeader;
         api.header($("header").value);
         rebuild();
@@ -444,6 +449,14 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     AU: [["SA1", "South Australia", "SA \u00b7 Adelaide", "Australia/Adelaide"], ["NSW1", "New South Wales", "NSW \u00b7 Sydney", "Australia/Sydney"],
          ["VIC1", "Victoria", "VIC \u00b7 Melbourne", "Australia/Melbourne"], ["QLD1", "Queensland", "QLD \u00b7 Brisbane", "Australia/Brisbane"],
          ["TAS1", "Tasmania", "TAS \u00b7 Hobart", "Australia/Hobart"], ["WEM", "Western Australia", "WA \u00b7 Perth", "Australia/Perth"]],
+    GB: [["13", "London", "London", "Europe/London"], ["14", "South East England", "South East England", "Europe/London"],
+         ["12", "South England", "South England", "Europe/London"], ["11", "South West England", "South West England", "Europe/London"],
+         ["10", "East England", "East England", "Europe/London"], ["9", "East Midlands", "East Midlands", "Europe/London"],
+         ["8", "West Midlands", "West Midlands", "Europe/London"], ["3", "North West England", "North West England", "Europe/London"],
+         ["4", "North East England", "North East England", "Europe/London"], ["5", "Yorkshire", "Yorkshire", "Europe/London"],
+         ["6", "North Wales & Merseyside", "North Wales & Merseyside", "Europe/London"], ["7", "South Wales", "South Wales", "Europe/London"],
+         ["2", "South Scotland", "South Scotland", "Europe/London"], ["1", "North Scotland", "North Scotland", "Europe/London"],
+         ["15", "England", "England", "Europe/London"], ["17", "Wales", "Wales", "Europe/London"], ["16", "Scotland", "Scotland", "Europe/London"]],
     US: [["CAL", "California", "California", "America/Los_Angeles"], ["CAR", "Carolinas", "Carolinas", "America/New_York"],
          ["CENT", "Central", "Central", "America/Chicago"], ["FLA", "Florida", "Florida", "America/New_York"],
          ["MIDA", "Mid-Atlantic", "Mid-Atlantic", "America/New_York"], ["MIDW", "Midwest", "Midwest", "America/Chicago"],
@@ -463,10 +476,14 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   function fillRegions() {
     const c = lv.country();
     $("lvRegion").innerHTML = REGIONS[c].map(r => `<option value="${r[0]}">${r[1]}</option>`).join("");
-    $("lvRegion").value = c === "AU" ? "SA1" : "TEX";
+    $("lvRegion").value = c === "AU" ? "SA1" : c === "GB" ? "13" : "TEX";
     $("lvKey").value = store.get(keyName());
     $("lvRemember").checked = !!$("lvKey").value;
-    $("lvUS").hidden = c !== "US";
+    $("lvUS").hidden = c !== "US" && c !== "GB";
+    $("lvKeyRow").hidden = $("lvRememberRow").hidden = c === "GB";   // Britain's data needs no key
+    $("lvFetchNote").textContent = c === "GB"
+      ? "No key needed: the page asks the Carbon Intensity API directly, with the same requests the display sends (the half hour now, and the last 24 hours)."
+      : "The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.";
     $("lvAU").hidden = c !== "AU";
     $("lvMsg").textContent = "";
     makeCommand();
@@ -525,9 +542,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   function showLive(label) {
     const s = JSON.parse(api.state());
     const [code, , header, tz] = regionInfo();
-    const us = lv.country() === "US";
-    applySettings({country: lv.country(), region: code}, true);
+    const us = lv.country() === "US", gb = lv.country() === "GB";
+    applySettings({country: lv.country(), region: code, tz: gb ? "GMT0BST,M3.5.0/1,M10.5.0" : undefined}, true);
     if (us) { $("plan").value = "none"; api.hasPlan(0); }
+    else if (gb && $("plan").value !== "custom") { $("plan").value = "uk"; api.hasPlan(1); applySettings(PLANS.uk, true); }
     else if ($("plan").value === "none") { $("plan").value = "tou"; api.hasPlan(1); applySettings(PLANS.tou, true); }
     const when = new Date((s.data_time || Date.now() / 1000) * 1000);
     // Like the display: the clock is the real time there, and the dot shows how old the data is
@@ -537,7 +555,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     tickLiveClock(true);
     const age = Math.max(0, Math.round((Date.now() / 1000 - liveClock.dataTime) / 60));
     api.problem("");
-    const wholeLabel = us ? "United States" : "Australia (NEM)";
+    const wholeLabel = us ? "United States" : gb ? "Great Britain" : "Australia (NEM)";
     api.header(lv.whole() ? wholeLabel : header);
     api.setView(lv.whole() ? 1 : 0);
     $("hasData").checked = true;
@@ -548,6 +566,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   }
 
   $("lvFetch").addEventListener("click", async () => {
+    if (lv.country() === "GB") return fetchGB();
     const key = $("lvKey").value.trim();
     if (!key) { lvMsg("Add your EIA key first.", false); return; }
     const url = getUrl(2, "US", lv.region(), lv.whole() ? 1 : 0, Date.now() / 1000) + encodeURIComponent(key);
@@ -563,6 +582,23 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
     showLive(res);
   });
+
+  // Great Britain: no key, and the API allows web pages, so fetch straight away
+  async function fetchGB() {
+    const now = Date.now() / 1000, whole = lv.whole() ? 1 : 0;
+    lvMsg("Asking the Carbon Intensity API\u2026", true);
+    let mix, hist;
+    try {
+      const [a, b] = await Promise.all([fetch(getUrl(4, "GB", lv.region(), whole, now)), fetch(getUrl(5, "GB", lv.region(), whole, now))]);
+      if (!a.ok) { lvMsg(`The Carbon Intensity API answered with error ${a.status}. Try again in a minute.`, false); return; }
+      mix = await a.text();
+      hist = b.ok ? await b.text() : "";
+    } catch { lvMsg("Couldn't reach the Carbon Intensity API. Check your internet connection.", false); return; }
+    const res = api.parse(4, mix);
+    if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
+    showLive(res.replace(/[\d,]+ MW total, /, ""));
+    if (hist) { log(api.loadHistory(hist)); rebuild(); }
+  }
 
   async function loadFile(file) {
     let obj;

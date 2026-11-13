@@ -13,9 +13,13 @@ Sky sky_for_hour(int hour) {
   return SKY_NIGHT;
 }
 
+static bool use_pence = false;
+void set_pence(bool pence) { use_pence = pence; }
+const char *minor_unit() { return use_pence ? "p" : "\xC2\xA2"; }
+
 void format_rate(float cents, char *out, size_t cap) {
-  if (cents >= 100) snprintf(out, cap, "$%.2f", cents / 100.0f);
-  else snprintf(out, cap, "%.1f\xC2\xA2", cents);   // ¢
+  if (cents >= 100) snprintf(out, cap, use_pence ? "\xC2\xA3%.2f" : "$%.2f", cents / 100.0f);
+  else snprintf(out, cap, "%.1f%s", cents, minor_unit());
 }
 
 static void clock_text(int minute_of_day, char *out, size_t cap) {

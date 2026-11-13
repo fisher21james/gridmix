@@ -13,7 +13,23 @@ static const RegionInfo REGIONS[] = {
   {"US", "MIDA", "Mid-Atlantic"}, {"US", "MIDW", "Midwest"}, {"US", "NE", "New England"}, {"US", "NY", "New York"},
   {"US", "NW", "Northwest"}, {"US", "SE", "Southeast"}, {"US", "SW", "Southwest"}, {"US", "TEN", "Tennessee"},
   {"US", "TEX", "Texas"},
+  // Great Britain: Carbon Intensity API region ids (DNO areas, then nations; 18 = all of GB)
+  {"GB", "1", "North Scotland"}, {"GB", "2", "South Scotland"}, {"GB", "3", "North West England"},
+  {"GB", "4", "North East England"}, {"GB", "5", "Yorkshire"}, {"GB", "6", "North Wales & Merseyside"},
+  {"GB", "7", "South Wales"}, {"GB", "8", "West Midlands"}, {"GB", "9", "East Midlands"},
+  {"GB", "10", "East England"}, {"GB", "11", "South West England"}, {"GB", "12", "South England"},
+  {"GB", "13", "London"}, {"GB", "14", "South East England"}, {"GB", "15", "England"},
+  {"GB", "16", "Scotland"}, {"GB", "17", "Wales"}, {"GB", "18", "Great Britain"},
 };
+
+const CountryInfo &country_info(const char *country) {
+  static const CountryInfo AU = {"Australia", "Australia (NEM)", "East coast grid (NEM)", "state grid", "Every 10 min", false};
+  static const CountryInfo US = {"United States", "United States", "Lower 48 states (EIA)", "EIA", "Hourly", false};
+  static const CountryInfo GB = {"Great Britain", "Great Britain", "England, Scotland & Wales", "local area", "Every 30 min", true};
+  if (country && country[0] == 'G') return GB;
+  if (country && country[0] == 'U') return US;
+  return AU;
+}
 
 bool region_is_valid(const char *country, const char *region) {
   return region_label(country, region)[0] != 0;
@@ -116,7 +132,7 @@ bool settings_from_json(const char *json, size_t len, Settings &out, char *err, 
 
   Settings s = out;   // work on a copy so a bad save changes nothing
 
-  if (!copy_str(doc["country"] | s.country, s.country, sizeof s.country) || (strcmp(s.country, "AU") && strcmp(s.country, "US")))
+  if (!copy_str(doc["country"] | s.country, s.country, sizeof s.country) || (strcmp(s.country, "AU") && strcmp(s.country, "US") && strcmp(s.country, "GB")))
     return fail(err, err_len, "Unknown country.");
   if (!copy_str(doc["region"] | s.region, s.region, sizeof s.region) || !region_is_valid(s.country, s.region))
     return fail(err, err_len, "That region isn't in the country chosen.");

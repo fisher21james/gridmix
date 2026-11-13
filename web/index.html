@@ -281,7 +281,7 @@
         <button type="button" data-i="0">SA sunny afternoon</button>
         <button type="button" data-i="1">SA windy night</button>
         <button type="button" data-i="2">NSW evening peak</button>
-        <button type="button" data-i="3">VIC morning</button>
+        <button type="button" data-i="3">VIC morning</button><button type="button" data-i="4">London (UK)</button>
       </div>
       <figcaption class="caption">Live preview with sample data. Photos of the real build coming soon.</figcaption>
     </figure>
@@ -294,7 +294,7 @@
       <div class="card"><div class="swatch" style="background:var(--wind)"></div><h3>A living scene</h3><p>Each power source is a little building that comes alive in proportion to how much it's producing: spinning turbines, smoking stacks, a pouring dam, glinting solar panels.</p></div>
       <div class="card"><div class="swatch" style="background:var(--solar)"></div><h3>The mix at a glance</h3><p>A big renewable percentage, plus a colour-matched bar of every source. Tap the bar to switch between a labelled and a slim style.</p></div>
       <div class="card"><div class="swatch" style="background:var(--gas)"></div><h3>Your own power plan</h3><p>Enter your tariff and it shows your rate right now and which time-of-use period you're in, and tips you off before the price goes up. Pair that with the renewable share and you can pick greener, cheaper times for big appliances, or just enjoy watching it.</p></div>
-      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country. Australia for now, with more countries coming in updates. Each view shows how fresh its data is.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country. Australia and the UK for now, with more countries coming in updates. Each view shows how fresh its data is.</p></div>
     </div>
   </section>
 
@@ -351,12 +351,13 @@
 
   <section id="setup" aria-labelledby="setup-h">
     <h2 id="setup-h">Set up</h2>
-    <p class="sub">Once it's on your Wi-Fi, open <code>gridmix.local</code> on your phone (same Wi-Fi) to choose your region and enter your tariff. Supported now: <b>Australia</b>. More countries are coming in updates. <a href="setup-demo/">Try a demo of the setup page</a>, or <a href="sim/">try the screen in your browser</a>.</p>
+    <p class="sub">Once it's on your Wi-Fi, open <code>gridmix.local</code> on your phone (same Wi-Fi) to choose your region and enter your tariff. Supported now: <b>Australia</b> and the <b>UK</b> (Great Britain). More countries are coming in updates. <a href="setup-demo/">Try a demo of the setup page</a>, or <a href="sim/">try the screen in your browser</a>.</p>
     <div class="table-box">
       <table>
         <thead><tr><th scope="col">Where you are</th><th scope="col">Data source</th><th scope="col">Updates</th><th scope="col">Free key</th></tr></thead>
         <tbody>
           <tr><td>Australia</td><td>Open Electricity</td><td>Every 5 minutes</td><td><a href="https://platform.openelectricity.org.au">platform.openelectricity.org.au</a></td></tr>
+          <tr><td>UK (Great Britain)</td><td>Carbon Intensity API (NESO and the University of Oxford)</td><td>Every 30 minutes</td><td>None needed</td></tr>
         </tbody>
       </table>
     </div>
@@ -386,7 +387,7 @@
       <p class="tip">Keep your key private, like a password. If it ever ends up somewhere public, delete it on the API Keys page and make a new one.</p>
     </details>
 
-    <p class="tip">Outside Australia? More countries are planned for future updates, once there's a free source with up-to-date data for them.</p>
+    <p class="tip">In the UK you don't need a key at all: just pick your region on the setup page. Northern Ireland isn't covered yet (its grid is run separately). Elsewhere, more countries are planned once there's a free source with up-to-date data for them.</p>
   </section>
 
   <section id="faq" aria-labelledby="faq-h">
@@ -394,14 +395,15 @@
     <details><summary>Does my data go anywhere?</summary><p>No. The display talks directly to the data source you pick. There's no account and no cloud service in between, and your tariff stays on the device.</p></details>
     <details><summary>Why do I need my own key?</summary><p>The data sources are free but limit how often each key can ask. Your own key means your display is never slowed down by anyone else's.</p></details>
     <details><summary>Can I use the resistive or no-touch version of the board?</summary><p>Not yet. The firmware is built for the capacitive version. Support for the others may come later.</p></details>
-    <details><summary>Will it work in my country?</summary><p>Right now it supports Australia. More countries will be added in future updates as free, up-to-date data sources are confirmed (the US is first on the list), and you'll get them by clicking Install again.</p></details>
+    <details><summary>Will it work in my country?</summary><p>Right now it supports Australia and Great Britain (England, Scotland and Wales). More countries will be added in future updates as free, up-to-date data sources are confirmed (the US is first on the list), and your display can install them over Wi-Fi from its setup page.</p></details>
+    <details><summary>What counts as renewable?</summary><p>Solar (including rooftops), wind, hydro and bioenergy such as biomass, as official Australian and UK figures count them. Biomass is debated because burning it releases CO2, so when it's part of the mix the details screen says the renewable figure includes it. Batteries store power rather than make it, and imports (UK power from other countries) have no known source, so neither counts.</p></details>
     <details><summary>Why not Safari or Firefox?</summary><p>Installing uses Web Serial, which only Chrome and Edge support on desktop. You only need it once; after that the display updates itself.</p></details>
     <details><summary>Is it open source?</summary><p>Yes. The firmware and this page are on <a href="https://github.com/fisher21james/gridmix">GitHub</a> under the MIT licence.</p></details>
   </section>
 </main>
 
 <footer>
-  Grid data: <a href="https://openelectricity.org.au">Open Electricity</a> (Australia, CC BY-NC 4.0).
+  Grid data: <a href="https://openelectricity.org.au">Open Electricity</a> (Australia, CC BY-NC 4.0) and the <a href="https://carbonintensity.org.uk">Carbon Intensity API</a> by NESO and the University of Oxford (Great Britain, CC BY 4.0).
   The preview uses sample data. Source code on <a href="https://github.com/fisher21james/gridmix">GitHub</a>.
 </footer>
 
@@ -414,7 +416,9 @@
     battery: { name: 'Battery', color: '#9B7BEA', fg: '#160B33' },
     nuclear: { name: 'Nuclear', color: '#3BB273', fg: '#03200E' },
     gas: { name: 'Gas', color: '#F07A3A', fg: '#2B1100' },
-    coal: { name: 'Coal', color: '#8C7B6E', fg: '#1A120C' }
+    coal: { name: 'Coal', color: '#8C7B6E', fg: '#1A120C' },
+    biomass: { name: 'Biomass', color: '#8DB255', fg: '#162204' },
+    imports: { name: 'Imports', color: '#E07BA0', fg: '#2A0A15' }
   };
   const SKY = {
     day: { top: '#6EC3F0', bottom: '#CFEFFC', hill: '#8CC071', ground: '#69A156', text: '#0B1B2B', sub: '#1E3346', smoke: '#9AA0A8' },
@@ -432,7 +436,9 @@
     { region: 'NSW · Sydney', time: '6:15 pm', sky: 'dusk', renew: 23, mix: { coal: 68, gas: 9, hydro: 8, wind: 6, battery: 5, solar: 4 },
       cells: 1, batt: true, status: 'Peak rate & mostly coal/gas · hold off if you can', tone: 'bad', rate: '56.4¢', period: 'Peak', band: 'high' },
     { region: 'VIC · Melbourne', time: '8:30 am', sky: 'day', renew: 54, mix: { coal: 40, wind: 30, solar: 18, hydro: 6, gas: 4, battery: 2 },
-      cells: 1, batt: true, status: 'Peak rate · wait for cheaper times if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' }
+      cells: 1, batt: true, status: 'Peak rate · wait for cheaper times if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' },
+    { region: 'London', time: '4:40 am', sky: 'night', renew: 42, mix: { wind: 37, imports: 33, nuclear: 14, gas: 12, biomass: 5 },
+      cells: 0, batt: false, status: 'Cheapest rate · good time for big loads', tone: 'good', rate: '13.5p', period: 'Night', band: 'low' }
   ];
   const $ = (id) => document.getElementById(id);
   const buttons = Array.from(document.querySelectorAll('.scene-picker button'));

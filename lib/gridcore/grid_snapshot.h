@@ -13,7 +13,9 @@ enum Source : uint8_t {
   NUCLEAR,
   GAS,
   COAL,
-  OTHER,     // oil/distillate, biomass, anything unmapped
+  OTHER,     // oil/distillate, anything unmapped
+  BIOMASS,   // wood, waste, biogas: counted as renewable (as official AU and UK figures do), and the screen says so
+  IMPORTS,   // power from other countries (UK interconnectors); unknown origin, so not counted as renewable
   SOURCE_COUNT
 };
 
@@ -27,6 +29,7 @@ struct GridSnapshot {
   int64_t data_time = 0;          // UTC seconds of the data point shown
   bool estimated = false;         // true if part of the mix was filled in (e.g. rooftop solar from AEMO's forecast)
   bool has_rooftop = false;       // true once rooftop solar is included (actual, carried forward or forecast)
+  bool percent_only = false;      // the source gives shares, not megawatts (UK Carbon Intensity): don't show MW
 
   float total() const;
   float share_pct(Source s) const;   // 0..100

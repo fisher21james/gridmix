@@ -12,7 +12,7 @@
 namespace gridcore {
 
 // ---- requests
-enum DataSource : uint8_t { SRC_OPEN_ELECTRICITY = 0, SRC_EIA };
+enum DataSource : uint8_t { SRC_OPEN_ELECTRICITY = 0, SRC_EIA, SRC_CARBON_INTENSITY };
 
 struct Feed {
   DataSource source = SRC_OPEN_ELECTRICITY;
@@ -35,6 +35,9 @@ size_t oe_market_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
 size_t eia_url(const Feed &f, char *out, size_t cap);
 // Hourly mix for the last 25 hours, to fill the 24-hour chart straight after start-up (1 request).
 size_t oe_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
+// Great Britain (Carbon Intensity API, no key): the current half hour, and the 24 hours before now
+size_t ci_url(const Feed &f, char *out, size_t cap);
+size_t ci_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap);
 
 // ---- timing
 enum FetchKind : uint8_t { FETCH_MIX = 0, FETCH_MARKET };
@@ -67,7 +70,8 @@ class Scheduler {
 void format_ago(int64_t age_s, char *out, size_t cap);
 // How up to date the data on screen is, for the dot next to the clock:
 //   0 = up to date, 1 = falling behind (amber), 2 = out of date (red).
-// Open Electricity: up to 25 min, up to 90 min, older. EIA is hourly and normally runs hours to
+// Open Electricity: up to 25 min, up to 90 min, older. Carbon Intensity (GB): 45 min, 2 h.
+// EIA is hourly and normally runs hours to
 // about a day behind, so: up to 24 h, up to 48 h, older.
 int freshness_level(DataSource src, int64_t age_s);
 inline bool data_is_fresh(DataSource src, int64_t age_s) { return freshness_level(src, age_s) == 0; }

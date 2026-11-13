@@ -101,9 +101,8 @@ static void touch_read_cb(lv_indev_t *, lv_indev_data_t *data) {
 static const char *DOT = "\xC2\xB7";
 
 static void header_for(char *out, size_t cap) {
-  const bool us = g_settings.country[0] == 'U';
-  if (view_country) { snprintf(out, cap, "%s", us ? "United States" : "Australia (NEM)"); return; }
-  if (us) { snprintf(out, cap, "%s", region_label(g_settings.country, g_settings.region)); return; }
+  if (view_country) { snprintf(out, cap, "%s", country_info(g_settings.country).whole_header); return; }
+  if (g_settings.country[0] != 'A') { snprintf(out, cap, "%s", region_label(g_settings.country, g_settings.region)); return; }
   static const char *AU[][3] = {{"SA1", "SA", "Adelaide"}, {"NSW1", "NSW", "Sydney"}, {"VIC1", "VIC", "Melbourne"},
                                 {"QLD1", "QLD", "Brisbane"}, {"TAS1", "TAS", "Hobart"}, {"WEM", "WA", "Perth"}};
   for (auto &r : AU)
@@ -132,9 +131,11 @@ static void history_record(int64_t data_time, float renewable_pct) {
 }
 // Hourly points from the history request fill the half hours they cover, without replacing
 // anything already recorded from live data (which is more detailed)
+// Newest first, so with half-hourly points (Britain) each point's second half is already taken by
+// the next point and stays as it is; with hourly points (Australia) it fills the gap.
 static void history_import(const LiveData &d) {
   const int N = gridui::HISTORY_POINTS;
-  for (int i = 0; i < d.history_count; i++) {
+  for (int i = d.history_count - 1; i >= 0; i--) {
     for (int half = 0; half < 2; half++) {
       const int64_t slot = d.history[i].time / 1800 + half;
       if (store.hist_slot[slot % N] == slot) continue;
@@ -159,10 +160,10 @@ static void feed_key(char *out, size_t cap) {
 }
 
 static gridui::Model build_model() {
-  const bool us = g_settings.country[0] == 'U';
-  const bool has_key = g_settings.key_for_country()[0] != 0;
+  const CountryInfo &ci = country_info(g_settings.country);
+  gridui::set_pence(ci.pence);
 
-  if (!has_key) {   // not set up yet: play the sample scenes so the display isn't blank on day one
+  if (!g_settings.ready()) {   // not set up yet: play the sample scenes so the display isn't blank on day one
     gridui::Model m = gridui::demo_model(demo_index);
     setup_hint(m.advice, sizeof m.advice);
     m.tone = gridui::TONE_OK;
@@ -185,7 +186,7 @@ static gridui::Model build_model() {
   m.view_country = view_country;
 
   char local_sub[40], ago[24] = "Waiting for data";
-  snprintf(local_sub, sizeof local_sub, "My region %s %s", DOT, us ? "EIA" : "state grid");
+  snprintf(local_sub, sizeof local_sub, "My region %s %s", DOT, ci.local_sub);
   gridui::Freshness fresh = gridui::FRESH_OLD;
   if (d.has_data && clock_ok) {
     const int64_t age = (int64_t)now - d.snap.data_time;
@@ -200,8 +201,7 @@ static gridui::Model build_model() {
   m.freshness = fresh;
   if (d.has_data) history_to_model(m, d.snap.data_time);
   gridui::model_views(m, region_label(g_settings.country, g_settings.region), local_sub,
-                      us ? "United States" : "Australia", us ? "Lower 48 states (EIA)" : "East coast grid (NEM)",
-                      us ? "Hourly" : "Every 10 min", ago, fresh);
+                      ci.name, ci.whole_sub, ci.freq, ago, fresh);
 
   // Say plainly why there's nothing to show
   if (!d.has_data) {
@@ -238,7 +238,7 @@ static void screen_tick(lv_timer_t *) {
   fetcher_get(d);
   const time_t now = time(nullptr);
   const int minute = (int)(now / 60);
-  const bool demo = g_settings.key_for_country()[0] == 0;
+  const bool demo = !g_settings.ready();
   if (demo && millis() - demo_since > 8000) {
     demo_index = (demo_index + 1) % gridui::demo_count();
     demo_since = millis();

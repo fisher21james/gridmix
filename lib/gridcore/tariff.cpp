@@ -120,9 +120,13 @@ static void format_span(int start, int end, char *out, size_t cap) {
   char a[12], b[12];
   format_clock(start, a, sizeof a);
   format_clock(end, b, sizeof b);
+  // Drop the first "am"/"pm" only when both ends are on the same side of noon: "6–10am", "1–5pm",
+  // but "7am–12am" (ends at midnight) and "3pm–1am" (past midnight) keep both
+  const int s0 = start % DAY_MIN, e0 = end % DAY_MIN;
+  const bool morning = s0 < 720 && e0 > s0 && e0 <= 720;
+  const bool afternoon = s0 >= 720 && e0 > s0;
   const size_t la = strlen(a), lb = strlen(b);
-  if (start % DAY_MIN != end % DAY_MIN && la > 2 && lb > 2 && !strcmp(a + la - 2, b + lb - 2) && (start % DAY_MIN) < (end % DAY_MIN ? end % DAY_MIN : DAY_MIN))
-    a[la - 2] = 0;
+  if ((morning || afternoon) && la > 2 && lb > 2 && !strcmp(a + la - 2, b + lb - 2)) a[la - 2] = 0;
   snprintf(out, cap, "%s%s%s", a, DASH, b);
 }
 

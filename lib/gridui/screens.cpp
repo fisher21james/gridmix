@@ -201,14 +201,21 @@ static void update_detail(const Model &m) {
     lv_obj_set_style_radius(fill, 3, 0);
   }
 
-  char total[80] = "", mw[24];
+  // Footer: total power (when the source gives megawatts), batteries charging, and a note when
+  // biomass is part of the renewable share
+  char total[96] = "", mw[24];
   if (m.has_data) {
-    thousands(m.snap.total(), mw, sizeof mw);
-    int len = snprintf(total, sizeof total, "Total %s MW", mw);
-    if (m.snap.battery_charging >= 1) {
-      thousands(m.snap.battery_charging, mw, sizeof mw);
-      snprintf(total + len, sizeof total - len, " \xC2\xB7 batteries charging %s MW", mw);
+    int len = 0;
+    if (!m.snap.percent_only) {
+      thousands(m.snap.total(), mw, sizeof mw);
+      len = snprintf(total, sizeof total, "Total %s MW", mw);
     }
+    if (m.snap.battery_charging >= 1 && !m.snap.percent_only) {
+      thousands(m.snap.battery_charging, mw, sizeof mw);
+      len += snprintf(total + len, sizeof total - len, " \xC2\xB7 batteries charging %s MW", mw);
+    }
+    if (m.snap.share_pct(BIOMASS) >= 0.5f)
+      snprintf(total + len, sizeof total - len, "%sRenewable %% includes biomass", len ? " \xC2\xB7 " : "");
   }
   lv_label_set_text(d_total, total);
 
@@ -360,7 +367,7 @@ static void update_tariff(const Model &m) {
 
   char foot[64] = "";
   if (t.supply_cents_per_day > 0 || t.feed_in_cents > 0)
-    snprintf(foot, sizeof foot, "Supply %.1f\xC2\xA2/day \xC2\xB7 Feed-in %.1f\xC2\xA2/kWh", t.supply_cents_per_day, t.feed_in_cents);
+    snprintf(foot, sizeof foot, "Supply %.1f%s/day \xC2\xB7 Feed-in %.1f%s/kWh", t.supply_cents_per_day, minor_unit(), t.feed_in_cents, minor_unit());
   lv_label_set_text(t_footer, foot);
 }
 

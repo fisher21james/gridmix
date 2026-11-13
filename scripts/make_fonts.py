@@ -13,7 +13,7 @@ from PIL import ImageFont
 OUT = Path(__file__).resolve().parent.parent / "lib" / "gridui" / "fonts"
 
 ASCII = list(range(0x20, 0x7F))
-EXTRA = [0xA2, 0xB0, 0xB7, 0x2013, 0x2026, 0x2039, 0x203A, 0x2212]   # ¢ ° · – … ‹ › −
+EXTRA = [0xA2, 0xA3, 0xB0, 0xB7, 0x2013, 0x2026, 0x2039, 0x203A, 0x2212]   # ¢ £ ° · – … ‹ › −
 TEXT = ASCII + EXTRA
 DIGITS = [ord(c) for c in " %-.0123456789"] + [0x2212]
 

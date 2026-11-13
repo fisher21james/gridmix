@@ -145,6 +145,14 @@ void test_day_segments_and_cards() {
   flat.add("Flat", 0, 0, 30);
   TEST_ASSERT_EQUAL(1, tariff_cards(flat, THU, cards, 8));
   TEST_ASSERT_EQUAL_STRING("All day", cards[0].hours);
+
+  // A day rate to midnight keeps both am/pm marks (found on a UK plan in the simulator)
+  Tariff uk;
+  uk.add("Night", 0, 7 * 60, 13.5f);
+  uk.add("Day", 7 * 60, 0, 27.0f);
+  TEST_ASSERT_EQUAL(2, tariff_cards(uk, THU, cards, 8));
+  TEST_ASSERT_EQUAL_STRING("12\xE2\x80\x93" "7am", cards[0].hours);
+  TEST_ASSERT_EQUAL_STRING("7am\xE2\x80\x93" "12am", cards[1].hours);
 }
 
 void test_cheapest_window() {

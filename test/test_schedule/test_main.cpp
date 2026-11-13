@@ -73,6 +73,25 @@ void test_urls() {
   TEST_ASSERT_EQUAL(0, eia_url(f, u, 40));   // too small: nothing half-written is used
 }
 
+void test_gb_requests() {
+  char u[200];
+  Feed f = feed_for("GB", "13", false);
+  TEST_ASSERT_EQUAL(SRC_CARBON_INTENSITY, f.source);
+  TEST_ASSERT_TRUE(ci_url(f, u, sizeof u) > 0);
+  TEST_ASSERT_EQUAL_STRING("https://api.carbonintensity.org.uk/regional/regionid/13", u);
+  TEST_ASSERT_TRUE(ci_history_url(f, T0(), u, sizeof u) > 0);
+  TEST_ASSERT_EQUAL_STRING("https://api.carbonintensity.org.uk/regional/intensity/2026-11-12T05:35Z/pt24h/regionid/13", u);
+  TEST_ASSERT_EQUAL_STRING("18", feed_for("GB", "13", true).region);   // whole of Great Britain
+
+  Scheduler s;
+  s.reset(SRC_CARBON_INTENSITY, T0());
+  TEST_ASSERT_FALSE(s.due(FETCH_MARKET, T0() + 86400));
+  s.done(FETCH_MIX, T0(), 200);
+  TEST_ASSERT_EQUAL(300, s.next(FETCH_MIX) % 900);   // 5 past each quarter hour
+  TEST_ASSERT_EQUAL(0, freshness_level(SRC_CARBON_INTENSITY, 20 * 60));
+  TEST_ASSERT_EQUAL(1, freshness_level(SRC_CARBON_INTENSITY, 60 * 60));
+}
+
 void test_regular_timing_stays_in_budget() {
   Scheduler s;
   int64_t t = T0();
@@ -155,6 +174,7 @@ int main(int, char **) {
   RUN_TEST(test_nem_time_is_utc_plus_10);
   RUN_TEST(test_feeds);
   RUN_TEST(test_urls);
+  RUN_TEST(test_gb_requests);
   RUN_TEST(test_regular_timing_stays_in_budget);
   RUN_TEST(test_low_credits_slow_down);
   RUN_TEST(test_backoff_and_errors);

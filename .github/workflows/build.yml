@@ -55,7 +55,7 @@ jobs:
 
       - name: Check the display's root certificates still verify the data APIs
         run: |
-          for host in api.openelectricity.org.au api.eia.gov fisher21james.github.io; do
+          for host in api.openelectricity.org.au api.eia.gov api.carbonintensity.org.uk fisher21james.github.io; do
             echo | openssl s_client -connect $host:443 -servername $host -CAfile data/ca_roots.pem -verify_return_error 2>/dev/null | grep -q "Verify return code: 0 (ok)" \
               && echo "$host: OK" || { echo "::error::$host no longer verifies against data/ca_roots.pem"; exit 1; }
           done

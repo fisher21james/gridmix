@@ -142,7 +142,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_get_settings() {
   return out;
 }
 
-// Paste a real API answer. kind: 0 = Open Electricity generation, 1 = Open Electricity market, 2 = EIA.
+// Paste a real API answer. kind: 0 = Open Electricity generation, 1 = Open Electricity market, 2 = EIA,
+// 4 = Carbon Intensity (Great Britain).
 EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
   const size_t len = strlen(json);
   if (kind == 1) {
@@ -153,7 +154,7 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
     return out;
   }
   GridSnapshot s;
-  const bool ok = kind == 0 ? parse_openelectricity(json, len, s) : parse_eia(json, len, s);
+  const bool ok = kind == 0 ? parse_openelectricity(json, len, s) : kind == 4 ? parse_carbon_intensity(json, len, s) : parse_eia(json, len, s);
   if (!ok) { snprintf(out, sizeof out, "Couldn't read that as %s data.", kind == 0 ? "Open Electricity generation" : "EIA"); return out; }
   snap = s;
   has_data = true;
@@ -162,12 +163,14 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
 }
 
 // The exact request the display would send (same code as the firmware).
-// kind: 0 = generation, 1 = market, 2 = EIA, 3 = 24-hour history.
+// kind: 0 = generation, 1 = market, 2 = EIA, 3 = 24-hour history, 4 = GB now, 5 = GB 24-hour history.
 // The EIA URL ends with "api_key=" for the page to add the key.
 EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const char *region, int country_view, double now_utc) {
   const Feed f = feed_for(country, region, country_view);
   size_t n = 0;
   if (kind == 2) n = f.source == SRC_EIA ? eia_url(f, out, sizeof out) : 0;
+  else if (kind == 4) n = f.source == SRC_CARBON_INTENSITY ? ci_url(f, out, sizeof out) : 0;
+  else if (kind == 5) n = f.source == SRC_CARBON_INTENSITY ? ci_history_url(f, (int64_t)now_utc, out, sizeof out) : 0;
   else if (f.source == SRC_OPEN_ELECTRICITY) {
     if (kind == 0) n = oe_power_url(f, (int64_t)now_utc, out, sizeof out);
     else if (kind == 3) n = oe_history_url(f, (int64_t)now_utc, out, sizeof out);
@@ -180,7 +183,9 @@ EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const cha
 // The 24-hour history answer (same request the display makes after start-up). Call after the mix.
 EMSCRIPTEN_KEEPALIVE const char *gm_load_history(const char *json) {
   static HistoryPoint pts[64];
-  const int n = parse_openelectricity_history(json, strlen(json), pts, 64);
+  // Open Electricity hourly, or Carbon Intensity half-hourly (it has "generationmix")
+  const int n = strstr(json, "generationmix") ? parse_carbon_intensity_history(json, strlen(json), pts, 64)
+                                              : parse_openelectricity_history(json, strlen(json), pts, 64);
   if (!n) { snprintf(out, sizeof out, "Couldn't read the 24-hour history."); return out; }
   has_history = true;
   for (float &h : history) h = NAN;
@@ -221,19 +226,21 @@ EMSCRIPTEN_KEEPALIVE void gm_load_demo(int i) {
 
 // Builds the screen from the inputs, as the firmware does. Returns a JSON summary for the page.
 EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
-  const bool us = settings.country[0] == 'U';
+  const CountryInfo &ci = country_info(settings.country);
+  set_pence(ci.pence);   // before the rate is formatted
+  const DataSource src = feed_for(settings.country, settings.region, view_country).source;
   const Tariff plan = settings.active_tariff();
   Model m = model_build(snap, has_data, header, weekday, minute, has_plan && settings.has_tariff() ? &plan : nullptr);
   m.view_country = view_country;
   char ago[24] = "Waiting for data";
   if (has_data) format_ago((int64_t)data_age_min * 60, ago, sizeof ago);
-  const Freshness fresh = (Freshness)freshness_level(us ? SRC_EIA : SRC_OPEN_ELECTRICITY, (int64_t)data_age_min * 60);
+  const Freshness fresh = (Freshness)freshness_level(src, (int64_t)data_age_min * 60);
   m.freshness = fresh;
   if (!has_history) demo_history(m);
   else for (int i = 0; i < HISTORY_POINTS; i++) m.history[i] = history[i];
-  model_views(m, region_label(settings.country, settings.region), us ? "My region \xC2\xB7 EIA" : "My region \xC2\xB7 state grid",
-              us ? "United States" : "Australia", us ? "Lower 48 states (EIA)" : "East coast grid (NEM)",
-              us ? "Hourly" : "Every 10 min", ago, fresh);
+  char local_sub[48];
+  snprintf(local_sub, sizeof local_sub, "My region \xC2\xB7 %s", ci.local_sub);
+  model_views(m, region_label(settings.country, settings.region), local_sub, ci.name, ci.whole_sub, ci.freq, ago, fresh);
   if (problem[0] && !has_data) {
     snprintf(m.advice, sizeof m.advice, "%s", problem);
     m.tone = TONE_BAD;

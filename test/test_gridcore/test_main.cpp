@@ -187,7 +187,8 @@ void test_oe_wem() {
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 1080.9f, s.mw[SOLAR]);     // 836.9 rooftop + 244.0 utility
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 0.0f, s.mw[BATTERY]);
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 488.7f, s.battery_charging);
-  TEST_ASSERT_FLOAT_WITHIN(0.5f, 47.0f, s.renewable_pct());
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 48.7f, s.renewable_pct());   // includes WA's bioenergy (46 MW)
+  TEST_ASSERT_FLOAT_WITHIN(0.5f, 46.0f, s.mw[BIOMASS]);
 }
 
 // History: the 5-minute capture has 14 timestamps; each point's share must match what the live
@@ -218,6 +219,30 @@ void test_oe_history_real() {
   }
 }
 
+// ---------- Great Britain (Carbon Intensity API), London 13 Nov 2026 04:00-04:30 UTC
+
+void test_ci_now() {
+  GridSnapshot s;
+  TEST_ASSERT_TRUE(parse_carbon_intensity(CI_LONDON_NOW, strlen(CI_LONDON_NOW), s));
+  TEST_ASSERT_TRUE(s.percent_only);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-13T04:30Z"), s.data_time);   // end of the half hour
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 37.1f, s.mw[WIND]);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 32.6f, s.mw[IMPORTS]);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 4.6f, s.mw[BIOMASS]);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 13.6f, s.mw[NUCLEAR]);
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 41.9f, s.renewable_pct());   // wind 37.1 + hydro 0.2 + biomass 4.6; imports not counted
+  TEST_ASSERT_FALSE(parse_carbon_intensity("{\"data\":[]}", 11, s));
+}
+
+void test_ci_history() {
+  HistoryPoint p[64];
+  const int n = parse_carbon_intensity_history(CI_LONDON_HISTORY, strlen(CI_LONDON_HISTORY), p, 64);
+  TEST_ASSERT_EQUAL(6, n);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-12T04:30Z"), p[0].time);
+  TEST_ASSERT_EQUAL_INT64(parse_iso_time("2026-11-13T04:00Z"), p[5].time);
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 60.0f, p[1].renewable_pct);   // midday: solar 18.6 + wind 34.9 + biomass 6.3 + hydro 0.1
+}
+
 int main(int, char **) {
   UNITY_BEGIN();
   RUN_TEST(test_iso_time_utc_hour);
@@ -231,6 +256,8 @@ int main(int, char **) {
   RUN_TEST(test_oe_wem);
   RUN_TEST(test_oe_history);
   RUN_TEST(test_oe_history_real);
+  RUN_TEST(test_ci_now);
+  RUN_TEST(test_ci_history);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);
   RUN_TEST(test_oe_mix);

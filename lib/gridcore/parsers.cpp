@@ -85,7 +85,8 @@ static OeKind classify_oe(const char *key, Source &src) {
   else if (starts_with(key, "solar")) src = SOLAR;
   else if (starts_with(key, "wind")) src = WIND;
   else if (starts_with(key, "hydro")) src = HYDRO;
-  else src = OTHER;  // distillate, bioenergy_*, ...
+  else if (starts_with(key, "bioenergy")) src = BIOMASS;
+  else src = OTHER;  // distillate, ...
   return OE_SOURCE;
 }
 
@@ -277,6 +278,70 @@ void merge_market(GridSnapshot &snap, const MarketInfo &m) {
     snap.has_rooftop = true;
     snap.estimated = true;
   }
+}
+
+// ---------------------------------------------------------------- Great Britain: Carbon Intensity API
+
+static Source ci_source(const char *fuel) {
+  if (!strcmp(fuel, "solar")) return SOLAR;
+  if (!strcmp(fuel, "wind")) return WIND;
+  if (!strcmp(fuel, "hydro")) return HYDRO;
+  if (!strcmp(fuel, "nuclear")) return NUCLEAR;
+  if (!strcmp(fuel, "gas")) return GAS;
+  if (!strcmp(fuel, "coal")) return COAL;
+  if (!strcmp(fuel, "biomass")) return BIOMASS;
+  if (!strcmp(fuel, "imports")) return IMPORTS;
+  return OTHER;
+}
+
+// One half-hour entry: {"from","to","generationmix":[{"fuel","perc"}]}
+static bool ci_entry(JsonObjectConst e, GridSnapshot &s) {
+  JsonArrayConst mix = e["generationmix"];
+  if (mix.isNull() || mix.size() == 0) return false;
+  s = GridSnapshot();
+  for (JsonObjectConst f : mix) {
+    const float p = f["perc"] | 0.0f;
+    if (p > 0) s.mw[ci_source(f["fuel"] | "")] += p;
+  }
+  s.data_time = parse_iso_time(e["to"] | "");
+  s.percent_only = true;
+  s.has_rooftop = true;   // NESO's figures include solar on rooftops and small farms
+  s.valid = s.total() > 0 && s.data_time > 0;
+  return s.valid;
+}
+
+// The entries list sits at data[0].data (current endpoint) or data.data (history endpoint)
+static JsonArrayConst ci_entries(JsonDocument &doc) {
+  JsonVariantConst d = doc["data"];
+  if (d.is<JsonArrayConst>()) return d[0]["data"];
+  return d["data"];
+}
+
+bool parse_carbon_intensity(const char *json, size_t len, GridSnapshot &out) {
+  out = GridSnapshot();
+  JsonDocument doc;
+  if (deserializeJson(doc, json, len)) return false;
+  JsonArrayConst entries = ci_entries(doc);
+  bool ok = false;
+  int64_t newest = -1;
+  for (JsonObjectConst e : entries) {   // normally one; take the newest if there are several
+    GridSnapshot s;
+    if (ci_entry(e, s) && s.data_time > newest) { newest = s.data_time; out = s; ok = true; }
+  }
+  return ok;
+}
+
+int parse_carbon_intensity_history(const char *json, size_t len, HistoryPoint *out, int max) {
+  JsonDocument doc;
+  if (deserializeJson(doc, json, len)) return 0;
+  int n = 0;
+  for (JsonObjectConst e : ci_entries(doc)) {
+    GridSnapshot s;
+    if (n < max && ci_entry(e, s)) out[n++] = HistoryPoint{parse_iso_time(e["from"] | ""), s.renewable_pct()};
+  }
+  for (int i = 1; i < n; i++)   // oldest first
+    for (int j = i; j > 0 && out[j].time < out[j - 1].time; j--) { const HistoryPoint x = out[j]; out[j] = out[j - 1]; out[j - 1] = x; }
+  return n;
 }
 
 }  // namespace gridcore

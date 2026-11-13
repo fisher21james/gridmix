@@ -25,8 +25,9 @@ An animated 4.3" desk display that shows what's powering your electricity grid r
 | Region | Source | Updates |
 | --- | --- | --- |
 | Australia | [Open Electricity](https://openelectricity.org.au) (CC BY-NC 4.0) | Every 5 minutes |
+| UK (Great Britain) | [Carbon Intensity API](https://carbonintensity.org.uk) by NESO and the University of Oxford (CC BY 4.0), no key | Every 30 minutes |
 
-Australia is supported for now. More countries are planned for future updates once there's a free, up-to-date data source for them (the US is first on the list).
+Australia and Great Britain are supported for now. The renewable figure counts solar, wind, hydro and bioenergy (biomass), as official figures do; the details screen says when biomass is included. More countries are planned for future updates once there's a free, up-to-date data source for them (the US is first on the list).
 
 Each display uses its owner's own free API key and talks to the source directly. There's no account or cloud service in between.
 

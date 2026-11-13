@@ -161,12 +161,39 @@ int main(int argc, char **argv) {
     list.push_back({"17-tariff-no-plan", model_build(list[4].model.snap, true, SA, 4, 16 * 60 + 5, nullptr), 4});
   }
   {
+    // Great Britain, real Carbon Intensity answer for London (13 Nov 2026, 4:30am UK time), pence tariff
+    set_pence(true);
+    GridSnapshot s;
+    parse_carbon_intensity(CI_LONDON_NOW, strlen(CI_LONDON_NOW), s);
+    Tariff uk;
+    uk.add("Night", 0, 7 * 60, 13.5f);
+    uk.add("Day", 7 * 60, 0, 27.0f);
+    uk.supply_cents_per_day = 53.4f;
+    uk.feed_in_cents = 15.0f;
+    Model m = model_build(s, true, "London", 5, 4 * 60 + 40, &uk);
+    model_views(m, "London", "My region \xC2\xB7 local area", "Great Britain", "England, Scotland & Wales", "Every 30 min",
+                "Updated 10 min ago", FRESH_OK);
+    HistoryPoint pts[64];
+    const int n = parse_carbon_intensity_history(CI_LONDON_HISTORY, strlen(CI_LONDON_HISTORY), pts, 64);
+    const int64_t end = s.data_time / 1800;
+    for (int i = 0; i < n; i++) {
+      const int64_t idx = pts[i].time / 1800 - (end - (HISTORY_POINTS - 1));
+      if (idx >= 0 && idx < HISTORY_POINTS) m.history[idx] = pts[i].renewable_pct;
+    }
+    m.history[HISTORY_POINTS - 1] = s.renewable_pct();
+    set_pence(false);
+    list.push_back({"19-uk-london-real", m, 0});
+    list.push_back({"20-uk-london-detail", m, 3});
+    list.push_back({"21-uk-london-tariff", m, 4});
+  }
+  {
     Model m = list[4].model;       // data that's falling behind: amber dot next to the clock
     m.freshness = FRESH_LATE;
     list.push_back({"18-data-falling-behind", m, 0});
   }
 
   for (Scenario &sc : list) {
+    set_pence(sc.name.find("-uk-") != std::string::npos);
     update(sc.model);
     run(1500);
     if (sc.action == 1) tap(60, 20);

@@ -88,6 +88,7 @@ input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:va
     <label>Country
       <select id="country">
         <option value="AU">Australia</option>
+        <option value="GB">United Kingdom (Great Britain)</option>
         <!-- US paused: EIA's fuel mix runs about 18 hours behind (Nov 2026). The code paths stay for later. -->
       </select>
     </label>
@@ -105,7 +106,12 @@ input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:va
     </div>
   </section>
 
-  <section class="card" aria-labelledby="key-h">
+  <section class="card hidden" id="noKeyCard">
+    <h2>Data</h2>
+    <p class="hint" style="margin:0">Great Britain uses the Carbon Intensity API from NESO (the grid operator) and the University of Oxford. It's free and needs no key. It updates every half hour.</p>
+  </section>
+
+  <section class="card" aria-labelledby="key-h" id="keyCard">
     <h2 id="key-h">Data key</h2>
     <p id="keyIntro" class="hint" style="margin:0 0 12px"></p>
     <div class="flabel"><label for="key" style="display:inline;margin:0">Your <span id="keyProvider">Open Electricity</span> key</label></div>
@@ -128,7 +134,7 @@ input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:va
     </div>
 
     <div id="flatBox" class="hidden">
-      <label>Usage rate (¢ per kWh)
+      <label>Usage rate (<span class="unit">¢</span> per kWh)
         <input id="flatRate" inputmode="decimal" placeholder="e.g. 32.5">
       </label>
     </div>
@@ -141,10 +147,10 @@ input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:va
     </div>
 
     <div class="row" style="margin-top:14px">
-      <label>Supply (¢ per day)
+      <label>Supply (<span class="unit">¢</span> per day)
         <input id="supply" inputmode="decimal" placeholder="e.g. 116.18">
       </label>
-      <label>Solar feed-in (¢/kWh)
+      <label>Solar feed-in (<span class="unit">¢</span>/kWh)
         <input id="feedin" inputmode="decimal" placeholder="e.g. 4.0">
       </label>
     </div>
@@ -187,15 +193,18 @@ var $ = function (id) { return document.getElementById(id); };
 
 // ---------------------------------------------------------------- reference data
 var REGIONS = {
+  GB: [["13","London"],["14","South East England"],["12","South England"],["11","South West England"],["10","East England"],["9","East Midlands"],["8","West Midlands"],["3","North West England"],["4","North East England"],["5","Yorkshire"],["6","North Wales & Merseyside"],["7","South Wales"],["2","South Scotland"],["1","North Scotland"],["15","England (all)"],["17","Wales (all)"],["16","Scotland (all)"]],
   AU: [["SA1","South Australia"],["NSW1","New South Wales & ACT"],["VIC1","Victoria"],["QLD1","Queensland"],["TAS1","Tasmania"],["WEM","Western Australia (South West)"]],
   US: [["CAL","California"],["CAR","Carolinas"],["CENT","Central"],["FLA","Florida"],["MIDA","Mid-Atlantic"],["MIDW","Midwest"],["NE","New England"],["NY","New York"],["NW","Northwest"],["SE","Southeast"],["SW","Southwest"],["TEN","Tennessee"],["TEX","Texas"]]
 };
 var ZONES = {
+  GB: [["GMT0BST,M3.5.0/1,M10.5.0","UK time (GMT/BST)"]],
   AU: [["ACST-9:30ACDT,M10.1.0,M4.1.0/3","Adelaide"],["AEST-10AEDT,M10.1.0,M4.1.0/3","Sydney, Melbourne, Canberra, Hobart"],["AEST-10","Brisbane"],["AWST-8","Perth"],["ACST-9:30","Darwin"]],
   US: [["EST5EDT,M3.2.0,M11.1.0","Eastern"],["CST6CDT,M3.2.0,M11.1.0","Central"],["MST7MDT,M3.2.0,M11.1.0","Mountain"],["MST7","Arizona"],["PST8PDT,M3.2.0,M11.1.0","Pacific"]]
 };
 var DEFAULT_TZ = {SA1:0,NSW1:1,VIC1:1,QLD1:2,TAS1:1,WEM:3, CAL:4,NW:4,SW:3,CENT:1,TEX:1,MIDW:1,TEN:1,FLA:0,CAR:0,MIDA:0,NE:0,NY:0,SE:0};
 var PROVIDER = {
+  GB: {id:"", name:"", intro:"", help:""},
   AU: {id:"oe", name:"Open Electricity", intro:"Australia uses Open Electricity, which updates every 5 minutes. The key is free and starts with oe_.", help:"https://fisher21james.github.io/gridmix/#key"},
   US: {id:"eia", name:"U.S. EIA", intro:"The US uses the Energy Information Administration's hourly grid data. The key is free and arrives by email.", help:"https://fisher21james.github.io/gridmix/#key"}
 };
@@ -273,7 +282,7 @@ function checkPlan(periods) {
     var p = periods[i], n = i + 1;
     if (hhmm(p.from) < 0 || hhmm(p.from) >= 1440) return {ok:false, msg:"Period " + n + ": the start time should look like 06:00.", field:[i,"from"]};
     if (hhmm(p.to) < 0) return {ok:false, msg:"Period " + n + ": the end time should look like 15:00.", field:[i,"to"]};
-    if (num(p.rate) === null) return {ok:false, msg:"Period " + n + ": enter a rate in cents, e.g. 53.99.", field:[i,"rate"]};
+    if (num(p.rate) === null) return {ok:false, msg:"Period " + n + ": enter a rate in " + (unit() === "p" ? "pence, e.g. 24.5." : "cents, e.g. 53.99."), field:[i,"rate"]};
   }
   var names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   for (var d = 0; d < 7; d++) {
@@ -312,6 +321,7 @@ function fillSelect(sel, list, value) {
   list.forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
   if (value && list.some(function (o) { return o[0] === value; })) sel.value = value;
 }
+function unit() { return cur && cur.country === "GB" ? "p" : "¢"; }
 function setPressed(attr, value) {
   document.querySelectorAll("[data-" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset[attr] === value ? "true" : "false"); });
 }
@@ -322,6 +332,12 @@ function renderLocation() {
   fillSelect($("tz"), ZONES[cur.country], cur.tz);
   cur.tz = $("tz").value;
   setPressed("view", cur.view);
+  // Great Britain needs no key; prices there are in pence
+  var nokey = !PROVIDER[cur.country].id;
+  $("keyCard").classList.toggle("hidden", nokey);
+  $("noKeyCard").classList.toggle("hidden", !nokey);
+  document.querySelectorAll(".unit").forEach(function (u) { u.textContent = unit(); });
+  if (nokey) return;
   var pv = PROVIDER[cur.country], k = cur.keys[pv.id];
   $("keyProvider").textContent = pv.name;
   $("keyIntro").textContent = pv.intro;
@@ -342,7 +358,7 @@ function periodRow(p, i, lo, hi) {
     '<button type="button" class="icon" data-del="' + i + '" aria-label="Remove period ' + (i + 1) + '"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>' +
     '<div class="times"><label>From<input data-i="' + i + '" data-f="from" inputmode="numeric" placeholder="06:00"></label>' +
     '<label>To<input data-i="' + i + '" data-f="to" inputmode="numeric" placeholder="10:00"></label>' +
-    '<label>¢ per kWh<input data-i="' + i + '" data-f="rate" inputmode="decimal" placeholder="53.99"></label></div>';
+    '<label>' + unit() + ' per kWh<input data-i="' + i + '" data-f="rate" inputmode="decimal" placeholder="53.99"></label></div>';
   ["name","from","to","rate","days"].forEach(function (f) { el.querySelector('[data-f="' + f + '"]').value = p[f] === undefined ? "" : p[f]; });
   return el;
 }
@@ -443,7 +459,7 @@ $("country").addEventListener("change", function () {
   cur.region = REGIONS[cur.country][0][0];
   cur.tz = ZONES[cur.country][DEFAULT_TZ[cur.region] || 0][0];
   $("keyMsg").classList.add("hidden");
-  renderLocation(); updateSave();
+  renderLocation(); renderTariff(); updateSave();
 });
 $("region").addEventListener("change", function () {
   cur.region = this.value;
@@ -455,7 +471,7 @@ $("tz").addEventListener("change", function () { cur.tz = this.value; updateSave
 document.querySelectorAll("[data-view]").forEach(function (b) { b.addEventListener("click", function () { cur.view = b.dataset.view; setPressed("view", cur.view); updateSave(); }); });
 document.querySelectorAll("[data-plan]").forEach(function (b) { b.addEventListener("click", function () { cur.tariff.type = b.dataset.plan; renderTariff(); updateSave(); }); });
 
-$("key").addEventListener("input", function () { cur.keys[PROVIDER[cur.country].id].value = this.value.trim(); $("keyMsg").classList.add("hidden"); updateSave(); });
+$("key").addEventListener("input", function () { if (!PROVIDER[cur.country].id) return; cur.keys[PROVIDER[cur.country].id].value = this.value.trim(); $("keyMsg").classList.add("hidden"); updateSave(); });
 $("keyShow").addEventListener("click", function () {
   var show = $("key").type === "password";
   $("key").type = show ? "text" : "password";

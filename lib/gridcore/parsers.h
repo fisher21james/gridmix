@@ -20,6 +20,13 @@ bool parse_openelectricity(const char *json, size_t len, GridSnapshot &out);
 struct HistoryPoint { int64_t time; float renewable_pct; };
 int parse_openelectricity_history(const char *json, size_t len, HistoryPoint *out, int max);
 
+// Great Britain: Carbon Intensity API (api.carbonintensity.org.uk), percentages per fuel for a half hour.
+//   /regional/regionid/{id}                        -> the current half hour
+//   /regional/intensity/{to}/pt24h/regionid/{id}   -> the 48 half hours before {to}
+// The snapshot holds percentages (percent_only) and is timed at the end of the half hour.
+bool parse_carbon_intensity(const char *json, size_t len, GridSnapshot &out);
+int parse_carbon_intensity_history(const char *json, size_t len, HistoryPoint *out, int max);
+
 // Open Electricity v4 /market/network/{NEM}?metrics=solar_rooftop_forecast (AEMO's rooftop solar estimate).
 // Any other metrics in the answer (such as price) are ignored.
 struct MarketInfo {

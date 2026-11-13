@@ -66,7 +66,10 @@ void show_update(int percent, const char *message);
 
 // ---- helpers for building a Model (no LVGL needed)
 Sky sky_for_hour(int hour);
-void format_rate(float cents, char *out, size_t cap);   // 23.78 -> "23.8¢"
+void format_rate(float cents, char *out, size_t cap);   // 23.78 -> "23.8¢" (or "23.8p" in Britain)
+// Britain: rates in pence and pounds instead of cents and dollars
+void set_pence(bool pence);
+const char *minor_unit();   // "¢" or "p"
 // Plain-English advice for the status pill. now_min = local minutes after midnight.
 void advise(const Model &m, const gridcore::RateNow *rate, const gridcore::Tariff *tariff, int now_min,
             char *out, size_t cap, Tone &tone);

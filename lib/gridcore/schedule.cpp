@@ -10,6 +10,13 @@ static const int64_t MIN = 60, HOUR = 3600, DAY = 86400;
 
 Feed feed_for(const char *country, const char *region, bool country_view) {
   Feed f;
+  if (country && country[0] == 'G') {   // Great Britain: region ids 1-17, 18 = all of GB
+    f.source = SRC_CARBON_INTENSITY;
+    f.has_market = false;
+    f.network[0] = 0;
+    snprintf(f.region, sizeof f.region, "%s", country_view || !region || !*region ? "18" : region);
+    return f;
+  }
   if (country && country[0] == 'U') {
     f.source = SRC_EIA;
     f.has_market = false;
@@ -33,7 +40,8 @@ Feed feed_for(const char *country, const char *region, bool country_view) {
 }
 
 void network_time(int64_t utc, const char *network, char *out, size_t cap) {
-  int64_t t = utc + (network && !strcmp(network, "WEM") ? 8 : 10) * HOUR;
+  const int off = !network ? 10 : !strcmp(network, "WEM") ? 8 : !strcmp(network, "UTC") ? 0 : 10;
+  int64_t t = utc + off * HOUR;
   int64_t days = t >= 0 ? t / DAY : (t - DAY + 1) / DAY;
   int64_t secs = t - days * DAY;
   // civil_from_days (Howard Hinnant)
@@ -85,6 +93,18 @@ size_t oe_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
                          OE_BASE, f.network, region, start), cap);
 }
 
+size_t ci_url(const Feed &f, char *out, size_t cap) {
+  return finish(snprintf(out, cap, "https://api.carbonintensity.org.uk/regional/regionid/%s", f.region), cap);
+}
+
+size_t ci_history_url(const Feed &f, int64_t now_utc, char *out, size_t cap) {
+  // ".../{to}/pt24h/..." returns the 24 hours before {to}, which is written in UTC
+  char t[24];
+  network_time(now_utc, "UTC", t, sizeof t);
+  t[16] = 0;   // "YYYY-MM-DDTHH:MM"
+  return finish(snprintf(out, cap, "https://api.carbonintensity.org.uk/regional/intensity/%sZ/pt24h/regionid/%s", t, f.region), cap);
+}
+
 size_t eia_url(const Feed &f, char *out, size_t cap) {
   // Newest rows first; 30 rows covers every fuel type for the latest hour. Brackets are percent-encoded.
   return finish(snprintf(out, cap,
@@ -99,7 +119,7 @@ size_t eia_url(const Feed &f, char *out, size_t cap) {
 void Scheduler::reset(DataSource src, int64_t now) {
   src_ = src;
   next_[FETCH_MIX] = now;
-  next_[FETCH_MARKET] = src == SRC_OPEN_ELECTRICITY ? now : INT64_MAX;
+  next_[FETCH_MARKET] = src == SRC_OPEN_ELECTRICITY ? now : INT64_MAX;   // only Open Electricity has a second request
   fails_[0] = fails_[1] = 0;
   key_rejected_ = out_of_credits_ = false;
 }
@@ -108,6 +128,9 @@ bool Scheduler::due(FetchKind k, int64_t now) const { return now >= next_[k]; }
 
 int64_t Scheduler::next_regular(FetchKind k, int64_t now) const {
   if (src_ == SRC_EIA) return (now / (15 * MIN) + 1) * 15 * MIN + 2 * MIN;
+  // Carbon Intensity: half-hourly, published shortly after each half hour. Check every 15 minutes
+  // (5 minutes past each quarter): 96 small requests a day, no key or allowance.
+  if (src_ == SRC_CARBON_INTENSITY) return (now / (15 * MIN) + 1) * 15 * MIN + 5 * MIN;
   // Open Electricity: just after each 10 (or 30) minutes, when the newest 5-minute point has been published.
   // Slow down when the day's credits are nearly gone.
   int64_t step = k == FETCH_MIX ? 10 * MIN : 30 * MIN;
@@ -158,8 +181,9 @@ void format_ago(int64_t age_s, char *out, size_t cap) {
 }
 
 int freshness_level(DataSource src, int64_t age_s) {
-  const int64_t ok = src == SRC_EIA ? 24 * HOUR : 25 * MIN;
-  const int64_t late = src == SRC_EIA ? 48 * HOUR : 90 * MIN;
+  // Carbon Intensity's newest half hour is normally under 30 minutes old (its end time is used)
+  const int64_t ok = src == SRC_EIA ? 24 * HOUR : src == SRC_CARBON_INTENSITY ? 45 * MIN : 25 * MIN;
+  const int64_t late = src == SRC_EIA ? 48 * HOUR : src == SRC_CARBON_INTENSITY ? 2 * HOUR : 90 * MIN;
   return age_s <= ok ? 0 : age_s <= late ? 1 : 2;
 }
 
