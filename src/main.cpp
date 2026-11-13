@@ -17,6 +17,8 @@
 #include "setup_server.h"
 #include "fetcher.h"
 #include "gridui.h"
+#include "data_cache.h"
+#include "health.h"
 
 #if HAS_GT911_TOUCH
 #include <Wire.h>
@@ -118,18 +120,27 @@ static uint32_t demo_since = 0;
 
 // Renewable share over the last 24 hours, one slot per half hour (for the detail screen's chart).
 // Starts empty after power-up and fills in as data arrives.
-static float hist[gridui::HISTORY_POINTS];
-static int64_t hist_slot[gridui::HISTORY_POINTS];
-static void history_clear() { for (auto &s : hist_slot) s = -1; }
-static void history_fill(gridui::Model &m, const GridSnapshot &snap) {
-  const int64_t slot = snap.data_time / 1800;
+// Kept with the last data in flash (data_cache), so a restart doesn't lose it.
+static CachedData store;   // .hist / .hist_slot: ring of half-hour slots; .snap: last good data
+static void history_clear() { for (auto &s : store.hist_slot) s = -1; }
+static void history_record(int64_t data_time, float renewable_pct) {
+  const int64_t slot = data_time / 1800;
   const int N = gridui::HISTORY_POINTS;
-  hist[slot % N] = snap.renewable_pct();
-  hist_slot[slot % N] = slot;
+  store.hist[slot % N] = renewable_pct;
+  store.hist_slot[slot % N] = slot;
+}
+static void history_to_model(gridui::Model &m, int64_t data_time) {
+  const int64_t slot = data_time / 1800;
+  const int N = gridui::HISTORY_POINTS;
   for (int i = 0; i < N; i++) {
     const int64_t want = slot - (N - 1) + i;
-    m.history[i] = hist_slot[want % N] == want ? hist[want % N] : NAN;
+    m.history[i] = store.hist_slot[want % N] == want ? store.hist[want % N] : NAN;
   }
+}
+
+// What the cached data is for; a change of region or view makes the cache stale
+static void feed_key(char *out, size_t cap) {
+  snprintf(out, cap, "%s/%s/%d", g_settings.country, g_settings.region, view_country ? 1 : 0);
 }
 
 static gridui::Model build_model() {
@@ -165,9 +176,14 @@ static gridui::Model build_model() {
     const int64_t age = (int64_t)now - d.snap.data_time;
     format_ago(age, ago, sizeof ago);
     fresh = (gridui::Freshness)freshness_level(d.source, age);
+  } else if (d.has_data) {
+    // Saved before a restart and the clock isn't set yet: we can't say how old it is
+    snprintf(ago, sizeof ago, "Saved before restart");
+    fresh = gridui::FRESH_LATE;
   }
+  if (d.from_cache && fresh == gridui::FRESH_OK) fresh = gridui::FRESH_LATE;   // amber until a fetch confirms it
   m.freshness = fresh;
-  if (d.has_data) history_fill(m, d.snap);
+  if (d.has_data) history_to_model(m, d.snap.data_time);
   gridui::model_views(m, region_label(g_settings.country, g_settings.region), local_sub,
                       us ? "United States" : "Australia", us ? "Lower 48 states (EIA)" : "East coast grid (NEM)",
                       us ? "Hourly" : "Every 10 min", ago, fresh);
@@ -213,6 +229,21 @@ static void screen_tick(lv_timer_t *) {
     demo_since = millis();
     dirty = true;
   }
+  if (d.version != last_version && d.has_data && !d.from_cache) {
+    // New data: add it to the 24-hour history, and keep a copy in flash (at most every 30 minutes,
+    // to spare the flash; the first one after a restart or a change is saved straight away)
+    static uint32_t last_save_ms = 0;
+    static bool saved_once = false;
+    history_record(d.snap.data_time, d.snap.renewable_pct());
+    store.snap = d.snap;
+    if (!saved_once || millis() - last_save_ms > 30 * 60 * 1000UL) {
+      char key[24];
+      feed_key(key, sizeof key);
+      cache_save(key, store);
+      last_save_ms = millis();
+      saved_once = true;
+    }
+  }
   if (d.version != last_version || minute != last_minute || WiFi.status() != last_wifi) dirty = true;
   if (!dirty) return;
   dirty = false;
@@ -226,6 +257,7 @@ static void screen_tick(lv_timer_t *) {
 void setup() {
   Serial.begin(115200);
   Serial.printf("\nGrid Mix Display %s\n", FW_VERSION);
+  health_begin();
 
   settings_load(g_settings);
   history_clear();
@@ -268,9 +300,20 @@ void setup() {
   improv::begin("GridMix", FW_VERSION, "Grid Mix Display", "http://{IP}");
 
   fetcher_begin();
+
+  // Show the last data from before the restart (if it's for the same region and view)
+  char key[24];
+  feed_key(key, sizeof key);
+  CachedData saved;
+  if (cache_load(key, saved)) {
+    store = saved;
+    fetcher_seed(saved.snap);
+    Serial.println("Showing data saved before the restart");
+  }
 }
 
 void loop() {
+  health_loop();
   improv::loop();
   if (!net_started && WiFi.status() == WL_CONNECTED) {
     configTzTime(g_settings.tz, "pool.ntp.org", "time.google.com");   // clock, in the user's time zone

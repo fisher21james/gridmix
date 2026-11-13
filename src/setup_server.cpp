@@ -7,6 +7,7 @@
 #include "app_state.h"
 #include "net.h"
 #include "settings_store.h"
+#include "health.h"
 #include "generated/setup_html.h"
 
 using gridcore::Settings;
@@ -81,6 +82,16 @@ static void handle_status() {
   if (g_status.problem) doc["problem"] = g_status.problem;
   doc["credits_known"] = g_status.credits_left >= 0;
   doc["credits"] = g_status.credits_left;
+  HealthInfo h;
+  health_info(h);
+  JsonObject d = doc["device"].to<JsonObject>();
+  d["uptime_s"] = h.uptime_s;
+  d["last_restart"] = h.last_restart;
+  d["heap_free"] = h.heap_free;
+  d["heap_min"] = h.heap_min;
+  d["heap_largest"] = h.heap_largest;
+  d["psram_free"] = h.psram_free;
+  d["wifi_reconnects"] = h.wifi_reconnects;
   send_json(200, doc);
 }
 

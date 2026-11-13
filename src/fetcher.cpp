@@ -7,6 +7,7 @@
 #include "app_state.h"
 #include "net.h"
 #include "parsers.h"
+#include "health.h"
 
 using namespace gridcore;
 
@@ -36,6 +37,7 @@ static void task(void *) {
 
   for (;;) {
     vTaskDelay(pdMS_TO_TICKS(1000));
+    health_fetch_alive();
     const int64_t now = time(nullptr);
     if (WiFi.status() != WL_CONNECTED || now < 1700000000) continue;   // no Wi-Fi or clock not set yet
 
@@ -95,6 +97,7 @@ static void task(void *) {
       if (ok) {
         live.has_data = true;
         live.snap = snap;
+        live.from_cache = false;
         live.version++;
       }
       live.source = j.feed.source;
@@ -125,6 +128,17 @@ void fetcher_reset(bool country_view) {
   live = LiveData();
   live.version = version;
   live.source = job.feed.source;
+  xSemaphoreGive(lock);
+}
+
+void fetcher_seed(const GridSnapshot &snap) {
+  xSemaphoreTake(lock, portMAX_DELAY);
+  if (!live.has_data) {
+    live.has_data = true;
+    live.snap = snap;
+    live.from_cache = true;
+    live.version++;
+  }
   xSemaphoreGive(lock);
 }
 

@@ -12,10 +12,13 @@ struct LiveData {
   bool key_rejected = false;
   bool out_of_credits = false;
   int failures = 0;              // failed requests in a row
+  bool from_cache = false;       // shown from flash after a restart; nothing fetched yet
 };
 
 void fetcher_begin();
 // Settings or the region/country view changed: forget old data and fetch straight away.
 void fetcher_reset(bool country_view);
+// Show data saved before a restart until the first fetch replaces it.
+void fetcher_seed(const gridcore::GridSnapshot &snap);
 // Copies the latest state (thread safe).
 void fetcher_get(LiveData &out);
