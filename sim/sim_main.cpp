@@ -227,6 +227,25 @@ int main(int argc, char **argv) {
     set_currency('$');
   }
   {
+    // New Zealand, sample numbers from Transpower's live page (13 Nov 2026, 6pm NZ time). The live
+    // feed (Electricity Authority) is still to come; this is to check the geothermal station.
+    GridSnapshot s;
+    s.mw[HYDRO] = 3306; s.mw[GEOTHERMAL] = 776; s.mw[WIND] = 477; s.mw[SOLAR] = 239;
+    s.mw[GAS] = 101; s.mw[OTHER] = 42; s.mw[BATTERY] = 49;
+    s.valid = true;
+    s.data_time = 1794546000;
+    Tariff t;
+    t.add("Off-peak", 21 * 60, 7 * 60, 19.5f);
+    t.add("Peak", 7 * 60, 21 * 60, 33.0f);
+    Model m = model_build(s, true, "New Zealand", 5, 18 * 60 + 5, &t);
+    m.show_geothermal = true;
+    char ago[48];
+    format_ago(5 * 60, ago, sizeof ago);
+    model_views(m, "New Zealand", "My region \xC2\xB7 island grid", "New Zealand", "Both islands", "Every 5 min", ago, FRESH_OK);
+    list.push_back({"26-nz-sample", m, 0});
+    list.push_back({"27-nz-detail", m, 3});
+  }
+  {
     Model m = list[4].model;       // data that's falling behind: amber dot next to the clock
     m.freshness = FRESH_LATE;
     list.push_back({"18-data-falling-behind", m, 0});

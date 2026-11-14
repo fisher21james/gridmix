@@ -116,6 +116,19 @@ void test_garbage_refused() {
   TEST_ASSERT_FALSE(settings_from_json("{nope", 5, s, err, sizeof err));
 }
 
+void test_new_zealand() {
+  Settings s;
+  char err[96];
+  const char *j = "{\"country\":\"NZ\",\"region\":\"SI\",\"tz\":\"NZST-12NZDT,M9.5.0,M4.1.0/3\",\"keys\":{\"ea\":{\"value\":\"0123456789abcdef0123456789abcdef\"}}}";
+  TEST_ASSERT_TRUE_MESSAGE(settings_from_json(j, strlen(j), s, err, sizeof err), err);
+  TEST_ASSERT_TRUE(s.needs_key());
+  TEST_ASSERT_EQUAL_STRING("0123456789abcdef0123456789abcdef", s.key_for_country());
+  TEST_ASSERT_TRUE(country_info("NZ").geothermal);
+  TEST_ASSERT_FALSE(country_info("AU").geothermal);
+  const char *bad = "{\"country\":\"NZ\",\"region\":\"FR\"}";
+  TEST_ASSERT_FALSE(settings_from_json(bad, strlen(bad), s, err, sizeof err));
+}
+
 void test_france_and_language() {
   Settings s;
   char err[96];
@@ -149,5 +162,6 @@ int main(int, char **) {
   RUN_TEST(test_brightness_clamped);
   RUN_TEST(test_garbage_refused);
   RUN_TEST(test_france_and_language);
+  RUN_TEST(test_new_zealand);
   return UNITY_END();
 }

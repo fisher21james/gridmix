@@ -118,6 +118,8 @@ static void task(void *) {
       if (!rte_url(url, sizeof url)) continue;
       log_url("mix", url);
       code = https_get(url, nullptr, body);
+    } else if (j.feed.source == SRC_EA) {
+      continue;   // New Zealand: waiting on the Electricity Authority key to finish this source
     } else {
       if (!eia_url(j.feed, url, sizeof url)) continue;
       log_url("mix", url);

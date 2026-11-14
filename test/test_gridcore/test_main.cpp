@@ -259,6 +259,13 @@ void test_rte_now() {
   TEST_ASSERT_FALSE(parse_rte("{\"results\":[{\"date_heure\":\"2026-11-13T05:30:00+00:00\",\"nucleaire\":null}]}", 64, s));
 }
 
+void test_geothermal_is_renewable() {
+  GridSnapshot s;
+  s.mw[HYDRO] = 60; s.mw[GEOTHERMAL] = 20; s.mw[GAS] = 20;
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 80, s.renewable_pct());
+  TEST_ASSERT_EQUAL_STRING("Geothermal", source_name(GEOTHERMAL));
+}
+
 void test_rte_history() {
   HistoryPoint p[64];
   const int n = parse_rte_history(RTE_FRANCE_HISTORY, strlen(RTE_FRANCE_HISTORY), p, 64);
@@ -316,6 +323,7 @@ int main(int, char **) {
   RUN_TEST(test_ci_history);
   RUN_TEST(test_rte_now);
   RUN_TEST(test_rte_history);
+  RUN_TEST(test_geothermal_is_renewable);
   RUN_TEST(test_french_text);
   RUN_TEST(test_eia_bad_json_fails_cleanly);
   RUN_TEST(test_oe_parses);

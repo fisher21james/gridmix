@@ -166,14 +166,35 @@ static void draw_static_art() {
   art.rect(292, 114, 10, 16, 0xF07A3A);
   art.rect(310, 84, 6, 26, 0x8A939C);
 
-  // nuclear cooling tower (green stripe)
-  art.opa = ghost(NUCLEAR);
-  p.move(336, 130).quad(348, 106, 344, 86).line(370, 86).quad(366, 106, 378, 130);
-  art.fill(p, 0xD9E1E7);
-  art.stroke(p.p, p.n, true, 1, 0xB6C2CC);
-  art.ellipse(357, 86, 13, 2.5f, 0xAEBAC4);
-  const Pt stripe[] = {{344.7f, 93}, {369.3f, 93}, {369.6f, 98}, {344.4f, 98}};
-  art.fill(stripe, 4, 0x3BB273);
+  if (cur.show_geothermal) {
+    // geothermal station (New Zealand has no nuclear): turbine hall, a low cooling tower block with
+    // two fan stacks, and a silver steam pipe with an expansion loop running in from the steam field
+    art.opa = ghost(GEOTHERMAL);
+    const uint32_t pipe = 0xC9D1D8;
+    const Pt pl[] = {{324, 126}, {328, 126}, {328, 116}, {334, 116}, {334, 126}, {338, 126}};
+    art.stroke(pl, 6, false, 2.5f, pipe);
+    art.rect(325, 126, 2, 4, 0x8A939C);   // pipe supports
+    art.rect(335, 126, 2, 4, 0x8A939C);
+    art.rect(338, 102, 22, 28, 0xD9E1E7);   // turbine hall
+    art.rect(338, 100, 22, 3, 0xAEBAC4);
+    art.rect(338, 109, 22, 4, 0x1AA59A);    // teal stripe
+    art.rect(342, 120, 6, 10, 0x8A939C);    // door
+    art.rect(351, 118, 5, 4, 0xAEBAC4);     // window
+    art.rect(361, 94, 17, 36, 0xC4CDD5);    // cooling tower block
+    art.rect(361, 94, 17, 2, 0xAEBAC4);
+    for (int y = 100; y < 128; y += 4) art.rect(362, y, 15, 1, 0xAEBAC4);   // louvres
+    art.rect(363, 88, 6, 6, 0xAEBAC4);      // fan stacks
+    art.rect(371, 88, 6, 6, 0xAEBAC4);
+  } else {
+    // nuclear cooling tower (green stripe)
+    art.opa = ghost(NUCLEAR);
+    p.move(336, 130).quad(348, 106, 344, 86).line(370, 86).quad(366, 106, 378, 130);
+    art.fill(p, 0xD9E1E7);
+    art.stroke(p.p, p.n, true, 1, 0xB6C2CC);
+    art.ellipse(357, 86, 13, 2.5f, 0xAEBAC4);
+    const Pt stripe[] = {{344.7f, 93}, {369.3f, 93}, {369.6f, 98}, {344.4f, 98}};
+    art.fill(stripe, 4, 0x3BB273);
+  }
 
   // hydro dam
   art.opa = ghost(HYDRO);
@@ -722,7 +743,7 @@ void update(const Model &m) {
 
   // The artwork only changes with the sky and which sources are running, so skip the redraw otherwise
   static int art_key = -1;
-  int key = m.sky * 2 + m.show_imports;
+  int key = m.sky * 4 + m.show_imports * 2 + m.show_geothermal;
   for (int i = 0; i < SOURCE_COUNT; i++) key = key * 2 + (m.has_data && m.snap.mw[i] > 0);
   if (key != art_key) { art_key = key; draw_static_art(); }
 
@@ -733,7 +754,12 @@ void update(const Model &m) {
   set_hidden(smoke_box, coal <= 0);
   lv_obj_set_style_opa(smoke_box, (lv_opa_t)(255 * fminf(1, 0.35f + coal / 80)), 0);
   for (auto *p : puffs) lv_obj_set_style_bg_color(p, hex(sky.smoke), 0);
-  set_hidden(vap_box, !(m.has_data && m.snap.mw[NUCLEAR] > 0));
+  // The white vapour comes from the nuclear cooling tower, or the geothermal station's two fan stacks
+  for (int i = 0; i < 3; i++) {
+    if (m.show_geothermal) vap_cfg[i] = {i == 1 ? 374.0f : 366.0f, 85, 5, -5, -34, 2.0f, (float)(i * 333)};
+    else vap_cfg[i] = {357, 80, 7, -6, -40, 2.1f, (float)(i * 333)};
+  }
+  set_hidden(vap_box, !(m.has_data && m.snap.mw[m.show_geothermal ? GEOTHERMAL : NUCLEAR] > 0));
   set_hidden(flame_img, gas <= 0);
   lv_obj_set_style_opa(flame_img, (lv_opa_t)(255 * fminf(1, 0.55f + gas / 60)), 0);
   set_hidden(water_box, !hydro);

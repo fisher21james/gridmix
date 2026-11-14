@@ -17,6 +17,7 @@ struct Settings {
 
   char key_oe[72] = "";
   char key_eia[72] = "";
+  char key_ea[72] = "";      // New Zealand: Electricity Authority API (free, subscription approved by hand)
 
   bool tariff_flat = false;
   float flat_cents = 0;
@@ -30,8 +31,10 @@ struct Settings {
   bool has_tariff() const { return tariff_flat ? flat_cents > 0 : tou.count > 0; }
   Tariff active_tariff() const;   // what the rate engine should use (flat becomes one all-day period)
   // Great Britain's Carbon Intensity API and France's RTE data need no key
-  bool needs_key() const { return country[0] == 'A' || country[0] == 'U'; }
-  const char *key_for_country() const { return country[0] == 'U' ? key_eia : needs_key() ? key_oe : ""; }
+  bool needs_key() const { return country[0] == 'A' || country[0] == 'U' || country[0] == 'N'; }
+  const char *key_for_country() const {
+    return country[0] == 'U' ? key_eia : country[0] == 'N' ? key_ea : needs_key() ? key_oe : "";
+  }
   bool ready() const { return !needs_key() || key_for_country()[0]; }   // enough set up to fetch live data
 };
 
@@ -46,6 +49,7 @@ struct CountryInfo {
   char currency;               // '$' (dollars and cents), 'L' (pounds and pence) or 'E' (euros and cents)
   const char *lang;            // the country's own language for the screen: "en", "fr"
   bool imports;                // grid buys power from abroad (draw the transmission line); never in Australia
+  bool geothermal;             // draw a geothermal station where the nuclear plant would be (New Zealand)
 };
 const CountryInfo &country_info(const char *country);
 

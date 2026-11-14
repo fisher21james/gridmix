@@ -5,11 +5,11 @@
 namespace gridcore {
 
 const char *source_name(Source s) {
-  static const char *names[SOURCE_COUNT] = {"Solar", "Wind", "Hydro", "Battery", "Nuclear", "Gas", "Coal", "Other", "Biomass", "Imports"};
+  static const char *names[SOURCE_COUNT] = {"Solar", "Wind", "Hydro", "Battery", "Nuclear", "Gas", "Coal", "Other", "Biomass", "Imports", "Geothermal"};
   return s < SOURCE_COUNT ? T(names[s]) : "?";
 }
 
-bool source_is_renewable(Source s) { return s == SOLAR || s == WIND || s == HYDRO || s == BIOMASS; }
+bool source_is_renewable(Source s) { return s == SOLAR || s == WIND || s == HYDRO || s == BIOMASS || s == GEOTHERMAL; }
 
 float GridSnapshot::total() const {
   float t = 0;

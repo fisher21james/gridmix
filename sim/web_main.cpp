@@ -239,6 +239,7 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
   Model m = model_build(snap, has_data, header, weekday, minute, has_plan && settings.has_tariff() ? &plan : nullptr);
   m.view_country = view_country;
   m.show_imports = ci.imports;
+  m.show_geothermal = ci.geothermal;
   char ago[48];
   snprintf(ago, sizeof ago, "%s", T("Waiting for data"));
   if (has_data) format_ago((int64_t)data_age_min * 60, ago, sizeof ago);

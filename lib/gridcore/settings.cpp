@@ -22,6 +22,8 @@ static const RegionInfo REGIONS[] = {
   {"GB", "16", "Scotland"}, {"GB", "17", "Wales"}, {"GB", "18", "Great Britain"},
   // France: national figures only (RTE's regional data runs about 45 minutes behind)
   {"FR", "FR", "France"},
+  // New Zealand: North and South Island (the Electricity Authority's data can be split by island)
+  {"NZ", "NI", "North Island"}, {"NZ", "SI", "South Island"},
 };
 
 const CountryInfo &country_info(const char *country) {
@@ -31,6 +33,8 @@ const CountryInfo &country_info(const char *country) {
   static const CountryInfo FR = {"France", "France", "Whole country", "national grid", "Every 15 min", false, 'E', "fr", true};
   if (country && country[0] == 'G') return GB;
   if (country && country[0] == 'F') return FR;
+  static const CountryInfo NZ = {"New Zealand", "New Zealand", "Both islands", "island grid", "Every 5 min", false, '$', "en", false, true};
+  if (country && country[0] == 'N') return NZ;
   if (country && country[0] == 'U') return US;
   return AU;
 }
@@ -83,6 +87,7 @@ size_t settings_to_json(const Settings &s, bool public_view, char *out, size_t c
   doc["view"] = s.view_country ? "country" : "local";
   key_json(doc["keys"]["oe"].to<JsonObject>(), s.key_oe, public_view);
   key_json(doc["keys"]["eia"].to<JsonObject>(), s.key_eia, public_view);
+  key_json(doc["keys"]["ea"].to<JsonObject>(), s.key_ea, public_view);
 
   JsonObject t = doc["tariff"].to<JsonObject>();
   t["type"] = s.tariff_flat ? "flat" : "tou";
@@ -137,7 +142,7 @@ bool settings_from_json(const char *json, size_t len, Settings &out, char *err, 
 
   Settings s = out;   // work on a copy so a bad save changes nothing
 
-  if (!copy_str(doc["country"] | s.country, s.country, sizeof s.country) || (strcmp(s.country, "AU") && strcmp(s.country, "US") && strcmp(s.country, "GB") && strcmp(s.country, "FR")))
+  if (!copy_str(doc["country"] | s.country, s.country, sizeof s.country) || (strcmp(s.country, "AU") && strcmp(s.country, "US") && strcmp(s.country, "GB") && strcmp(s.country, "FR") && strcmp(s.country, "NZ")))
     return fail(err, err_len, "Unknown country.");
   if (!copy_str(doc["region"] | s.region, s.region, sizeof s.region) || !region_is_valid(s.country, s.region))
     return fail(err, err_len, "That region isn't in the country chosen.");
@@ -152,6 +157,10 @@ bool settings_from_json(const char *json, size_t len, Settings &out, char *err, 
   k = doc["keys"]["eia"]["value"];
   if (k) {
     if (!copy_str(k, s.key_eia, sizeof s.key_eia) || !plausible_key(k)) return fail(err, err_len, "That EIA key doesn't look right.");
+  }
+  k = doc["keys"]["ea"]["value"];
+  if (k) {
+    if (!copy_str(k, s.key_ea, sizeof s.key_ea) || !plausible_key(k)) return fail(err, err_len, "That Electricity Authority key doesn't look right.");
   }
 
   JsonObjectConst t = doc["tariff"];

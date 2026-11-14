@@ -7,7 +7,7 @@ static_assert(std::is_trivially_copyable<CachedData>::value, "CachedData is save
 
 static const char *NS = "gridmix";
 static const char *KEY = "cache";
-static const uint32_t MAGIC = 0x474D4333;   // "GMC3"; change if CachedData's layout changes
+static const uint32_t MAGIC = 0x474D4334;   // "GMC4" (geothermal added); change if CachedData's layout changes
 
 struct Blob {
   uint32_t magic;

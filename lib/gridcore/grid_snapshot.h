@@ -16,6 +16,7 @@ enum Source : uint8_t {
   OTHER,     // oil/distillate, anything unmapped
   BIOMASS,   // wood, waste, biogas: counted as renewable (as official AU and UK figures do), and the screen says so
   IMPORTS,   // power from other countries (UK interconnectors); unknown origin, so not counted as renewable
+  GEOTHERMAL,   // heat from underground (New Zealand): renewable
   SOURCE_COUNT
 };
 
@@ -33,7 +34,7 @@ struct GridSnapshot {
 
   float total() const;
   float share_pct(Source s) const;   // 0..100
-  float renewable_pct() const;       // solar + wind + hydro + biomass, 0..100
+  float renewable_pct() const;       // solar + wind + hydro + biomass + geothermal, 0..100
   float low_carbon_pct() const;      // renewables + nuclear, 0..100 (imports count as neither: their source is unknown)
   bool has_nuclear() const { return share_pct(NUCLEAR) >= 0.5f; }   // only then is low-carbon worth showing
   bool battery_is_charging() const { return battery_charging > mw[BATTERY]; }

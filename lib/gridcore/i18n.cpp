@@ -17,7 +17,7 @@ static const Pair FR[] = {
   // fuels
   {"Solar", "Solaire"}, {"Wind", "\xC3\x89olien"}, {"Hydro", "Hydraulique"}, {"Battery", "Batteries"},
   {"Nuclear", "Nucl\xC3\xA9" "aire"}, {"Gas", "Gaz"}, {"Coal", "Charbon"}, {"Other", "Autre"},
-  {"Biomass", "Bio\xC3\xA9nergies"}, {"Imports", "Importations"},
+  {"Biomass", "Bio\xC3\xA9nergies"}, {"Imports", "Importations"}, {"Geothermal", "G\xC3\xA9othermie"},
 
   // main screen
   {"Your rate", "Votre tarif"},

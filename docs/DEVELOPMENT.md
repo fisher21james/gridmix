@@ -122,6 +122,19 @@ EIA (US support paused, 13 Nov 2026):
   grid that's 70%+ low-carbon like a renewable one ("Mostly low-carbon, but your rate is high"), and the detail
   badge is coloured by the low-carbon share. Australia has no nuclear, so nothing changes there.
 
+## New Zealand (in progress, 14 Nov 2026)
+
+- Source: Electricity Authority real-time dispatch API (emi.developer.azure-api.net), free key, subscription
+  approved by hand (requested 14 Nov). Subscribe to the "Wholesale market prices" product; only its Real-time
+  dispatch API still runs (the three price APIs in it were retired in 2022). Data is MW per grid connection
+  point every 5 minutes, so it needs a point-to-fuel table built from the Authority's generation fleet list.
+- Rejected: em6 free endpoints (renewable % only, undocumented), Transpower's live page (figures embedded in
+  the web page, ~80 min old when checked, best effort), em6 full API (paid).
+- Done so far: `GEOTHERMAL` source (renewable, teal), a geothermal station drawn in the nuclear plant's place
+  when `CountryInfo.geothermal` (NZ), country "NZ" with regions NI / SI, NZ$ in cents, key `keys.ea`,
+  `SRC_EA` (the board stays on "Waiting for data" until the source is written). Not yet on the setup page.
+- Cache magic is now GMC4 (one more source in the snapshot).
+
 ## Screen language (13 Nov 2026)
 
 - `lib/gridcore/i18n.*`: English is written in the code; `T("...")` returns the translation for the chosen

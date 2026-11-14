@@ -27,6 +27,7 @@ static const SourceStyle SRC_STYLE[SOURCE_COUNT] = {
   {0x6E7783, 0xFFFFFF},   // other
   {0x8DB255, 0x162204},   // biomass
   {0xE07BA0, 0x2A0A15},   // imports
+  {0x1AA59A, 0x02201D},   // geothermal (teal, like the hot pools)
 };
 
 static const uint32_t BG = 0x0E1116, MUTED = 0xA9B1BC, TEXT = 0xE6EAF0;

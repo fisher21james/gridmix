@@ -18,6 +18,13 @@ Feed feed_for(const char *country, const char *region, bool country_view) {
     snprintf(f.region, sizeof f.region, "%s", country_view || !region || !*region ? "18" : region);
     return f;
   }
+  if (country && country[0] == 'N') {   // New Zealand: Electricity Authority real-time dispatch (to come); "NI", "SI" or both
+    f.source = SRC_EA;
+    f.has_market = false;
+    f.network[0] = 0;
+    snprintf(f.region, sizeof f.region, "%s", country_view ? "" : region);
+    return f;
+  }
   if (country && country[0] == 'F') {   // France: one national feed
     f.source = SRC_RTE;
     f.has_market = false;

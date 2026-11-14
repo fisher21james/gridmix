@@ -12,7 +12,7 @@
 namespace gridcore {
 
 // ---- requests
-enum DataSource : uint8_t { SRC_OPEN_ELECTRICITY = 0, SRC_EIA, SRC_CARBON_INTENSITY, SRC_RTE };
+enum DataSource : uint8_t { SRC_OPEN_ELECTRICITY = 0, SRC_EIA, SRC_CARBON_INTENSITY, SRC_RTE, SRC_EA };   // EA = NZ Electricity Authority
 
 struct Feed {
   DataSource source = SRC_OPEN_ELECTRICITY;

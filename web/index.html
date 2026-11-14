@@ -35,6 +35,13 @@
     h1 { font: 700 clamp(34px, 5vw, 52px)/1.05 "Space Grotesk", sans-serif; color: var(--white); margin: 0 0 16px; letter-spacing: -0.01em; }
     .lead { font-size: 18px; color: #C9D0D9; margin: 0 0 24px; }
     .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+    .where { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--nuclear); border-radius: 12px;
+             padding: 14px 16px; margin: 0 0 24px; }
+    .where h2 { font-size: 15px; margin: 0 0 8px; }
+    .where ul { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .where li { font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #1F3A2B; color: #CFF3DD; }
+    .where li.soon { background: #2A303A; color: var(--muted); font-weight: 500; }
+    .where p { font-size: 13px; color: var(--muted); margin: 0; }
     .btn { display: inline-flex; align-items: center; justify-content: center; font: 700 16px Inter, system-ui, sans-serif; border: 0; border-radius: 12px;
            padding: 13px 24px; min-height: 48px; cursor: pointer; text-decoration: none; }
     .btn-primary { background: var(--wind); color: #04131B; }
@@ -146,6 +153,16 @@
     <div>
       <h1>See what's powering your grid, right now.</h1>
       <p class="lead">A 4.3" animated desk display. Turbines spin with the wind, the coal plant smokes when coal is burning, and the header shows what your power costs this minute.</p>
+      <section class="where" aria-labelledby="where-h">
+        <h2 id="where-h">Works in these countries</h2>
+        <ul>
+          <li>Australia <span style="font-weight:500">(east coast and WA)</span></li>
+          <li>United Kingdom <span style="font-weight:500">(Great Britain)</span></li>
+          <li>France</li>
+          <li class="soon">New Zealand: coming soon</li>
+        </ul>
+        <p>It needs live grid data for your country, so check yours is listed before you buy the parts. Northern Ireland (a separate grid from Great Britain), the Northern Territory and other countries aren't supported yet. Countries are only added when free data is no more than about 30 minutes behind.</p>
+      </section>
       <div class="cta">
         <a class="btn btn-primary" href="#install">Install the firmware</a>
         <a class="btn btn-ghost" href="#need">What you need</a>
@@ -165,7 +182,7 @@
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
                   <span style="display:flex;align-items:center;gap:5px">
-                    <span style="font-size:10px;color:#A9B1BC">Your rate</span>
+                    <span id="pRateLbl" style="font-size:10px;color:#A9B1BC">Your rate</span>
                     <span id="pRate" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;line-height:1.1;color:#fff"></span>
                     <span style="font-size:10px;color:#C9D0D9">/kWh</span>
                     <span id="pPeriod" style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px"></span>
@@ -262,6 +279,7 @@
                 <div style="position:absolute;left:14px;top:8px">
                   <div id="pRenew" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;line-height:1"></div>
                   <div id="pRenewSub" style="font-size:12px;font-weight:600;margin-top:3px">renewable right now</div>
+                  <div id="pLowc" style="font-size:10px;font-weight:600;margin-top:1px"></div>
                 </div>
                 <div id="pStatus" style="position:absolute;left:14px;bottom:6px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px"></div>
               </div>
@@ -270,7 +288,7 @@
                 <div id="pBar" style="display:flex;gap:2px;height:32px;border-radius:8px;overflow:hidden;background:#1B1F27"></div>
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;height:18px">
                   <div id="pChips" style="display:flex;gap:12px;min-width:0;overflow:hidden"></div>
-                  <span style="font-size:12px;font-weight:600;color:#E6EAF0;white-space:nowrap">Details ›</span>
+                  <span id="pDetails" style="font-size:12px;font-weight:600;color:#E6EAF0;white-space:nowrap">Details ›</span>
                 </div>
               </div>
             </div>
@@ -281,7 +299,7 @@
         <button type="button" data-i="0">SA sunny afternoon</button>
         <button type="button" data-i="1">SA windy night</button>
         <button type="button" data-i="2">NSW evening peak</button>
-        <button type="button" data-i="3">VIC morning</button><button type="button" data-i="4">London (UK)</button>
+        <button type="button" data-i="3">VIC morning</button><button type="button" data-i="4">London (UK)</button><button type="button" data-i="5">France (en français)</button>
       </div>
       <figcaption class="caption">Live preview with sample data. Photos of the real build coming soon.</figcaption>
     </figure>
@@ -294,13 +312,13 @@
       <div class="card"><div class="swatch" style="background:var(--wind)"></div><h3>A living scene</h3><p>Each power source is a little building that comes alive in proportion to how much it's producing: spinning turbines, smoking stacks, a pouring dam, glinting solar panels.</p></div>
       <div class="card"><div class="swatch" style="background:var(--solar)"></div><h3>The mix at a glance</h3><p>A big renewable percentage, plus a colour-matched bar of every source. Tap the bar to switch between a labelled and a slim style.</p></div>
       <div class="card"><div class="swatch" style="background:var(--gas)"></div><h3>Your own power plan</h3><p>Enter your tariff and it shows your rate right now and which time-of-use period you're in, and tips you off before the price goes up. Pair that with the renewable share and you can pick greener, cheaper times for big appliances, or just enjoy watching it.</p></div>
-      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country. Australia and the UK for now, with more countries coming in updates. Each view shows how fresh its data is.</p></div>
+      <div class="card"><div class="swatch" style="background:var(--battery)"></div><h3>Your area or your whole country</h3><p>Tap the region name to switch between your local grid and your whole country (France shows the whole country only). Each view shows how fresh its data is. In France the screen can be in French or English.</p></div>
     </div>
   </section>
 
   <section id="need" aria-labelledby="need-h">
     <h2 id="need-h">What you need</h2>
-    <p class="sub">About $25 of parts plus a printed stand.</p>
+    <p class="sub">About $25 of parts plus a printed stand. Before you buy, check your country is in the <a href="#where-h">supported list</a>.</p>
     <div class="table-box">
       <table>
         <thead><tr><th scope="col">Item</th><th scope="col">Notes</th></tr></thead>
@@ -388,7 +406,7 @@
       <p class="tip">Keep your key private, like a password. If it ever ends up somewhere public, delete it on the API Keys page and make a new one.</p>
     </details>
 
-    <p class="tip">In the UK you don't need a key at all: just pick your region on the setup page. Northern Ireland isn't covered yet (its grid is run separately). Elsewhere, more countries are planned once there's a free source with up-to-date data for them.</p>
+    <p class="tip">In the UK and France you don't need a key at all: just pick your region on the setup page. Northern Ireland isn't covered yet (its grid is run separately). Elsewhere, more countries are planned once there's a free source with up-to-date data for them.</p>
   </section>
 
   <section id="faq" aria-labelledby="faq-h">
@@ -420,8 +438,12 @@
     gas: { name: 'Gas', color: '#F07A3A', fg: '#2B1100' },
     coal: { name: 'Coal', color: '#8C7B6E', fg: '#1A120C' },
     biomass: { name: 'Biomass', color: '#8DB255', fg: '#162204' },
-    imports: { name: 'Imports', color: '#E07BA0', fg: '#2A0A15' }
+    imports: { name: 'Imports', color: '#E07BA0', fg: '#2A0A15' },
+    geothermal: { name: 'Geothermal', color: '#1AA59A', fg: '#02201D' }
   };
+  // French names, for the France preview
+  const FR_NAMES = { solar: 'Solaire', wind: '\u00c9olien', hydro: 'Hydraulique', battery: 'Batteries', nuclear: 'Nucl\u00e9aire', gas: 'Gaz',
+    coal: 'Charbon', biomass: 'Bio\u00e9nergies', imports: 'Importations', geothermal: 'G\u00e9othermie' };
   const SKY = {
     day: { top: '#6EC3F0', bottom: '#CFEFFC', hill: '#8CC071', ground: '#69A156', text: '#0B1B2B', sub: '#1E3346', smoke: '#9AA0A8' },
     dusk: { top: '#3B3768', bottom: '#F2A06B', hill: '#6C7F4E', ground: '#4D6B43', text: '#FFFFFF', sub: '#F3E9F2', smoke: '#6F6A72' },
@@ -440,7 +462,11 @@
     { region: 'VIC · Melbourne', time: '8:30 am', sky: 'day', renew: 54, mix: { coal: 40, wind: 30, solar: 18, hydro: 6, gas: 4, battery: 2 },
       cells: 1, batt: true, status: 'Part renewable · peak rate, hold off if you can', tone: 'bad', rate: '54.0¢', period: 'Peak', band: 'high' },
     { region: 'London', time: '4:40 am', sky: 'night', renew: 42, mix: { wind: 37, imports: 33, nuclear: 14, gas: 12, biomass: 5 },
-      cells: 0, batt: false, status: 'Part renewable · cheap rate, good for big loads', tone: 'good', rate: '13.5p', period: 'Night', band: 'low' }
+      cells: 0, batt: false, status: 'Part renewable · cheap rate, good for big loads', tone: 'good', rate: '13.5p', period: 'Night', band: 'low',
+      lowc: '56% low-carbon' },
+    { region: 'France', time: '6:35', sky: 'dusk', renew: 22, mix: { nuclear: 76, wind: 13, hydro: 7, gas: 2, biomass: 2 },
+      cells: 1, batt: true, status: 'Surtout bas carbone, mais tarif \u00e9lev\u00e9', tone: 'ok', rate: '27,0c', period: 'Pleines', band: 'high',
+      lowc: '97% bas carbone', fr: true }
   ];
   const $ = (id) => document.getElementById(id);
   const buttons = Array.from(document.querySelectorAll('.scene-picker button'));
@@ -486,6 +512,11 @@
     ['c1', 'c2', 'c3'].forEach((id, n) => { const c = $(id); c.setAttribute('fill', p.cells > n ? '#9B7BEA' : '#3A3350'); play(c, p.batt); });
 
     $('pRenew').textContent = p.renew + '%';
+    $('pRenewSub').textContent = p.fr ? 'renouvelable' : 'renewable right now';
+    $('pLowc').textContent = p.lowc || '';
+    $('pLowc').style.color = sky.sub;
+    $('pRateLbl').textContent = p.fr ? 'Votre tarif' : 'Your rate';
+    $('pDetails').textContent = p.fr ? 'D\u00e9tails \u203a' : 'Details \u203a';
     $('pRenew').style.color = sky.text;
     $('pRenewSub').style.color = sky.sub;
     const tone = TONE[p.tone];
@@ -497,7 +528,7 @@
     const bar = $('pBar'), chips = $('pChips');
     bar.innerHTML = ''; chips.innerHTML = '';
     keys.forEach((k) => {
-      const v = p.mix[k], s = SRC[k], label = v + '%', px = barW * v / 100;
+      const v = p.mix[k], s = { ...SRC[k], name: p.fr ? FR_NAMES[k] : SRC[k].name }, label = v + '%', px = barW * v / 100;
       const full = (s.name.length + label.length) * 7 + 18 <= px, pctOnly = label.length * 8 + 8 <= px;
       const seg = document.createElement('span');
       Object.assign(seg.style, { flex: v + ' 1 0px', minWidth: '0', height: '32px', background: s.color, color: s.fg, display: 'flex',
