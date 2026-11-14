@@ -9,12 +9,8 @@ jobs:
         run: |
           date -u
           p() { echo; echo "=== $1"; shift; curl -sS -L --max-time 40 -A "gridmix-probe" -D h.txt -o b.txt "$@" ; echo "exit $?"; grep -iE "^(HTTP|content-type|last-modified|content-length)" h.txt; echo "bytes $(wc -c < b.txt)"; head -c 600 b.txt; echo; echo "--- tail"; tail -c 500 b.txt; echo; }
-          p ERCOT-dashboard https://www.ercot.com/api/1/services/read/dashboards/fuel-mix.json
-          p NYISO "https://mis.nyiso.com/public/csv/rtfuelmix/$(TZ=America/New_York date +%Y%m%d)rtfuelmix.csv"
-          p SPP "https://portal.spp.org/file-browser-api/download/generation-mix-historical?path=%2FGenMix_2Hour.csv"
-          p ISONE "https://www.iso-ne.com/transform/csv/genfuelmix?start=$(TZ=America/New_York date +%Y%m%d)"
-          p ISONE-ws "https://webservices.iso-ne.com/api/v1.1/genfuelmix/current.json"
-          p PJM-api "https://api.pjm.com/api/v1/gen_by_fuel?rowCount=20&sort=datetime_beginning_utc&order=Desc"
-          p BPA https://transmission.bpa.gov/business/operations/wind/baltwg.txt
-          p CAISO https://www.caiso.com/outlook/current/fuelsource.csv
-          p MISO https://public-api.misoenergy.org/api/FuelMix
+          p SPP1 "https://portal.spp.org/file-browser-api/download/generation-mix-historical?path=%2FGenMix2Hour.csv"
+          p SPP2 "https://portal.spp.org/file-browser-api/download/generation-mix-historical?path=/GenMix2Hour.csv"
+          p ISONE-ws2 -X POST -d "_nstmp_formDate=0&_nstmp_startDate=&_nstmp_endDate=&_nstmp_twodays=false&_nstmp_twodaysCheckbox=false&_nstmp_requestType=fuelmix&_nstmp_fuelType=all&_nstmp_height=250" "https://www.iso-ne.com/ws/wsclient"
+          echo; echo "=== BPA head"; curl -sS --max-time 40 https://transmission.bpa.gov/business/operations/wind/baltwg.txt | sed -n 10,14p
+          echo; echo "=== BPA last filled rows"; curl -sS --max-time 40 https://transmission.bpa.gov/business/operations/wind/baltwg.txt | awk -F'\t' 'NF>2 && $2!=""' | tail -3
