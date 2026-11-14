@@ -1,15 +1,25 @@
-# One-off: how fresh is each US grid operator's fuel mix? Run by hand (Actions tab), read the log.
+# One-off: save a real answer from each US grid operator for the tests. Run by hand, download the artifact.
 name: Probe US grid data
 on: workflow_dispatch
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe
+      - name: Fetch
         run: |
-          date -u
-          p() { echo; echo "=== $1"; shift; curl -sS -L --max-time 40 -A "gridmix-probe" -D h.txt -o b.txt "$@" ; echo "exit $?"; grep -iE "^(HTTP|content-type|last-modified|content-length)" h.txt; echo "bytes $(wc -c < b.txt)"; head -c 600 b.txt; echo; echo "--- tail"; tail -c 500 b.txt; echo; }
-          p SPP "https://portal.spp.org/file-browser-api/download/generation-mix-historical?path=/SPP/GenMix2Hour_SPP.csv"
-          p ISONE-ws2 -X POST -d "_nstmp_formDate=0&_nstmp_startDate=&_nstmp_endDate=&_nstmp_twodays=false&_nstmp_twodaysCheckbox=false&_nstmp_requestType=fuelmix&_nstmp_fuelType=all&_nstmp_height=250" "https://www.iso-ne.com/ws/wsclient"
-          echo; echo "=== BPA head"; curl -sS --max-time 40 https://transmission.bpa.gov/business/operations/wind/baltwg.txt | sed -n 10,14p
-          echo; echo "=== BPA last filled rows"; curl -sS --max-time 40 https://transmission.bpa.gov/business/operations/wind/baltwg.txt | awk -F'\t' 'NF>2 && $2!=""' | tail -3
+          mkdir out && cd out
+          date -u > when.txt
+          ET=$(TZ=America/New_York date +%Y%m%d)
+          curl -sS --max-time 60 -o caiso.csv https://www.caiso.com/outlook/current/fuelsource.csv
+          curl -sS --max-time 60 -o miso.json https://public-api.misoenergy.org/api/FuelMix
+          curl -sS --max-time 60 -o miso_today.json https://public-api.misoenergy.org/api/FuelMix/Today
+          curl -sS --max-time 60 -o spp.csv "https://portal.spp.org/file-browser-api/download/generation-mix-historical?path=/SPP/GenMix2Hour_SPP.csv"
+          curl -sS --max-time 60 -o ercot.json https://www.ercot.com/api/1/services/read/dashboards/fuel-mix.json
+          curl -sS --max-time 60 -o nyiso.csv "https://mis.nyiso.com/public/csv/rtfuelmix/${ET}rtfuelmix.csv"
+          curl -sS --max-time 60 -o isone.json -X POST -d "_nstmp_requestType=fuelmix&_nstmp_fuelType=all" https://www.iso-ne.com/ws/wsclient
+          curl -sS --max-time 60 -o bpa.txt https://transmission.bpa.gov/business/operations/wind/baltwg.txt
+          ls -la
+      - uses: actions/upload-artifact@v4
+        with:
+          name: us-samples
+          path: out
