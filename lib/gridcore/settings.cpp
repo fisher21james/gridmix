@@ -9,10 +9,11 @@ struct RegionInfo { const char *country, *code, *label; };
 static const RegionInfo REGIONS[] = {
   {"AU", "SA1", "South Australia"}, {"AU", "NSW1", "New South Wales"}, {"AU", "VIC1", "Victoria"},
   {"AU", "QLD1", "Queensland"}, {"AU", "TAS1", "Tasmania"}, {"AU", "WEM", "Western Australia"},
-  {"US", "CAL", "California"}, {"US", "CAR", "Carolinas"}, {"US", "CENT", "Central"}, {"US", "FLA", "Florida"},
-  {"US", "MIDA", "Mid-Atlantic"}, {"US", "MIDW", "Midwest"}, {"US", "NE", "New England"}, {"US", "NY", "New York"},
-  {"US", "NW", "Northwest"}, {"US", "SE", "Southeast"}, {"US", "SW", "Southwest"}, {"US", "TEN", "Tennessee"},
-  {"US", "TEX", "Texas"},
+  // US: the grid operators with free, live fuel mix data (see us_grid.h). The rest of the country
+  // (Southeast, Carolinas, Florida, Tennessee, Southwest, Mid-Atlantic/PJM) has nothing fresh enough yet.
+  {"US", "CAL", "California"}, {"US", "TEX", "Texas"}, {"US", "MIDW", "Midwest (MISO)"},
+  {"US", "CENT", "Central (SPP)"}, {"US", "NY", "New York"}, {"US", "NE", "New England"},
+  {"US", "NW", "Northwest (BPA)"},
   // Great Britain: Carbon Intensity API region ids (DNO areas, then nations; 18 = all of GB)
   {"GB", "1", "North Scotland"}, {"GB", "2", "South Scotland"}, {"GB", "3", "North West England"},
   {"GB", "4", "North East England"}, {"GB", "5", "Yorkshire"}, {"GB", "6", "North Wales & Merseyside"},
@@ -28,9 +29,9 @@ static const RegionInfo REGIONS[] = {
 
 const CountryInfo &country_info(const char *country) {
   static const CountryInfo AU = {"Australia", "Australia (NEM)", "East coast grid (NEM)", "state grid", "Every 10 min", false, '$', "en", false};
-  static const CountryInfo US = {"United States", "United States", "Lower 48 states (EIA)", "EIA", "Hourly", false, '$', "en", true};
+  static const CountryInfo US = {"United States", "United States", "", "grid operator", "Every 5 min", false, '$', "en", true, false, true};
   static const CountryInfo GB = {"Great Britain", "Great Britain", "England, Scotland & Wales", "local area", "Every 30 min", true, 'L', "en", true};
-  static const CountryInfo FR = {"France", "France", "Whole country", "national grid", "Every 15 min", false, 'E', "fr", true};
+  static const CountryInfo FR = {"France", "France", "Whole country", "national grid", "Every 15 min", false, 'E', "fr", true, false, true};
   if (country && country[0] == 'G') return GB;
   if (country && country[0] == 'F') return FR;
   static const CountryInfo NZ = {"New Zealand", "New Zealand", "Both islands", "island grid", "Every 5 min", false, '$', "en", false, true};

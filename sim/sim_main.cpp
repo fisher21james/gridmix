@@ -11,6 +11,7 @@
 #include "lvgl.h"
 #include "gridui.h"
 #include "parsers.h"
+#include "us_grid.h"
 #include "schedule.h"
 #include "../test/test_gridcore/fixtures.h"
 
@@ -225,6 +226,36 @@ int main(int argc, char **argv) {
     }
     set_lang(LANG_EN);
     set_currency('$');
+  }
+  {
+    // United States: real answers from California and Texas (14 Nov 2026, 00:20-00:25 UTC)
+    const int64_t now = 1794616131;
+    struct { const char *region, *body, *name, *file; int minute; } us[] = {
+      {"CAL", US_CAISO, "California", "28-us-california", 16 * 60 + 20},
+      {"TEX", US_ERCOT, "Texas", "29-us-texas", 18 * 60 + 25},
+      {"NW", US_BPA, "Northwest (BPA)", "30-us-northwest", 16 * 60 + 25}};
+    for (auto &u : us) {
+      GridSnapshot s;
+      parse_us(u.region, u.body, strlen(u.body), now, s);
+      Tariff t;
+      t.add("Off-peak", 21 * 60, 16 * 60, 31.0f);
+      t.add("Peak", 16 * 60, 21 * 60, 52.0f);
+      Model m = model_build(s, true, u.name, 4, u.minute, &t);
+      m.show_imports = true;
+      m.single_view = true;
+      char ago[48];
+      format_ago(now - s.data_time, ago, sizeof ago);
+      model_views(m, u.name, "My region \xC2\xB7 grid operator", "United States", "", "Every 5 min", ago, FRESH_OK);
+      HistoryPoint pts[48];
+      const int n = parse_us_history(u.region, u.body, strlen(u.body), now, pts, 48);
+      const int64_t end = s.data_time / 1800;
+      for (int i = 0; i < n; i++) {
+        const int64_t idx = pts[i].time / 1800 - (end - (HISTORY_POINTS - 1));
+        if (idx >= 0 && idx < HISTORY_POINTS) m.history[idx] = pts[i].renewable_pct;
+      }
+      list.push_back({u.file, m, 0});
+      if (u.region[0] == 'C') list.push_back({"31-us-california-detail", m, 3});
+    }
   }
   {
     // New Zealand, sample numbers from Transpower's live page (13 Nov 2026, 6pm NZ time). The live

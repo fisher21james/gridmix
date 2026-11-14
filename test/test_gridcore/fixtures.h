@@ -11,3 +11,575 @@ static const char CI_LONDON_NOW[] = R"gm({"data":[{"regionid":13,"dnoregion":"UK
 static const char CI_LONDON_HISTORY[] = R"gm({"data":{"regionid":13,"dnoregion":"UKPN London","shortname":"London","data":[{"from":"2026-11-12T04:30Z","to":"2026-11-12T05:00Z","intensity":{"forecast":132,"index":"moderate"},"generationmix":[{"fuel":"biomass","perc":11.6},{"fuel":"coal","perc":0},{"fuel":"imports","perc":3},{"fuel":"gas","perc":29.9},{"fuel":"nuclear","perc":17.4},{"fuel":"other","perc":0},{"fuel":"hydro","perc":0.1},{"fuel":"solar","perc":0},{"fuel":"wind","perc":38}]},{"from":"2026-11-12T12:00Z","to":"2026-11-12T12:30Z","intensity":{"forecast":117,"index":"moderate"},"generationmix":[{"fuel":"biomass","perc":6.3},{"fuel":"coal","perc":0},{"fuel":"imports","perc":9.1},{"fuel":"gas","perc":19.4},{"fuel":"nuclear","perc":11.6},{"fuel":"other","perc":0},{"fuel":"hydro","perc":0.1},{"fuel":"solar","perc":18.6},{"fuel":"wind","perc":34.9}]},{"from":"2026-11-12T12:30Z","to":"2026-11-12T13:00Z","intensity":{"forecast":110,"index":"moderate"},"generationmix":[{"fuel":"biomass","perc":6.5},{"fuel":"coal","perc":0},{"fuel":"imports","perc":9.1},{"fuel":"gas","perc":19.5},{"fuel":"nuclear","perc":11.5},{"fuel":"other","perc":0},{"fuel":"hydro","perc":0.1},{"fuel":"solar","perc":19},{"fuel":"wind","perc":34.2}]},{"from":"2026-11-12T18:30Z","to":"2026-11-12T19:00Z","intensity":{"forecast":170,"index":"high"},"generationmix":[{"fuel":"biomass","perc":4.4},{"fuel":"coal","perc":0},{"fuel":"imports","perc":26.7},{"fuel":"gas","perc":28.7},{"fuel":"nuclear","perc":9.9},{"fuel":"other","perc":0},{"fuel":"hydro","perc":0.1},{"fuel":"solar","perc":0},{"fuel":"wind","perc":30.2}]},{"from":"2026-11-13T03:30Z","to":"2026-11-13T04:00Z","intensity":{"forecast":94,"index":"moderate"},"generationmix":[{"fuel":"biomass","perc":4.1},{"fuel":"coal","perc":0},{"fuel":"imports","perc":36.1},{"fuel":"gas","perc":10.9},{"fuel":"nuclear","perc":13.5},{"fuel":"other","perc":0},{"fuel":"hydro","perc":0.2},{"fuel":"solar","perc":0},{"fuel":"wind","perc":35.3}]},{"from":"2026-11-13T04:00Z","to":"2026-11-13T04:30Z","intensity":{"forecast":96,"index":"moderate"},"generationmix":[{"fuel":"biomass","perc":4.6},{"fuel":"coal","perc":0},{"fuel":"imports","perc":32.6},{"fuel":"gas","perc":11.9},{"fuel":"nuclear","perc":13.6},{"fuel":"other","perc":0},{"fuel":"hydro","perc":0.2},{"fuel":"solar","perc":0},{"fuel":"wind","perc":37.1}]}]}})gm";
 static const char RTE_FRANCE_NOW[] = R"gm({"total_count": 7034, "results": [{"date_heure": "2026-11-13T05:15:00+00:00", "nucleaire": 44436, "eolien": 7612, "solaire": 0, "hydraulique": 4206, "hydraulique_step_turbinage": 48, "gaz": 1406, "charbon": 0, "fioul": 36, "bioenergies": 969, "ech_physiques": -4578, "destockage_batterie": 24, "stockage_batterie": -12}]})gm";
 static const char RTE_FRANCE_HISTORY[] = R"gm({"total_count":47,"results":[{"date_heure":"2026-11-12T06:00:00+00:00","nucleaire":42845,"eolien":5280,"solaire":0,"hydraulique":5085,"hydraulique_step_turbinage":187,"gaz":6128,"charbon":0,"fioul":36,"bioenergies":971,"ech_physiques":-9838,"destockage_batterie":3,"stockage_batterie":-10},{"date_heure":"2026-11-12T06:30:00+00:00","nucleaire":42841,"eolien":5528,"solaire":227,"hydraulique":6117,"hydraulique_step_turbinage":1376,"gaz":6077,"charbon":0,"fioul":37,"bioenergies":975,"ech_physiques":-8699,"destockage_batterie":7,"stockage_batterie":-15},{"date_heure":"2026-11-12T07:00:00+00:00","nucleaire":42868,"eolien":5767,"solaire":246,"hydraulique":7136,"hydraulique_step_turbinage":2123,"gaz":6118,"charbon":0,"fioul":36,"bioenergies":977,"ech_physiques":-8936,"destockage_batterie":3,"stockage_batterie":-6},{"date_heure":"2026-11-12T07:30:00+00:00","nucleaire":42871,"eolien":6167,"solaire":624,"hydraulique":8026,"hydraulique_step_turbinage":2802,"gaz":6114,"charbon":0,"fioul":36,"bioenergies":975,"ech_physiques":-9358,"destockage_batterie":181,"stockage_batterie":-11},{"date_heure":"2026-11-12T08:00:00+00:00","nucleaire":42875,"eolien":6270,"solaire":1156,"hydraulique":7991,"hydraulique_step_turbinage":2770,"gaz":6123,"charbon":0,"fioul":37,"bioenergies":982,"ech_physiques":-8897,"destockage_batterie":57,"stockage_batterie":-6},{"date_heure":"2026-11-12T08:30:00+00:00","nucleaire":42838,"eolien":6537,"solaire":1745,"hydraulique":7544,"hydraulique_step_turbinage":2653,"gaz":6089,"charbon":0,"fioul":37,"bioenergies":987,"ech_physiques":-8287,"destockage_batterie":89,"stockage_batterie":-6},{"date_heure":"2026-11-12T09:00:00+00:00","nucleaire":42837,"eolien":6589,"solaire":2295,"hydraulique":6724,"hydraulique_step_turbinage":2136,"gaz":6114,"charbon":0,"fioul":36,"bioenergies":980,"ech_physiques":-7771,"destockage_batterie":14,"stockage_batterie":-18},{"date_heure":"2026-11-12T09:30:00+00:00","nucleaire":42857,"eolien":6644,"solaire":2919,"hydraulique":4502,"hydraulique_step_turbinage":220,"gaz":6066,"charbon":0,"fioul":37,"bioenergies":989,"ech_physiques":-6387,"destockage_batterie":2,"stockage_batterie":-5},{"date_heure":"2026-11-12T10:00:00+00:00","nucleaire":42863,"eolien":6885,"solaire":3212,"hydraulique":4414,"hydraulique_step_turbinage":280,"gaz":6075,"charbon":0,"fioul":36,"bioenergies":990,"ech_physiques":-6655,"destockage_batterie":14,"stockage_batterie":-18},{"date_heure":"2026-11-12T10:30:00+00:00","nucleaire":42845,"eolien":7370,"solaire":3706,"hydraulique":4460,"hydraulique_step_turbinage":348,"gaz":5655,"charbon":0,"fioul":36,"bioenergies":978,"ech_physiques":-7003,"destockage_batterie":5,"stockage_batterie":-9},{"date_heure":"2026-11-12T11:00:00+00:00","nucleaire":42837,"eolien":8225,"solaire":4095,"hydraulique":4337,"hydraulique_step_turbinage":49,"gaz":5469,"charbon":0,"fioul":35,"bioenergies":984,"ech_physiques":-7188,"destockage_batterie":3,"stockage_batterie":-7},{"date_heure":"2026-11-12T11:30:00+00:00","nucleaire":42833,"eolien":9507,"solaire":4400,"hydraulique":3988,"hydraulique_step_turbinage":50,"gaz":5140,"charbon":0,"fioul":36,"bioenergies":983,"ech_physiques":-7434,"destockage_batterie":1,"stockage_batterie":-75},{"date_heure":"2026-11-12T12:00:00+00:00","nucleaire":42848,"eolien":10363,"solaire":4445,"hydraulique":3873,"hydraulique_step_turbinage":49,"gaz":5033,"charbon":0,"fioul":37,"bioenergies":972,"ech_physiques":-8257,"destockage_batterie":27,"stockage_batterie":-34},{"date_heure":"2026-11-12T12:30:00+00:00","nucleaire":42872,"eolien":11321,"solaire":4546,"hydraulique":3849,"hydraulique_step_turbinage":51,"gaz":5043,"charbon":0,"fioul":37,"bioenergies":979,"ech_physiques":-9762,"destockage_batterie":24,"stockage_batterie":-90},{"date_heure":"2026-11-12T13:00:00+00:00","nucleaire":42876,"eolien":12261,"solaire":4115,"hydraulique":3672,"hydraulique_step_turbinage":48,"gaz":5093,"charbon":0,"fioul":36,"bioenergies":978,"ech_physiques":-9824,"destockage_batterie":0,"stockage_batterie":-66},{"date_heure":"2026-11-12T13:30:00+00:00","nucleaire":42895,"eolien":12899,"solaire":3867,"hydraulique":3762,"hydraulique_step_turbinage":48,"gaz":5298,"charbon":0,"fioul":37,"bioenergies":970,"ech_physiques":-10514,"destockage_batterie":26,"stockage_batterie":-12},{"date_heure":"2026-11-12T14:00:00+00:00","nucleaire":42939,"eolien":13435,"solaire":3171,"hydraulique":3757,"hydraulique_step_turbinage":45,"gaz":5348,"charbon":0,"fioul":37,"bioenergies":967,"ech_physiques":-10984,"destockage_batterie":28,"stockage_batterie":-21},{"date_heure":"2026-11-12T14:30:00+00:00","nucleaire":42963,"eolien":13731,"solaire":2577,"hydraulique":3785,"hydraulique_step_turbinage":19,"gaz":5325,"charbon":0,"fioul":37,"bioenergies":990,"ech_physiques":-11524,"destockage_batterie":9,"stockage_batterie":-5},{"date_heure":"2026-11-12T15:00:00+00:00","nucleaire":42970,"eolien":13875,"solaire":1991,"hydraulique":4073,"hydraulique_step_turbinage":104,"gaz":5468,"charbon":0,"fioul":36,"bioenergies":986,"ech_physiques":-12383,"destockage_batterie":11,"stockage_batterie":-4},{"date_heure":"2026-11-12T15:30:00+00:00","nucleaire":42935,"eolien":13998,"solaire":1141,"hydraulique":4178,"hydraulique_step_turbinage":114,"gaz":5413,"charbon":0,"fioul":37,"bioenergies":993,"ech_physiques":-12403,"destockage_batterie":12,"stockage_batterie":-79},{"date_heure":"2026-11-12T16:00:00+00:00","nucleaire":42946,"eolien":13979,"solaire":634,"hydraulique":4314,"hydraulique_step_turbinage":78,"gaz":5260,"charbon":0,"fioul":36,"bioenergies":989,"ech_physiques":-12190,"destockage_batterie":8,"stockage_batterie":-88},{"date_heure":"2026-11-12T16:30:00+00:00","nucleaire":42983,"eolien":14038,"solaire":293,"hydraulique":4618,"hydraulique_step_turbinage":125,"gaz":5406,"charbon":0,"fioul":36,"bioenergies":977,"ech_physiques":-11666,"destockage_batterie":31,"stockage_batterie":-13},{"date_heure":"2026-11-12T17:00:00+00:00","nucleaire":43032,"eolien":13855,"solaire":182,"hydraulique":5665,"hydraulique_step_turbinage":719,"gaz":5483,"charbon":0,"fioul":37,"bioenergies":976,"ech_physiques":-10809,"destockage_batterie":129,"stockage_batterie":-4},{"date_heure":"2026-11-12T17:30:00+00:00","nucleaire":43019,"eolien":13293,"solaire":0,"hydraulique":5972,"hydraulique_step_turbinage":980,"gaz":5929,"charbon":0,"fioul":36,"bioenergies":984,"ech_physiques":-9401,"destockage_batterie":85,"stockage_batterie":-21},{"date_heure":"2026-11-12T18:00:00+00:00","nucleaire":43059,"eolien":12955,"solaire":0,"hydraulique":6493,"hydraulique_step_turbinage":1477,"gaz":5938,"charbon":0,"fioul":37,"bioenergies":969,"ech_physiques":-8292,"destockage_batterie":78,"stockage_batterie":-5},{"date_heure":"2026-11-12T18:30:00+00:00","nucleaire":43057,"eolien":12690,"solaire":0,"hydraulique":5867,"hydraulique_step_turbinage":909,"gaz":5925,"charbon":0,"fioul":36,"bioenergies":976,"ech_physiques":-8140,"destockage_batterie":70,"stockage_batterie":-11},{"date_heure":"2026-11-12T19:00:00+00:00","nucleaire":43050,"eolien":12363,"solaire":0,"hydraulique":4775,"hydraulique_step_turbinage":57,"gaz":5518,"charbon":0,"fioul":37,"bioenergies":988,"ech_physiques":-7927,"destockage_batterie":71,"stockage_batterie":-12},{"date_heure":"2026-11-12T19:30:00+00:00","nucleaire":43061,"eolien":12109,"solaire":0,"hydraulique":4438,"hydraulique_step_turbinage":57,"gaz":5518,"charbon":0,"fioul":36,"bioenergies":985,"ech_physiques":-9850,"destockage_batterie":113,"stockage_batterie":-12},{"date_heure":"2026-11-12T20:00:00+00:00","nucleaire":43165,"eolien":11753,"solaire":0,"hydraulique":4360,"hydraulique_step_turbinage":56,"gaz":5139,"charbon":0,"fioul":36,"bioenergies":970,"ech_physiques":-10487,"destockage_batterie":5,"stockage_batterie":-5},{"date_heure":"2026-11-12T20:30:00+00:00","nucleaire":43357,"eolien":11555,"solaire":0,"hydraulique":4890,"hydraulique_step_turbinage":450,"gaz":4406,"charbon":0,"fioul":35,"bioenergies":967,"ech_physiques":-11296,"destockage_batterie":79,"stockage_batterie":-19},{"date_heure":"2026-11-12T21:00:00+00:00","nucleaire":43331,"eolien":11361,"solaire":0,"hydraulique":4694,"hydraulique_step_turbinage":431,"gaz":3951,"charbon":0,"fioul":37,"bioenergies":977,"ech_physiques":-11262,"destockage_batterie":13,"stockage_batterie":-151},{"date_heure":"2026-11-12T21:30:00+00:00","nucleaire":43310,"eolien":11073,"solaire":0,"hydraulique":4658,"hydraulique_step_turbinage":446,"gaz":2260,"charbon":0,"fioul":36,"bioenergies":974,"ech_physiques":-7569,"destockage_batterie":5,"stockage_batterie":-8},{"date_heure":"2026-11-12T22:00:00+00:00","nucleaire":43342,"eolien":10779,"solaire":0,"hydraulique":4114,"hydraulique_step_turbinage":44,"gaz":2051,"charbon":0,"fioul":36,"bioenergies":972,"ech_physiques":-6296,"destockage_batterie":8,"stockage_batterie":-14},{"date_heure":"2026-11-12T22:30:00+00:00","nucleaire":43355,"eolien":10655,"solaire":0,"hydraulique":4032,"hydraulique_step_turbinage":46,"gaz":2033,"charbon":0,"fioul":37,"bioenergies":972,"ech_physiques":-6294,"destockage_batterie":4,"stockage_batterie":-4},{"date_heure":"2026-11-12T23:00:00+00:00","nucleaire":43454,"eolien":10148,"solaire":0,"hydraulique":4112,"hydraulique_step_turbinage":42,"gaz":2037,"charbon":0,"fioul":36,"bioenergies":973,"ech_physiques":-5586,"destockage_batterie":11,"stockage_batterie":-64},{"date_heure":"2026-11-12T23:30:00+00:00","nucleaire":44105,"eolien":9931,"solaire":0,"hydraulique":4025,"hydraulique_step_turbinage":45,"gaz":1338,"charbon":0,"fioul":37,"bioenergies":961,"ech_physiques":-6325,"destockage_batterie":7,"stockage_batterie":-9},{"date_heure":"2026-11-13T00:00:00+00:00","nucleaire":44160,"eolien":9345,"solaire":0,"hydraulique":3981,"hydraulique_step_turbinage":45,"gaz":1153,"charbon":0,"fioul":37,"bioenergies":963,"ech_physiques":-6609,"destockage_batterie":2,"stockage_batterie":-9},{"date_heure":"2026-11-13T00:30:00+00:00","nucleaire":44331,"eolien":9097,"solaire":0,"hydraulique":4289,"hydraulique_step_turbinage":45,"gaz":1173,"charbon":0,"fioul":36,"bioenergies":965,"ech_physiques":-7088,"destockage_batterie":9,"stockage_batterie":-39},{"date_heure":"2026-11-13T01:00:00+00:00","nucleaire":44320,"eolien":9065,"solaire":0,"hydraulique":4332,"hydraulique_step_turbinage":46,"gaz":1159,"charbon":0,"fioul":36,"bioenergies":975,"ech_physiques":-7899,"destockage_batterie":6,"stockage_batterie":-50},{"date_heure":"2026-11-13T01:30:00+00:00","nucleaire":44435,"eolien":8982,"solaire":0,"hydraulique":4091,"hydraulique_step_turbinage":44,"gaz":1204,"charbon":0,"fioul":36,"bioenergies":972,"ech_physiques":-8299,"destockage_batterie":7,"stockage_batterie":-15},{"date_heure":"2026-11-13T02:00:00+00:00","nucleaire":44455,"eolien":8804,"solaire":0,"hydraulique":4101,"hydraulique_step_turbinage":45,"gaz":1203,"charbon":0,"fioul":37,"bioenergies":974,"ech_physiques":-9009,"destockage_batterie":2,"stockage_batterie":-50},{"date_heure":"2026-11-13T02:30:00+00:00","nucleaire":44275,"eolien":8601,"solaire":0,"hydraulique":4019,"hydraulique_step_turbinage":45,"gaz":1207,"charbon":0,"fioul":36,"bioenergies":974,"ech_physiques":-9244,"destockage_batterie":8,"stockage_batterie":-94},{"date_heure":"2026-11-13T03:00:00+00:00","nucleaire":44228,"eolien":8323,"solaire":0,"hydraulique":4037,"hydraulique_step_turbinage":43,"gaz":1265,"charbon":0,"fioul":36,"bioenergies":973,"ech_physiques":-9273,"destockage_batterie":11,"stockage_batterie":-228},{"date_heure":"2026-11-13T03:30:00+00:00","nucleaire":44256,"eolien":8227,"solaire":0,"hydraulique":3954,"hydraulique_step_turbinage":46,"gaz":1301,"charbon":0,"fioul":36,"bioenergies":969,"ech_physiques":-9325,"destockage_batterie":4,"stockage_batterie":-277},{"date_heure":"2026-11-13T04:00:00+00:00","nucleaire":44236,"eolien":7988,"solaire":0,"hydraulique":3936,"hydraulique_step_turbinage":46,"gaz":1292,"charbon":0,"fioul":36,"bioenergies":971,"ech_physiques":-8545,"destockage_batterie":4,"stockage_batterie":-247},{"date_heure":"2026-11-13T04:30:00+00:00","nucleaire":44330,"eolien":7799,"solaire":0,"hydraulique":4158,"hydraulique_step_turbinage":47,"gaz":1298,"charbon":0,"fioul":37,"bioenergies":967,"ech_physiques":-8306,"destockage_batterie":8,"stockage_batterie":-9},{"date_heure":"2026-11-13T05:00:00+00:00","nucleaire":44396,"eolien":7659,"solaire":0,"hydraulique":4137,"hydraulique_step_turbinage":45,"gaz":1367,"charbon":0,"fioul":36,"bioenergies":970,"ech_physiques":-6549,"destockage_batterie":10,"stockage_batterie":-32}]})gm";
+static const char US_CAISO[] = R"gm(Time,Solar,Wind,Geothermal,Biomass,Biogas,Small hydro,Coal,Nuclear,Natural Gas,Large Hydro,Batteries,Imports,Other
+00:00,-78,2223,732,121,152,103,3,2199,10016,1287,92,4042,0
+00:05,-77,2172,740,124,153,104,3,2199,10087,1390,619,3745,0
+00:10,-76,2127,741,128,153,104,3,2199,10093,1399,905,3674,0
+00:15,-75,2088,731,129,154,103,3,2198,10086,1404,864,3669,0
+00:20,-76,2016,731,129,156,103,3,2197,10092,1417,974,3574,0
+00:25,-77,1923,732,140,158,103,3,2199,10100,1413,990,3551,0
+00:30,-76,1891,731,145,160,103,3,2200,10085,1406,957,3542,0
+00:35,-77,1874,732,147,160,103,3,2198,10062,1397,996,3492,0
+00:40,-78,1907,730,153,160,103,3,2198,10063,1399,881,3463,0
+00:45,-78,1926,731,158,160,103,3,2198,10065,1403,735,3471,0
+00:50,-79,1932,732,162,161,103,3,2199,10081,1417,540,3530,0
+00:55,-80,1926,732,164,161,103,3,2198,10080,1400,407,3625,0
+01:00,-80,1897,732,165,161,103,3,2198,10079,1386,364,3620,0
+01:05,-77,1860,732,164,158,103,3,2198,10073,1307,583,3508,0
+01:10,-80,1825,732,163,158,103,3,2198,10072,1241,550,3494,0
+01:15,-78,1797,732,166,158,103,3,2196,10077,1233,554,3487,0
+01:20,-76,1789,732,165,159,104,3,2197,10026,1230,573,3445,0
+01:25,-76,1826,732,165,159,104,3,2198,9911,1226,541,3473,0
+01:30,-76,1862,730,166,159,103,3,2200,9763,1227,590,3470,0
+01:35,-77,1864,732,165,159,103,3,2201,9468,1240,639,3636,0
+01:40,-77,1893,732,164,159,104,3,2200,9350,1237,672,3614,0
+01:45,-77,1937,732,165,159,103,3,2201,9346,1231,498,3605,0
+01:50,-79,1990,732,163,159,103,3,2202,9327,1226,336,3626,0
+01:55,-77,2021,733,164,159,103,3,2201,9326,1230,186,3698,0
+02:00,-78,2024,732,165,159,103,3,2199,9331,1195,70,3792,0
+02:05,-77,1977,732,165,160,103,3,2201,9339,1127,222,3842,0
+02:10,-78,1927,732,166,161,103,3,2199,9370,1088,92,3925,0
+02:15,-79,1898,733,166,161,103,3,2201,9373,1081,29,4000,0
+02:20,-79,1888,733,166,161,103,3,2201,9370,1078,-35,4007,0
+02:25,-79,1873,732,166,161,104,3,2201,9391,1070,-32,3968,0
+02:30,-79,1868,732,166,160,103,3,2200,9400,1066,-99,4012,0
+02:35,-79,1880,732,166,161,103,3,2202,9399,1061,-165,3992,0
+02:40,-79,1841,732,166,161,103,3,2201,9402,1066,-139,3981,0
+02:45,-80,1793,732,167,161,103,3,2201,9389,1067,-146,3992,0
+02:50,-79,1776,732,165,161,103,3,2200,9364,1066,-187,4007,0
+02:55,-80,1782,732,166,161,103,3,2200,9366,1059,-243,4044,0
+03:00,-79,1762,731,167,161,103,3,2201,9339,1062,-215,3996,0
+03:05,-81,1732,731,169,161,103,3,2200,9328,1072,-130,3925,0
+03:10,-81,1721,726,168,161,103,3,2200,9344,1072,-66,3859,0
+03:15,-81,1714,725,170,161,104,3,2199,9335,1069,-63,3810,0
+03:20,-81,1703,729,168,162,103,3,2200,9331,1063,-74,3805,0
+03:25,-81,1715,731,168,162,103,3,2202,9326,1065,-98,3773,0
+03:30,-81,1750,731,169,162,103,3,2201,9326,1067,-184,3807,0
+03:35,-81,1769,732,170,161,103,3,2203,9329,1071,-240,3814,0
+03:40,-82,1743,732,169,161,103,3,2203,9333,1072,-269,3814,0
+03:45,-81,1718,732,168,162,103,3,2204,9327,1068,-239,3818,0
+03:50,-82,1752,733,170,161,103,3,2204,9327,1070,-261,3787,0
+03:55,-81,1818,733,170,161,103,3,2204,9327,1067,-276,3714,0
+04:00,-81,1834,732,170,161,103,3,2204,9343,1062,-332,3740,0
+04:05,-82,1842,732,172,160,103,3,2203,9316,1071,-295,3856,0
+04:10,-80,1842,733,172,159,103,3,2203,9302,1077,-248,3893,0
+04:15,-78,1828,733,171,159,103,3,2204,9414,1076,-242,3824,0
+04:20,-78,1873,732,170,159,103,3,2203,9461,1076,-250,3853,0
+04:25,-77,1943,732,170,159,103,3,2204,9535,1070,-291,3701,0
+04:30,-77,2010,731,169,159,103,3,2202,9604,1065,-296,3520,0
+04:35,-77,2074,732,170,159,103,3,2205,9615,1069,-302,3491,0
+04:40,-77,2128,731,171,159,103,2,2204,9618,1071,-202,3394,0
+04:45,-77,2149,731,170,159,103,3,2204,9610,1075,-139,3334,0
+04:50,-77,2119,731,170,159,103,3,2205,9612,1072,-95,3345,0
+04:55,-77,2050,731,173,159,104,3,2203,9621,1080,-84,3431,0
+05:00,-77,1964,731,171,159,104,3,2204,9626,1103,-31,3486,0
+05:05,-76,1898,738,172,159,104,3,2204,9630,1261,160,3264,0
+05:10,-76,1819,742,171,158,104,3,2203,9636,1346,311,3167,0
+05:15,-76,1770,742,172,158,104,3,2204,9648,1360,424,3204,0
+05:20,-76,1737,744,172,158,104,3,2203,9700,1378,516,3157,0
+05:25,-76,1748,743,172,159,104,3,2204,9709,1364,742,2845,0
+05:30,-76,1773,743,172,159,104,3,2205,9710,1356,868,2688,0
+05:35,-76,1768,740,172,159,105,3,2204,9962,1366,854,2731,0
+05:40,-76,1811,742,172,159,105,3,2204,10052,1376,903,2719,0
+05:45,-75,1813,746,171,159,105,3,2205,10104,1381,1051,2562,0
+05:50,-76,1834,746,171,158,105,3,2204,10139,1387,1016,2636,0
+05:55,-75,1868,745,172,158,105,3,2205,10192,1384,1243,2393,0
+06:00,-69,1942,743,171,158,105,3,2203,10151,1407,1627,2102,0
+06:05,-66,1946,732,173,159,104,3,2205,10081,1484,2194,1777,0
+06:10,-61,2000,730,171,159,105,3,2204,10032,1494,2451,1803,0
+06:15,-53,1996,731,169,159,104,3,2205,10041,1493,2672,1676,0
+06:20,-42,1972,731,168,159,104,3,2205,10053,1489,2734,1720,0
+06:25,-34,1972,730,170,159,104,3,2205,10054,1502,2603,1960,0
+06:30,0,1987,732,171,159,104,3,2205,10115,1498,2537,2016,0
+06:35,53,2018,730,170,159,105,3,2205,10269,1503,2474,1934,0
+06:40,182,2061,731,169,159,105,3,2205,10406,1496,2293,1860,0
+06:45,418,2075,730,170,159,105,3,2205,10563,1469,2031,1763,0
+06:50,618,2108,730,168,158,105,3,2202,10573,1480,1875,1724,0
+06:55,875,2140,730,171,159,105,3,2203,10636,1464,1681,1636,0
+07:00,1240,2146,730,172,158,105,3,2204,10633,1425,1458,1568,0
+07:05,1463,2136,734,172,159,105,3,2202,10649,1354,1122,1885,0
+07:10,1807,2089,741,172,159,106,3,2202,10693,1308,992,1900,0
+07:15,2270,2052,735,170,159,106,3,2203,10748,1247,714,1717,0
+07:20,2788,2010,730,170,158,105,3,2203,10778,1170,343,1610,0
+07:25,3414,1922,732,171,159,105,3,2204,10689,1144,64,1467,0
+07:30,4291,1886,732,172,158,105,3,2205,10470,1109,-404,1306,0
+07:35,5050,1830,731,172,159,105,3,2205,10303,1085,-806,1251,0
+07:40,5512,1726,731,174,158,105,3,2207,10135,1102,-1076,1217,0
+07:45,5957,1675,731,175,159,105,3,2206,10000,1161,-1521,1273,0
+07:50,6624,1662,730,174,159,106,3,2206,9710,1189,-1954,1157,0
+07:55,7116,1663,729,172,160,106,3,2206,9434,1125,-2224,1110,0
+08:00,7866,1733,724,172,160,106,3,2204,9274,1048,-2284,610,0
+08:05,8730,1759,731,171,159,107,3,2206,8915,935,-2822,856,0
+08:10,9444,1774,731,172,160,108,3,2206,8550,855,-2882,827,0
+08:15,10047,1794,731,173,159,102,3,2207,8381,845,-3327,857,0
+08:20,10665,1826,730,173,159,99,3,2207,8196,829,-3835,858,0
+08:25,11479,1862,729,173,159,99,3,2207,8188,818,-4673,616,0
+08:30,12151,1970,727,172,159,99,3,2206,8193,817,-5111,159,0
+08:35,12432,2024,728,171,159,100,3,2208,8069,817,-5477,232,0
+08:40,12891,2137,727,171,160,100,3,2208,7862,823,-5780,169,0
+08:45,13100,2254,726,171,160,100,3,2208,7664,817,-5947,274,0
+08:50,13074,2378,726,173,159,100,3,2208,7522,817,-5710,83,0
+08:55,13077,2443,724,173,160,101,3,2207,7570,816,-5341,-474,0
+09:00,13468,2597,727,174,160,101,3,2208,7717,818,-5928,-570,0
+09:05,14030,2774,725,172,159,101,3,2207,7670,875,-6561,-554,0
+09:10,14096,2907,726,171,160,101,3,2207,7647,880,-6795,-505,0
+09:15,14112,3043,726,172,159,101,3,2207,7562,884,-7150,-207,0
+09:20,14217,3133,727,170,159,101,3,2208,7557,874,-7172,-425,0
+09:25,14153,3202,727,170,159,101,3,2207,7475,877,-7334,-122,0
+09:30,14578,3257,728,170,159,101,3,2208,7334,874,-7587,-156,0
+09:35,14513,3266,728,171,159,101,3,2206,7285,887,-7863,26,0
+09:40,14155,3298,727,170,159,102,3,2205,7309,891,-7554,32,0
+09:45,14294,3241,727,171,159,102,3,2206,7303,889,-7603,122,0
+09:50,13999,3186,728,173,159,102,3,2207,7394,891,-7511,365,0
+09:55,13629,3100,735,172,157,103,3,2206,7374,932,-6656,116,0
+10:00,13885,3061,743,172,157,103,3,2207,7434,917,-6709,-28,0
+10:05,14395,3063,730,171,157,103,3,2207,7561,876,-6952,-120,0
+10:10,14899,3140,729,170,158,102,3,2208,7560,876,-7588,62,0
+10:15,14945,3226,728,171,158,102,3,2206,7539,888,-7994,166,0
+10:20,14900,3250,728,168,158,102,3,2207,7549,894,-8312,417,0
+10:25,14515,3281,736,167,158,103,3,2207,7570,896,-8008,570,0
+10:30,14676,3289,736,167,158,102,3,2206,7614,892,-8235,531,0
+10:35,14469,3288,730,168,158,103,3,2207,7617,893,-8226,753,0
+10:40,14258,3298,730,171,159,102,3,2207,7623,894,-7956,791,0
+10:45,14410,3319,731,171,158,102,3,2207,7635,898,-8122,695,0
+10:50,14490,3302,731,171,158,102,3,2206,7655,894,-8436,956,0
+10:55,14593,3269,735,171,158,102,3,2207,7661,890,-8220,703,0
+11:00,14739,3284,734,172,159,102,3,2207,7663,890,-8265,574,0
+11:05,14711,3260,732,170,159,102,3,2206,7656,879,-8152,590,0
+11:10,14927,3228,733,169,158,102,3,2207,7659,886,-8118,310,0
+11:15,14881,3231,733,170,158,103,3,2206,7660,895,-8117,309,0
+11:20,14496,3219,733,167,158,102,3,2205,7658,878,-7481,171,0
+11:25,14239,3235,735,168,158,102,3,2206,7648,884,-6725,-319,0
+11:30,14001,3343,733,168,158,102,3,2206,7650,882,-6997,80,0
+11:35,13737,3406,733,166,159,102,3,2206,7669,878,-6853,57,0
+11:40,13574,3450,733,166,159,102,3,2207,7668,875,-7009,329,0
+11:45,13382,3389,737,165,159,102,3,2207,7625,876,-6794,407,0
+11:50,12969,3305,751,165,159,102,3,2206,7557,893,-6350,672,0
+11:55,13415,3306,740,165,159,102,3,2207,7539,890,-6754,641,0
+12:00,13241,3283,732,163,159,101,3,2206,7593,920,-6744,798,0
+12:05,13315,3216,731,162,159,107,3,2207,7653,909,-7412,1385,0
+12:10,13194,3103,741,163,159,107,3,2206,7619,910,-7374,1605,0
+12:15,12848,3037,744,161,159,107,3,2205,7493,915,-7060,1806,0
+12:20,13147,3038,738,161,159,107,3,2206,7522,905,-6999,1508,0
+12:25,13393,3075,731,162,159,106,3,2208,7566,931,-7021,1210,0
+12:30,13653,3107,714,162,159,106,3,2207,7570,911,-7347,1309,0
+12:35,13518,3152,696,162,160,106,3,2206,7533,940,-6465,431,0
+12:40,13406,3182,684,162,160,107,3,2208,7557,944,-5869,-66,0
+12:45,13132,3159,687,165,159,107,3,2207,7580,979,-5383,-210,0
+12:50,13290,3206,689,166,159,107,3,2206,7591,1017,-5622,-116,0
+12:55,13292,3274,683,164,159,107,3,2206,7632,1018,-5784,-86,0
+13:00,13560,3294,695,163,160,106,2,2206,7584,1005,-6044,43,0
+13:05,13529,3296,716,164,159,105,3,2207,7500,962,-6073,214,0
+13:10,13315,3319,724,165,159,104,3,2207,7454,956,-5785,102,0
+13:15,13145,3275,731,166,159,103,3,2207,7403,1006,-5551,124,0
+13:20,13173,3217,739,166,158,103,3,2205,7352,1001,-5363,67,0
+13:25,12737,3249,745,163,159,103,3,2206,7344,1014,-5038,174,0
+13:30,12597,3325,741,161,159,102,2,2207,7294,983,-5062,616,0
+13:35,12791,3435,707,162,158,100,3,2206,7309,987,-5355,564,0
+13:40,12798,3488,681,164,158,100,3,2206,7316,984,-5289,460,0
+13:45,12516,3557,682,166,158,100,3,2205,7314,990,-5095,536,0
+13:50,12435,3688,692,164,158,100,3,2207,7301,980,-5044,599,0
+13:55,12115,3865,700,164,158,102,3,2207,7292,976,-4496,198,0
+14:00,12156,4056,699,165,158,105,3,2207,7270,954,-4540,64,0
+14:05,12016,4191,724,166,158,105,3,2207,7273,982,-5132,602,0
+14:10,11941,4231,729,163,158,105,3,2208,7276,953,-5253,733,0
+14:15,12055,4203,729,165,158,111,3,2207,7343,938,-5600,1037,0
+14:20,11734,4157,730,167,158,110,3,2207,7323,970,-5561,1352,0
+14:25,11267,4163,737,168,158,110,3,2207,7290,1036,-5053,1338,0
+14:30,11270,4166,742,165,158,110,3,2208,7225,1031,-4860,1255,0
+14:35,11253,4145,722,164,158,109,3,2208,7256,1032,-4762,1239,0
+14:40,11163,4127,704,164,158,109,3,2209,7345,1042,-4542,1073,0
+14:45,11340,4130,699,164,158,109,3,2208,7449,1031,-4817,1211,0
+14:50,10817,4122,695,166,158,109,3,2208,7486,1047,-4610,1311,0
+14:55,9768,4041,702,164,158,109,3,2208,7408,1094,-3437,1546,0
+15:00,9178,4013,709,164,158,109,3,2207,7339,1134,-2735,1619,0
+15:05,8991,4001,709,165,158,108,3,2208,7340,1162,-2541,1583,0
+15:10,8834,3995,703,165,158,109,3,2208,7395,1211,-2655,1768,0
+15:15,8032,4096,702,166,158,110,3,2207,7501,1265,-2044,1831,0
+15:20,7693,4243,691,164,158,110,3,2207,7636,1251,-1750,1822,0
+15:25,7084,4408,692,160,158,108,3,2207,7936,1259,-1604,1862,0
+15:30,6286,4569,692,159,158,109,3,2207,8204,1280,-1090,1850,0
+15:35,5883,4713,688,160,158,107,3,2208,8441,1254,-821,1812,0
+15:40,5111,4937,685,159,158,108,3,2207,8652,1256,-203,1679,0
+15:45,4409,5257,690,162,158,107,3,2208,8772,1269,446,1422,0
+15:50,3434,5546,693,160,158,107,3,2207,8944,1271,932,1522,0
+15:55,2802,5804,684,162,158,108,3,2207,8974,1280,1409,1581,0
+16:00,2545,6071,683,162,158,107,3,2207,9042,1337,1303,1622,0
+16:05,1900,6166,687,162,157,108,3,2205,8863,1463,1606,1576,0
+16:10,1377,6185,694,166,159,107,3,2205,8786,1624,2040,1503,0
+16:15,1217,6110,694,168,160,107,3,2205,8966,1655,2297,1342,0
+16:20,903,6091,696,166,158,107,3,2204,9168,1653,2607,1323,0
+)gm";
+static const char US_ERCOT[] = R"gm({"lastUpdated":"2026-11-13 18:26:00-0600","monthlyCapacity":{"Power Storage":20948,"Solar":40226,"Wind":40405,"Hydro":579,"Other":0,"Natural Gas":69569,"Coal and Lignite":13705,"Nuclear":5268},"data":{"2026-11-12":{"2026-11-12 00:00:00-0600":{"Coal and Lignite":{"gen":6904.70751953125},"Hydro":{"gen":141},"Nuclear":{"gen":3856.826171875},"Other":{"gen":0},"Power Storage":{"gen":-487.779479980469},"Solar":{"gen":0.368792861700058},"Wind":{"gen":3111.51196289062},"Natural Gas":{"gen":30875.05569458008},"Power Storage Charging":{"gen":-487.779479980469},"Power Storage Discharging":{"gen":0}},"2026-11-12 00:30:00-0600":{"Coal and Lignite":{"gen":6834.13671875},"Hydro":{"gen":86.005859375},"Nuclear":{"gen":3856.69506835938},"Other":{"gen":0},"Power Storage":{"gen":-467.468872070313},"Solar":{"gen":0.253003031015396},"Wind":{"gen":3123.02001953125},"Natural Gas":{"gen":30688.109313964847},"Power Storage Charging":{"gen":-467.468872070313},"Power Storage Discharging":{"gen":0}},"2026-11-12 01:00:00-0600":{"Coal and Lignite":{"gen":6814.9306640625},"Hydro":{"gen":89},"Nuclear":{"gen":3856.0146484375},"Other":{"gen":0},"Power Storage":{"gen":-1300.07531738281},"Solar":{"gen":0.105619788169861},"Wind":{"gen":2967.43994140625},"Natural Gas":{"gen":30923.159500122063},"Power Storage Charging":{"gen":-1300.07531738281},"Power Storage Discharging":{"gen":0}},"2026-11-12 01:30:00-0600":{"Coal and Lignite":{"gen":6917.564453125},"Hydro":{"gen":87},"Nuclear":{"gen":3857.3720703125},"Other":{"gen":0},"Power Storage":{"gen":-1486.46472167969},"Solar":{"gen":0.274298250675201},"Wind":{"gen":3257.37060546875},"Natural Gas":{"gen":30718.322113037102},"Power Storage Charging":{"gen":-1486.46472167969},"Power Storage Discharging":{"gen":0}},"2026-11-12 02:00:00-0600":{"Coal and Lignite":{"gen":7044.1640625},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3858.09912109375},"Other":{"gen":0},"Power Storage":{"gen":-1484.90063476562},"Solar":{"gen":0.248451888561249},"Wind":{"gen":3634.88305664062},"Natural Gas":{"gen":29642.403381347656},"Power Storage Charging":{"gen":-1484.90063476562},"Power Storage Discharging":{"gen":0}},"2026-11-12 02:30:00-0600":{"Coal and Lignite":{"gen":7133.23193359375},"Hydro":{"gen":87},"Nuclear":{"gen":3858.63354492188},"Other":{"gen":0},"Power Storage":{"gen":-1334.12976074219},"Solar":{"gen":0.256320804357529},"Wind":{"gen":3938.33349609375},"Natural Gas":{"gen":28890.588409423824},"Power Storage Charging":{"gen":-1334.12976074219},"Power Storage Discharging":{"gen":0}},"2026-11-12 03:00:00-0600":{"Coal and Lignite":{"gen":7116.7158203125},"Hydro":{"gen":88.005859375},"Nuclear":{"gen":3856.9853515625},"Other":{"gen":0},"Power Storage":{"gen":-1647.47424316406},"Solar":{"gen":0.383158057928085},"Wind":{"gen":4157.83251953125},"Natural Gas":{"gen":28617.984420776367},"Power Storage Charging":{"gen":-1647.47424316406},"Power Storage Discharging":{"gen":0}},"2026-11-12 03:30:00-0600":{"Coal and Lignite":{"gen":7189.09130859375},"Hydro":{"gen":91},"Nuclear":{"gen":3859.37670898438},"Other":{"gen":0},"Power Storage":{"gen":-1474.02648925781},"Solar":{"gen":0.266375422477722},"Wind":{"gen":4571.1318359375},"Natural Gas":{"gen":28071.604949951172},"Power Storage Charging":{"gen":-1474.02648925781},"Power Storage Discharging":{"gen":0}},"2026-11-12 04:00:00-0600":{"Coal and Lignite":{"gen":7132.16259765625},"Hydro":{"gen":88},"Nuclear":{"gen":3859.03198242188},"Other":{"gen":0},"Power Storage":{"gen":-1257.95922851563},"Solar":{"gen":0.19200973212719},"Wind":{"gen":4967.78173828125},"Natural Gas":{"gen":27652.31187438965},"Power Storage Charging":{"gen":-1257.95922851563},"Power Storage Discharging":{"gen":0}},"2026-11-12 04:30:00-0600":{"Coal and Lignite":{"gen":7137.296875},"Hydro":{"gen":89},"Nuclear":{"gen":3858.90649414062},"Other":{"gen":0},"Power Storage":{"gen":-1110.07055664062},"Solar":{"gen":0.218242004513741},"Wind":{"gen":5243.16162109375},"Natural Gas":{"gen":27799.66723632813},"Power Storage Charging":{"gen":-1110.07055664062},"Power Storage Discharging":{"gen":0}},"2026-11-12 05:00:00-0600":{"Coal and Lignite":{"gen":7136.5166015625},"Hydro":{"gen":88},"Nuclear":{"gen":3859.45166015625},"Other":{"gen":0},"Power Storage":{"gen":-729.257873535156},"Solar":{"gen":0.124135047197342},"Wind":{"gen":5161.2509765625},"Natural Gas":{"gen":27929.92929077149},"Power Storage Charging":{"gen":-729.257873535156},"Power Storage Discharging":{"gen":0}},"2026-11-12 05:30:00-0600":{"Coal and Lignite":{"gen":7124.4853515625},"Hydro":{"gen":90},"Nuclear":{"gen":3859.16137695313},"Other":{"gen":0},"Power Storage":{"gen":-114.673530578613},"Solar":{"gen":0.390253990888596},"Wind":{"gen":5071.15087890625},"Natural Gas":{"gen":28410.94879150391},"Power Storage Charging":{"gen":-114.673530578613},"Power Storage Discharging":{"gen":0}},"2026-11-12 06:00:00-0600":{"Coal and Lignite":{"gen":7077.42919921875},"Hydro":{"gen":90},"Nuclear":{"gen":3858.83642578125},"Other":{"gen":0},"Power Storage":{"gen":901.25439453125},"Solar":{"gen":0.248449593782425},"Wind":{"gen":5131.83544921875},"Natural Gas":{"gen":28584.6025390625},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":901.25439453125}},"2026-11-12 06:30:00-0600":{"Coal and Lignite":{"gen":7014.2900390625},"Hydro":{"gen":89},"Nuclear":{"gen":3858.08618164062},"Other":{"gen":0},"Power Storage":{"gen":2437.98559570312},"Solar":{"gen":0.211210131645203},"Wind":{"gen":5227.3017578125},"Natural Gas":{"gen":28664.57508850097},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":2437.98559570312}},"2026-11-12 07:00:00-0600":{"Coal and Lignite":{"gen":7196.86669921875},"Hydro":{"gen":89},"Nuclear":{"gen":3859.74145507813},"Other":{"gen":0},"Power Storage":{"gen":2694.66748046875},"Solar":{"gen":110.405685424805},"Wind":{"gen":5162.486328125},"Natural Gas":{"gen":28729.48815917969},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":2694.66748046875}},"2026-11-12 07:30:00-0600":{"Coal and Lignite":{"gen":7078.455078125},"Hydro":{"gen":87},"Nuclear":{"gen":3858.36865234375},"Other":{"gen":0},"Power Storage":{"gen":34.1705856323242},"Solar":{"gen":4078.36596679687},"Wind":{"gen":5407.630859375},"Natural Gas":{"gen":27856.45602416993},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":34.1705856323242}},"2026-11-12 08:00:00-0600":{"Coal and Lignite":{"gen":6294.8193359375},"Hydro":{"gen":87},"Nuclear":{"gen":3860.3583984375},"Other":{"gen":0},"Power Storage":{"gen":-3208.70361328125},"Solar":{"gen":13479.267578125},"Wind":{"gen":5216.00439453125},"Natural Gas":{"gen":22922.675811767585},"Power Storage Charging":{"gen":-3208.70361328125},"Power Storage Discharging":{"gen":0}},"2026-11-12 08:30:00-0600":{"Coal and Lignite":{"gen":5269.10107421875},"Hydro":{"gen":88},"Nuclear":{"gen":3858.7998046875},"Other":{"gen":0},"Power Storage":{"gen":-6902.6240234375},"Solar":{"gen":23441.09765625},"Wind":{"gen":4730.87060546875},"Natural Gas":{"gen":18784.9257183075},"Power Storage Charging":{"gen":-6902.6240234375},"Power Storage Discharging":{"gen":0}},"2026-11-12 09:00:00-0600":{"Coal and Lignite":{"gen":4667.9638671875},"Hydro":{"gen":87},"Nuclear":{"gen":3858.99169921875},"Other":{"gen":0},"Power Storage":{"gen":-7453.11865234375},"Solar":{"gen":28499.25},"Wind":{"gen":3764.224609375},"Natural Gas":{"gen":16541.82489538193},"Power Storage Charging":{"gen":-7453.11865234375},"Power Storage Discharging":{"gen":0}},"2026-11-12 09:30:00-0600":{"Coal and Lignite":{"gen":4458.61767578125},"Hydro":{"gen":89},"Nuclear":{"gen":3856.70947265625},"Other":{"gen":0},"Power Storage":{"gen":-6904.62255859375},"Solar":{"gen":29671.955078125},"Wind":{"gen":2561.27270507812},"Natural Gas":{"gen":16664.337074279785},"Power Storage Charging":{"gen":-6904.62255859375},"Power Storage Discharging":{"gen":0}},"2026-11-12 10:00:00-0600":{"Coal and Lignite":{"gen":4511.69140625},"Hydro":{"gen":88},"Nuclear":{"gen":3859.94116210938},"Other":{"gen":0},"Power Storage":{"gen":-6879.35498046875},"Solar":{"gen":29296.2421875},"Wind":{"gen":2041.92248535156},"Natural Gas":{"gen":17555.427881717686},"Power Storage Charging":{"gen":-6879.35498046875},"Power Storage Discharging":{"gen":0}},"2026-11-12 10:30:00-0600":{"Coal and Lignite":{"gen":4566.94140625},"Hydro":{"gen":87},"Nuclear":{"gen":3858.83764648437},"Other":{"gen":0},"Power Storage":{"gen":-6181.28466796875},"Solar":{"gen":28880.716796875},"Wind":{"gen":1947.49340820313},"Natural Gas":{"gen":17870.765263080593},"Power Storage Charging":{"gen":-6181.28466796875},"Power Storage Discharging":{"gen":0}},"2026-11-12 11:00:00-0600":{"Coal and Lignite":{"gen":4626.36962890625},"Hydro":{"gen":89},"Nuclear":{"gen":3859.84057617188},"Other":{"gen":0},"Power Storage":{"gen":-5687.9560546875},"Solar":{"gen":28498.0859375},"Wind":{"gen":2051.060546875},"Natural Gas":{"gen":18039.83332824707},"Power Storage Charging":{"gen":-5687.9560546875},"Power Storage Discharging":{"gen":0}},"2026-11-12 11:30:00-0600":{"Coal and Lignite":{"gen":4671.353515625},"Hydro":{"gen":89},"Nuclear":{"gen":3858.89135742188},"Other":{"gen":0},"Power Storage":{"gen":-4764.9384765625},"Solar":{"gen":28004.35546875},"Wind":{"gen":2011.52612304688},"Natural Gas":{"gen":17888.725282907493},"Power Storage Charging":{"gen":-4764.9384765625},"Power Storage Discharging":{"gen":0}},"2026-11-12 12:00:00-0600":{"Coal and Lignite":{"gen":4700.78564453125},"Hydro":{"gen":89},"Nuclear":{"gen":3858.73657226563},"Other":{"gen":0},"Power Storage":{"gen":-3883.13696289063},"Solar":{"gen":27815.521484375},"Wind":{"gen":2011.36401367188},"Natural Gas":{"gen":17744.797567605983},"Power Storage Charging":{"gen":-3883.13696289063},"Power Storage Discharging":{"gen":0}},"2026-11-12 12:30:00-0600":{"Coal and Lignite":{"gen":4653.3076171875},"Hydro":{"gen":88.005859375},"Nuclear":{"gen":3858.23095703125},"Other":{"gen":0},"Power Storage":{"gen":-3452.00610351563},"Solar":{"gen":27855.40625},"Wind":{"gen":1992.02648925781},"Natural Gas":{"gen":18007.666732788082},"Power Storage Charging":{"gen":-3452.00610351563},"Power Storage Discharging":{"gen":0}},"2026-11-12 13:00:00-0600":{"Coal and Lignite":{"gen":4641.1884765625},"Hydro":{"gen":88},"Nuclear":{"gen":3859.69580078125},"Other":{"gen":0},"Power Storage":{"gen":-2523.43212890625},"Solar":{"gen":28033.474609375},"Wind":{"gen":2066.13232421875},"Natural Gas":{"gen":17469.732461929325},"Power Storage Charging":{"gen":-2523.43212890625},"Power Storage Discharging":{"gen":0}},"2026-11-12 13:30:00-0600":{"Coal and Lignite":{"gen":4627.74169921875},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3857.91137695313},"Other":{"gen":0},"Power Storage":{"gen":-1519.18774414063},"Solar":{"gen":27915.390625},"Wind":{"gen":1873.41333007812},"Natural Gas":{"gen":17612.95503234864},"Power Storage Charging":{"gen":-1519.18774414063},"Power Storage Discharging":{"gen":0}},"2026-11-12 14:00:00-0600":{"Coal and Lignite":{"gen":4757.0888671875},"Hydro":{"gen":87.0029296875},"Nuclear":{"gen":3858.13403320313},"Other":{"gen":0},"Power Storage":{"gen":-1440.99291992187},"Solar":{"gen":28336.1875},"Wind":{"gen":1675.60522460938},"Natural Gas":{"gen":17811.592144012462},"Power Storage Charging":{"gen":-1440.99291992187},"Power Storage Discharging":{"gen":0}},"2026-11-12 14:30:00-0600":{"Coal and Lignite":{"gen":4888.251953125},"Hydro":{"gen":88},"Nuclear":{"gen":3858.64770507812},"Other":{"gen":0},"Power Storage":{"gen":-928.726867675781},"Solar":{"gen":28444.09375},"Wind":{"gen":1418.72375488281},"Natural Gas":{"gen":17718.295478820804},"Power Storage Charging":{"gen":-928.726867675781},"Power Storage Discharging":{"gen":0}},"2026-11-12 15:00:00-0600":{"Coal and Lignite":{"gen":4898.876953125},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3860.13671875},"Other":{"gen":0},"Power Storage":{"gen":-636.073303222656},"Solar":{"gen":28608.658203125},"Wind":{"gen":1168.39782714844},"Natural Gas":{"gen":18017.424812316895},"Power Storage Charging":{"gen":-636.073303222656},"Power Storage Discharging":{"gen":0}},"2026-11-12 15:30:00-0600":{"Coal and Lignite":{"gen":4993.21484375},"Hydro":{"gen":87.005859375},"Nuclear":{"gen":3857.66577148437},"Other":{"gen":0},"Power Storage":{"gen":-981.937438964844},"Solar":{"gen":28402.0546875},"Wind":{"gen":1009.55944824219},"Natural Gas":{"gen":19072.494346618656},"Power Storage Charging":{"gen":-981.937438964844},"Power Storage Discharging":{"gen":0}},"2026-11-12 16:00:00-0600":{"Coal and Lignite":{"gen":5290.578125},"Hydro":{"gen":89},"Nuclear":{"gen":3857.4384765625},"Other":{"gen":0},"Power Storage":{"gen":-524.743041992188},"Solar":{"gen":24536.029296875},"Wind":{"gen":1055.44250488281},"Natural Gas":{"gen":22621.529190063473},"Power Storage Charging":{"gen":-524.743041992188},"Power Storage Discharging":{"gen":0}},"2026-11-12 16:30:00-0600":{"Coal and Lignite":{"gen":6375.6533203125},"Hydro":{"gen":89.005859375},"Nuclear":{"gen":3856.6923828125},"Other":{"gen":0},"Power Storage":{"gen":2032.74987792969},"Solar":{"gen":15741.8876953125},"Wind":{"gen":978.904296875},"Natural Gas":{"gen":27154.467788696293},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":2032.74987792969}},"2026-11-12 17:00:00-0600":{"Coal and Lignite":{"gen":7234.08203125},"Hydro":{"gen":89.0029296875},"Nuclear":{"gen":3858.10180664063},"Other":{"gen":0},"Power Storage":{"gen":5059.6142578125},"Solar":{"gen":6080.13720703125},"Wind":{"gen":989.155700683594},"Natural Gas":{"gen":31087.8642425537},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":5059.6142578125}},"2026-11-12 17:30:00-0600":{"Coal and Lignite":{"gen":7612.3759765625},"Hydro":{"gen":89},"Nuclear":{"gen":3857.29150390625},"Other":{"gen":0},"Power Storage":{"gen":8760.23046875},"Solar":{"gen":589.769348144531},"Wind":{"gen":1063.03173828125},"Natural Gas":{"gen":32230.559707641598},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":8760.23046875}},"2026-11-12 18:00:00-0600":{"Coal and Lignite":{"gen":7781.89794921875},"Hydro":{"gen":87},"Nuclear":{"gen":3858.94775390625},"Other":{"gen":0},"Power Storage":{"gen":8252.787109375},"Solar":{"gen":0.197934836149216},"Wind":{"gen":1164.76647949219},"Natural Gas":{"gen":33064.7774963379},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":8252.787109375}},"2026-11-12 18:30:00-0600":{"Coal and Lignite":{"gen":7932.14501953125},"Hydro":{"gen":89},"Nuclear":{"gen":3858.07690429688},"Other":{"gen":0},"Power Storage":{"gen":6923.86669921875},"Solar":{"gen":0.0603527799248695},"Wind":{"gen":1531.8994140625},"Natural Gas":{"gen":33221.10455322266},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":6923.86669921875}},"2026-11-12 19:00:00-0600":{"Coal and Lignite":{"gen":7926.3173828125},"Hydro":{"gen":89},"Nuclear":{"gen":3859.12939453125},"Other":{"gen":0},"Power Storage":{"gen":5863.3798828125},"Solar":{"gen":0.0436300486326218},"Wind":{"gen":2006.18237304687},"Natural Gas":{"gen":33343.21464538574},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":5863.3798828125}},"2026-11-12 19:30:00-0600":{"Coal and Lignite":{"gen":7934.74951171875},"Hydro":{"gen":89.0029296875},"Nuclear":{"gen":3857.31201171875},"Other":{"gen":0},"Power Storage":{"gen":4753.89111328125},"Solar":{"gen":0.0624381639063358},"Wind":{"gen":2415.4521484375},"Natural Gas":{"gen":33251.143432617195},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":4753.89111328125}},"2026-11-12 20:00:00-0600":{"Coal and Lignite":{"gen":7732.81640625},"Hydro":{"gen":89},"Nuclear":{"gen":3859.42749023437},"Other":{"gen":0},"Power Storage":{"gen":3476.91845703125},"Solar":{"gen":0.176557555794716},"Wind":{"gen":2980.82788085938},"Natural Gas":{"gen":33400.18600463868},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":3476.91845703125}},"2026-11-12 20:30:00-0600":{"Coal and Lignite":{"gen":7441.25634765625},"Hydro":{"gen":89},"Nuclear":{"gen":3857.70434570313},"Other":{"gen":0},"Power Storage":{"gen":2293.57666015625},"Solar":{"gen":0.0835738927125931},"Wind":{"gen":3834.04614257812},"Natural Gas":{"gen":33222.94984436035},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":2293.57666015625}},"2026-11-12 21:00:00-0600":{"Coal and Lignite":{"gen":7429.8837890625},"Hydro":{"gen":89},"Nuclear":{"gen":3858.91088867187},"Other":{"gen":0},"Power Storage":{"gen":2144.91528320312},"Solar":{"gen":0.0814159885048866},"Wind":{"gen":4367.5673828125},"Natural Gas":{"gen":32969.586029052734},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":2144.91528320312}},"2026-11-12 21:30:00-0600":{"Coal and Lignite":{"gen":7454.79541015625},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3857.91625976563},"Other":{"gen":0},"Power Storage":{"gen":1136.15209960938},"Solar":{"gen":0.085665836930275},"Wind":{"gen":5181.0048828125},"Natural Gas":{"gen":32672.941848754886},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":1136.15209960938}},"2026-11-12 22:00:00-0600":{"Coal and Lignite":{"gen":7219.22607421875},"Hydro":{"gen":89.005859375},"Nuclear":{"gen":3858.26611328125},"Other":{"gen":0},"Power Storage":{"gen":316.271850585938},"Solar":{"gen":0.0733027756214142},"Wind":{"gen":5851.65185546875},"Natural Gas":{"gen":32112.029510498043},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":316.271850585938}},"2026-11-12 22:30:00-0600":{"Coal and Lignite":{"gen":7292.67578125},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3856.71215820312},"Other":{"gen":0},"Power Storage":{"gen":-1111.80236816406},"Solar":{"gen":0.099677249789238},"Wind":{"gen":6570.8525390625},"Natural Gas":{"gen":31538.330047607422},"Power Storage Charging":{"gen":-1111.80236816406},"Power Storage Discharging":{"gen":0}},"2026-11-12 23:00:00-0600":{"Coal and Lignite":{"gen":7276.96923828125},"Hydro":{"gen":87},"Nuclear":{"gen":3857.89135742188},"Other":{"gen":0},"Power Storage":{"gen":-2091.72387695312},"Solar":{"gen":0.0866823792457581},"Wind":{"gen":7258.2177734375},"Natural Gas":{"gen":30625.05488586427},"Power Storage Charging":{"gen":-2091.72387695312},"Power Storage Discharging":{"gen":0}},"2026-11-12 23:30:00-0600":{"Coal and Lignite":{"gen":7274.115234375},"Hydro":{"gen":87},"Nuclear":{"gen":3858.76782226563},"Other":{"gen":0},"Power Storage":{"gen":-2273.89892578125},"Solar":{"gen":0.156425222754478},"Wind":{"gen":7757.0625},"Natural Gas":{"gen":29219.580154418953},"Power Storage Charging":{"gen":-2273.89892578125},"Power Storage Discharging":{"gen":0}}},"2026-11-13":{"2026-11-13 00:00:00-0600":{"Coal and Lignite":{"gen":6845.21337890625},"Hydro":{"gen":94.005859375},"Nuclear":{"gen":3858.94091796875},"Other":{"gen":0},"Power Storage":{"gen":-2971.31127929688},"Solar":{"gen":0.13544362783432},"Wind":{"gen":8246.6494140625},"Natural Gas":{"gen":28760.71406555176},"Power Storage Charging":{"gen":-2971.31127929688},"Power Storage Discharging":{"gen":0}},"2026-11-13 00:30:00-0600":{"Coal and Lignite":{"gen":6327.93701171875},"Hydro":{"gen":49},"Nuclear":{"gen":3859.79125976563},"Other":{"gen":0},"Power Storage":{"gen":-1645.388671875},"Solar":{"gen":0.187279239296913},"Wind":{"gen":8679.5732421875},"Natural Gas":{"gen":26655.12768554688},"Power Storage Charging":{"gen":-1645.388671875},"Power Storage Discharging":{"gen":0}},"2026-11-13 01:00:00-0600":{"Coal and Lignite":{"gen":6307.28173828125},"Hydro":{"gen":50},"Nuclear":{"gen":3857.70458984375},"Other":{"gen":0},"Power Storage":{"gen":-1613.43896484375},"Solar":{"gen":0.124312102794647},"Wind":{"gen":8350.7109375},"Natural Gas":{"gen":26333.237419128407},"Power Storage Charging":{"gen":-1613.43896484375},"Power Storage Discharging":{"gen":0}},"2026-11-13 01:30:00-0600":{"Coal and Lignite":{"gen":6230.853515625},"Hydro":{"gen":50},"Nuclear":{"gen":3858.93139648438},"Other":{"gen":0},"Power Storage":{"gen":-1367.06372070313},"Solar":{"gen":0.28020516037941},"Wind":{"gen":7899.07373046875},"Natural Gas":{"gen":26078.132766723636},"Power Storage Charging":{"gen":-1367.06372070313},"Power Storage Discharging":{"gen":0}},"2026-11-13 02:00:00-0600":{"Coal and Lignite":{"gen":6308.4921875},"Hydro":{"gen":66.4365081787109},"Nuclear":{"gen":3861.146484375},"Other":{"gen":0},"Power Storage":{"gen":-2122.01293945313},"Solar":{"gen":0.249468713998795},"Wind":{"gen":8068.7802734375},"Natural Gas":{"gen":26076.563629150394},"Power Storage Charging":{"gen":-2122.01293945313},"Power Storage Discharging":{"gen":0}},"2026-11-13 02:30:00-0600":{"Coal and Lignite":{"gen":6750.25732421875},"Hydro":{"gen":66.4289398193359},"Nuclear":{"gen":3859.7919921875},"Other":{"gen":0},"Power Storage":{"gen":-1917.69274902344},"Solar":{"gen":0.315713375806808},"Wind":{"gen":7782.32177734375},"Natural Gas":{"gen":25910.671798706066},"Power Storage Charging":{"gen":-1917.69274902344},"Power Storage Discharging":{"gen":0}},"2026-11-13 03:00:00-0600":{"Coal and Lignite":{"gen":6817.7255859375},"Hydro":{"gen":66.3405151367188},"Nuclear":{"gen":3858.494140625},"Other":{"gen":0},"Power Storage":{"gen":-1208.13562011719},"Solar":{"gen":0.121148489415646},"Wind":{"gen":6850.25634765625},"Natural Gas":{"gen":25834.871887207035},"Power Storage Charging":{"gen":-1208.13562011719},"Power Storage Discharging":{"gen":0}},"2026-11-13 03:30:00-0600":{"Coal and Lignite":{"gen":6875.5458984375},"Hydro":{"gen":65.5002899169922},"Nuclear":{"gen":3859.85009765625},"Other":{"gen":0},"Power Storage":{"gen":-456.137664794922},"Solar":{"gen":0.117281317710876},"Wind":{"gen":6099.79052734375},"Natural Gas":{"gen":25945.773796081536},"Power Storage Charging":{"gen":-456.137664794922},"Power Storage Discharging":{"gen":0}},"2026-11-13 04:00:00-0600":{"Coal and Lignite":{"gen":6999.89208984375},"Hydro":{"gen":66.7323379516602},"Nuclear":{"gen":3859.04907226562},"Other":{"gen":0},"Power Storage":{"gen":-159.925079345703},"Solar":{"gen":0.112144462764263},"Wind":{"gen":5584.904296875},"Natural Gas":{"gen":26035.622741699215},"Power Storage Charging":{"gen":-159.925079345703},"Power Storage Discharging":{"gen":0}},"2026-11-13 04:30:00-0600":{"Coal and Lignite":{"gen":7076.86279296875},"Hydro":{"gen":66.662109375},"Nuclear":{"gen":3859.57543945312},"Other":{"gen":0},"Power Storage":{"gen":157.151977539062},"Solar":{"gen":0.335951864719391},"Wind":{"gen":5120.583984375},"Natural Gas":{"gen":26442.24247360229},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":157.151977539062}},"2026-11-13 05:00:00-0600":{"Coal and Lignite":{"gen":7376.7900390625},"Hydro":{"gen":66.5277709960938},"Nuclear":{"gen":3859.76342773438},"Other":{"gen":0},"Power Storage":{"gen":375.365417480469},"Solar":{"gen":0.284986644983292},"Wind":{"gen":4717.62548828125},"Natural Gas":{"gen":26654.131820678722},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":375.365417480469}},"2026-11-13 05:30:00-0600":{"Coal and Lignite":{"gen":7387.94580078125},"Hydro":{"gen":66.7323379516602},"Nuclear":{"gen":3860.5087890625},"Other":{"gen":0},"Power Storage":{"gen":1442.33251953125},"Solar":{"gen":0.117578387260437},"Wind":{"gen":4277.60205078125},"Natural Gas":{"gen":27040.003040313735},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":1442.33251953125}},"2026-11-13 06:00:00-0600":{"Coal and Lignite":{"gen":7507.4013671875},"Hydro":{"gen":68.0238571166992},"Nuclear":{"gen":3861.03759765625},"Other":{"gen":0},"Power Storage":{"gen":2678.33715820313},"Solar":{"gen":0.159772366285324},"Wind":{"gen":4107.8076171875},"Natural Gas":{"gen":27188.377593994137},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":2678.33715820313}},"2026-11-13 06:30:00-0600":{"Coal and Lignite":{"gen":7337.49267578125},"Hydro":{"gen":42},"Nuclear":{"gen":3861.60888671875},"Other":{"gen":0},"Power Storage":{"gen":4564.125},"Solar":{"gen":0.24237322807312},"Wind":{"gen":4137.7314453125},"Natural Gas":{"gen":27199.00934600831},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":4564.125}},"2026-11-13 07:00:00-0600":{"Coal and Lignite":{"gen":7234.8701171875},"Hydro":{"gen":43.0029296875},"Nuclear":{"gen":3861.61987304688},"Other":{"gen":0},"Power Storage":{"gen":4550.59130859375},"Solar":{"gen":167.152603149414},"Wind":{"gen":4473.8876953125},"Natural Gas":{"gen":27423.449562072765},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":4550.59130859375}},"2026-11-13 07:30:00-0600":{"Coal and Lignite":{"gen":7049.4775390625},"Hydro":{"gen":43},"Nuclear":{"gen":3861.72485351563},"Other":{"gen":0},"Power Storage":{"gen":832.797790527344},"Solar":{"gen":4257.41259765625},"Wind":{"gen":4539.79296875},"Natural Gas":{"gen":27076.28498458862},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":832.797790527344}},"2026-11-13 08:00:00-0600":{"Coal and Lignite":{"gen":6097.28857421875},"Hydro":{"gen":41},"Nuclear":{"gen":3859.75122070313},"Other":{"gen":0},"Power Storage":{"gen":-2763.84716796875},"Solar":{"gen":14048.4501953125},"Wind":{"gen":3934.11645507813},"Natural Gas":{"gen":23814.070335388187},"Power Storage Charging":{"gen":-2763.84716796875},"Power Storage Discharging":{"gen":0}},"2026-11-13 08:30:00-0600":{"Coal and Lignite":{"gen":5568.1865234375},"Hydro":{"gen":42},"Nuclear":{"gen":3859.93798828125},"Other":{"gen":0},"Power Storage":{"gen":-6395.57421875},"Solar":{"gen":24528.005859375},"Wind":{"gen":3302.224609375},"Natural Gas":{"gen":18809.69859313964},"Power Storage Charging":{"gen":-6395.57421875},"Power Storage Discharging":{"gen":0}},"2026-11-13 09:00:00-0600":{"Coal and Lignite":{"gen":5426.9189453125},"Hydro":{"gen":86},"Nuclear":{"gen":3860.1728515625},"Other":{"gen":0},"Power Storage":{"gen":-8619.560546875},"Solar":{"gen":29166.951171875},"Wind":{"gen":2807.91821289063},"Natural Gas":{"gen":17345.01761245727},"Power Storage Charging":{"gen":-8619.560546875},"Power Storage Discharging":{"gen":0}},"2026-11-13 09:30:00-0600":{"Coal and Lignite":{"gen":5489.2197265625},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3861.34106445312},"Other":{"gen":0},"Power Storage":{"gen":-8420.8955078125},"Solar":{"gen":29972.84375},"Wind":{"gen":2820.5634765625},"Natural Gas":{"gen":17031.264553070076},"Power Storage Charging":{"gen":-8420.8955078125},"Power Storage Discharging":{"gen":0}},"2026-11-13 10:00:00-0600":{"Coal and Lignite":{"gen":5425.60498046875},"Hydro":{"gen":86},"Nuclear":{"gen":3862.66040039063},"Other":{"gen":0},"Power Storage":{"gen":-8019.0576171875},"Solar":{"gen":29724.341796875},"Wind":{"gen":2876.08203125},"Natural Gas":{"gen":16756.326557159424},"Power Storage Charging":{"gen":-8019.0576171875},"Power Storage Discharging":{"gen":0}},"2026-11-13 10:30:00-0600":{"Coal and Lignite":{"gen":5252.6689453125},"Hydro":{"gen":87},"Nuclear":{"gen":3862.46215820313},"Other":{"gen":0},"Power Storage":{"gen":-6782.97265625},"Solar":{"gen":29656.810546875},"Wind":{"gen":2689.68408203125},"Natural Gas":{"gen":16178.18863296509},"Power Storage Charging":{"gen":-6782.97265625},"Power Storage Discharging":{"gen":0}},"2026-11-13 11:00:00-0600":{"Coal and Lignite":{"gen":5174.638671875},"Hydro":{"gen":98.958984375},"Nuclear":{"gen":3862.00439453125},"Other":{"gen":0},"Power Storage":{"gen":-5064.3046875},"Solar":{"gen":29134.533203125},"Wind":{"gen":2352.62841796875},"Natural Gas":{"gen":15968.895011901857},"Power Storage Charging":{"gen":-5064.3046875},"Power Storage Discharging":{"gen":0}},"2026-11-13 11:30:00-0600":{"Coal and Lignite":{"gen":5094.10888671875},"Hydro":{"gen":106.446792602539},"Nuclear":{"gen":3860.5361328125},"Other":{"gen":0},"Power Storage":{"gen":-3715.6484375},"Solar":{"gen":28428.919921875},"Wind":{"gen":2248.48095703125},"Natural Gas":{"gen":15782.9679107666},"Power Storage Charging":{"gen":-3715.6484375},"Power Storage Discharging":{"gen":0}},"2026-11-13 12:00:00-0600":{"Coal and Lignite":{"gen":5046.32421875},"Hydro":{"gen":88},"Nuclear":{"gen":3861.90307617188},"Other":{"gen":0},"Power Storage":{"gen":-2778.94897460938},"Solar":{"gen":27944.58984375},"Wind":{"gen":2308.58911132812},"Natural Gas":{"gen":15380.543519258501},"Power Storage Charging":{"gen":-2778.94897460938},"Power Storage Discharging":{"gen":0}},"2026-11-13 12:30:00-0600":{"Coal and Lignite":{"gen":5128.29296875},"Hydro":{"gen":85},"Nuclear":{"gen":3859.57153320313},"Other":{"gen":0},"Power Storage":{"gen":-1612.31970214844},"Solar":{"gen":27529.189453125},"Wind":{"gen":2156.13842773438},"Natural Gas":{"gen":15396.146499633789},"Power Storage Charging":{"gen":-1612.31970214844},"Power Storage Discharging":{"gen":0}},"2026-11-13 13:00:00-0600":{"Coal and Lignite":{"gen":4931.60400390625},"Hydro":{"gen":85},"Nuclear":{"gen":3859.67578125},"Other":{"gen":0},"Power Storage":{"gen":-1904.328125},"Solar":{"gen":28229.935546875},"Wind":{"gen":2541.04296875},"Natural Gas":{"gen":15250.896179199217},"Power Storage Charging":{"gen":-1904.328125},"Power Storage Discharging":{"gen":0}},"2026-11-13 13:30:00-0600":{"Coal and Lignite":{"gen":4918.146484375},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3859.26098632813},"Other":{"gen":0},"Power Storage":{"gen":-1117.86584472656},"Solar":{"gen":27669.140625},"Wind":{"gen":2867.49731445313},"Natural Gas":{"gen":15147.902137756348},"Power Storage Charging":{"gen":-1117.86584472656},"Power Storage Discharging":{"gen":0}},"2026-11-13 14:00:00-0600":{"Coal and Lignite":{"gen":4904.42333984375},"Hydro":{"gen":89},"Nuclear":{"gen":3859.40673828125},"Other":{"gen":0},"Power Storage":{"gen":-1000.68914794922},"Solar":{"gen":27962.306640625},"Wind":{"gen":3095.369140625},"Natural Gas":{"gen":15159.422676086431},"Power Storage Charging":{"gen":-1000.68914794922},"Power Storage Discharging":{"gen":0}},"2026-11-13 14:30:00-0600":{"Coal and Lignite":{"gen":5112.53564453125},"Hydro":{"gen":87},"Nuclear":{"gen":3859.36767578125},"Other":{"gen":0},"Power Storage":{"gen":-1432.77673339844},"Solar":{"gen":28402.59765625},"Wind":{"gen":3182.19287109375},"Natural Gas":{"gen":15517.063053131109},"Power Storage Charging":{"gen":-1432.77673339844},"Power Storage Discharging":{"gen":0}},"2026-11-13 15:00:00-0600":{"Coal and Lignite":{"gen":5362.0927734375},"Hydro":{"gen":86},"Nuclear":{"gen":3859.6162109375},"Other":{"gen":0},"Power Storage":{"gen":-990.552368164063},"Solar":{"gen":27383.259765625},"Wind":{"gen":3626.3291015625},"Natural Gas":{"gen":15602.325550079342},"Power Storage Charging":{"gen":-990.552368164063},"Power Storage Discharging":{"gen":0}},"2026-11-13 15:30:00-0600":{"Coal and Lignite":{"gen":5228.15625},"Hydro":{"gen":89},"Nuclear":{"gen":3859.2080078125},"Other":{"gen":0},"Power Storage":{"gen":-191.436065673828},"Solar":{"gen":25639.0234375},"Wind":{"gen":4139.22509765625},"Natural Gas":{"gen":16601.81348800659},"Power Storage Charging":{"gen":-191.436065673828},"Power Storage Discharging":{"gen":0}},"2026-11-13 16:00:00-0600":{"Coal and Lignite":{"gen":5404.76220703125},"Hydro":{"gen":88},"Nuclear":{"gen":3858.5703125},"Other":{"gen":0},"Power Storage":{"gen":-260.805786132812},"Solar":{"gen":21670.83984375},"Wind":{"gen":4925.42236328125},"Natural Gas":{"gen":19238.155269622806},"Power Storage Charging":{"gen":-260.805786132812},"Power Storage Discharging":{"gen":0}},"2026-11-13 16:30:00-0600":{"Coal and Lignite":{"gen":6108.84375},"Hydro":{"gen":88.0029296875},"Nuclear":{"gen":3858.1572265625},"Other":{"gen":0},"Power Storage":{"gen":3516.74438476563},"Solar":{"gen":12292.794921875},"Wind":{"gen":5897.12841796875},"Natural Gas":{"gen":22758.384517669674},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":3516.74438476563}},"2026-11-13 17:00:00-0600":{"Coal and Lignite":{"gen":6859.740234375},"Hydro":{"gen":90.0029296875},"Nuclear":{"gen":3857.1484375},"Other":{"gen":0},"Power Storage":{"gen":6944.2265625},"Solar":{"gen":4507.5634765625},"Wind":{"gen":7105.99853515625},"Natural Gas":{"gen":24651.05974197388},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":6944.2265625}},"2026-11-13 17:30:00-0600":{"Coal and Lignite":{"gen":7071.6279296875},"Hydro":{"gen":88},"Nuclear":{"gen":3857.673828125},"Other":{"gen":0},"Power Storage":{"gen":8974.328125},"Solar":{"gen":312.114135742187},"Wind":{"gen":7717.552734375},"Natural Gas":{"gen":26012.747482299816},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":8974.328125}},"2026-11-13 18:00:00-0600":{"Coal and Lignite":{"gen":7218.8046875},"Hydro":{"gen":93},"Nuclear":{"gen":3856.8408203125},"Other":{"gen":0},"Power Storage":{"gen":8188.0390625},"Solar":{"gen":0.462785124778748},"Wind":{"gen":8959.6611328125},"Natural Gas":{"gen":25859.88848876953},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":8188.0390625}},"2026-11-13 18:15:00-0600":{"Coal and Lignite":{"gen":7246.40478515625},"Hydro":{"gen":96},"Nuclear":{"gen":3857.83984375},"Other":{"gen":0},"Power Storage":{"gen":6983.74755859375},"Solar":{"gen":0.283870697021484},"Wind":{"gen":9896.3037109375},"Natural Gas":{"gen":25837.681533813473},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":6983.74755859375}},"2026-11-13 18:20:00-0600":{"Coal and Lignite":{"gen":7240.79931640625},"Hydro":{"gen":96.0029296875},"Nuclear":{"gen":3857.60961914063},"Other":{"gen":0},"Power Storage":{"gen":6723.99560546875},"Solar":{"gen":0.231158643960953},"Wind":{"gen":10299.0244140625},"Natural Gas":{"gen":25745.905769348148},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":6723.99560546875}},"2026-11-13 18:25:00-0600":{"Coal and Lignite":{"gen":7247.9892578125},"Hydro":{"gen":93},"Nuclear":{"gen":3859.42309570313},"Other":{"gen":0},"Power Storage":{"gen":6047.80078125},"Solar":{"gen":0.667135715484619},"Wind":{"gen":10744.6943359375},"Natural Gas":{"gen":25614.504753112797},"Power Storage Charging":{"gen":0},"Power Storage Discharging":{"gen":6047.80078125}}}}})gm";
+static const char US_MISO[] = R"gm({"RefId":"13-Nov-2026 - Interval 19:20 EST","TotalMW":"79109","Fuel":{"Type":[{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Coal","ACT":"24004","FUEL_CATEGORY":"Coal  (24,004 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Natural Gas","ACT":"33736","FUEL_CATEGORY":"Natural Gas  (33,736 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Nuclear","ACT":"9592","FUEL_CATEGORY":"Nuclear  (9,592 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Wind","ACT":"7004","FUEL_CATEGORY":"Wind  (7,004 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Solar","ACT":"1","FUEL_CATEGORY":"Solar  (1 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Battery Storage","ACT":"418","FUEL_CATEGORY":"Battery Storage  (418 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Other","ACT":"2501","FUEL_CATEGORY":"Other  (2,501 MW)"},{"INTERVALEST":"2026-11-13 7:20:00 PM","CATEGORY":"Imports","ACT":"1853","FUEL_CATEGORY":"Imports (1,853 MW)"}]}})gm";
+static const char US_MISO_TODAY[] = R"gm({"RefId":"13-Nov-2026 - Interval 19:25 EST","TotalMW":"0","Fuel":{"Type":[{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Battery Storage","ACT":"52"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Coal","ACT":"19231"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Imports","ACT":"954"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Natural Gas","ACT":"27453"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Nuclear","ACT":"9401"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Other","ACT":"1147"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Solar","ACT":"10688"},{"INTERVALEST":"2026-11-13 1:30:00 PM","CATEGORY":"Wind","ACT":"6341"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Battery Storage","ACT":"31"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Coal","ACT":"19458"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Imports","ACT":"881"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Natural Gas","ACT":"27351"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Nuclear","ACT":"9415"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Other","ACT":"1140"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Solar","ACT":"10599"},{"INTERVALEST":"2026-11-13 2:00:00 PM","CATEGORY":"Wind","ACT":"6233"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Battery Storage","ACT":"88"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Coal","ACT":"19601"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Imports","ACT":"987"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Natural Gas","ACT":"27515"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Nuclear","ACT":"9417"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Other","ACT":"1136"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Solar","ACT":"10261"},{"INTERVALEST":"2026-11-13 2:30:00 PM","CATEGORY":"Wind","ACT":"6234"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Battery Storage","ACT":"32"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Coal","ACT":"19925"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Imports","ACT":"1097"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Natural Gas","ACT":"27557"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Nuclear","ACT":"9428"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Other","ACT":"1133"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Solar","ACT":"9457"},{"INTERVALEST":"2026-11-13 3:00:00 PM","CATEGORY":"Wind","ACT":"6318"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Battery Storage","ACT":"-52"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Coal","ACT":"20223"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Imports","ACT":"1135"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Natural Gas","ACT":"28143"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Nuclear","ACT":"9430"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Other","ACT":"1126"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Solar","ACT":"8496"},{"INTERVALEST":"2026-11-13 3:30:00 PM","CATEGORY":"Wind","ACT":"6384"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Battery Storage","ACT":"-168"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Coal","ACT":"20130"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Imports","ACT":"1487"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Natural Gas","ACT":"28666"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Nuclear","ACT":"9425"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Other","ACT":"1222"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Solar","ACT":"8379"},{"INTERVALEST":"2026-11-13 4:00:00 PM","CATEGORY":"Wind","ACT":"6278"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Battery Storage","ACT":"89"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Coal","ACT":"20837"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Imports","ACT":"1927"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Natural Gas","ACT":"30266"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Nuclear","ACT":"9438"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Other","ACT":"1290"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Solar","ACT":"6080"},{"INTERVALEST":"2026-11-13 4:30:00 PM","CATEGORY":"Wind","ACT":"6064"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Battery Storage","ACT":"-109"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Coal","ACT":"21521"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Imports","ACT":"2400"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Natural Gas","ACT":"31259"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Nuclear","ACT":"9471"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Other","ACT":"2468"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Solar","ACT":"3247"},{"INTERVALEST":"2026-11-13 5:00:00 PM","CATEGORY":"Wind","ACT":"6270"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Battery Storage","ACT":"186"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Coal","ACT":"22094"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Imports","ACT":"3497"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Natural Gas","ACT":"32433"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Nuclear","ACT":"9485"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Other","ACT":"2785"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Solar","ACT":"826"},{"INTERVALEST":"2026-11-13 5:30:00 PM","CATEGORY":"Wind","ACT":"6338"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Battery Storage","ACT":"544"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Coal","ACT":"23142"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Imports","ACT":"3481"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Natural Gas","ACT":"33028"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Nuclear","ACT":"9528"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Other","ACT":"2816"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Solar","ACT":"19"},{"INTERVALEST":"2026-11-13 6:00:00 PM","CATEGORY":"Wind","ACT":"6497"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Battery Storage","ACT":"304"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Coal","ACT":"23551"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Imports","ACT":"3336"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Natural Gas","ACT":"33149"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Nuclear","ACT":"9561"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Other","ACT":"2781"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Solar","ACT":"5"},{"INTERVALEST":"2026-11-13 6:30:00 PM","CATEGORY":"Wind","ACT":"6729"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Battery Storage","ACT":"351"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Coal","ACT":"23617"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Imports","ACT":"2772"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Natural Gas","ACT":"33376"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Nuclear","ACT":"9551"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Other","ACT":"2734"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Solar","ACT":"2"},{"INTERVALEST":"2026-11-13 7:00:00 PM","CATEGORY":"Wind","ACT":"6959"}]}})gm";
+static const char US_SPP[] = R"gm(GMT MKT Interval,BAA,Coal Market,Coal Self,Diesel Fuel Oil Market,Diesel Fuel Oil Self,Hydro Market,Hydro Self,Natural Gas Market,Natural Gas Self,Nuclear Market,Nuclear Self,Solar Market,Solar Self,Waste Disposal Services Market,Waste Disposal Services Self,Wind Market,Wind Self,Waste Heat Market,Waste Heat Self,Energy Storage Market,Energy Storage Self,Other Market,Other Self,Load
+2026-11-13T22:30:00Z,SPP,6700.50,2231.70,0.00,0.00,24.60,853.50,10056.70,703.70,0.00,1223.90,0.00,1541.30,2.00,6.40,0.00,9126.60,0.00,0.00,-18.00,-9.00,10.20,50.90,32259.260
+2026-11-13T22:35:00Z,SPP,6745.30,2234.40,0.00,0.00,24.30,853.30,10120.90,710.70,0.00,1223.90,0.00,1293.90,2.00,6.40,0.00,9248.00,0.00,0.00,-18.00,-9.00,10.20,51.00,32341.910
+2026-11-13T22:40:00Z,SPP,6783.20,2240.80,0.00,0.00,24.50,852.80,10204.00,736.40,0.00,1223.90,0.00,1096.40,2.00,6.40,0.00,9422.00,0.00,0.00,-17.70,-9.00,10.20,50.90,32406.750
+2026-11-13T22:45:00Z,SPP,6807.20,2239.90,0.00,0.00,24.00,850.90,10273.20,756.90,0.00,1223.90,0.00,950.60,2.00,6.40,0.00,9573.50,0.00,0.00,-17.50,-15.20,10.20,50.90,32482.790
+2026-11-13T22:50:00Z,SPP,6819.30,2244.90,0.00,0.00,24.70,851.50,10455.60,778.00,0.00,1223.90,0.00,738.40,2.00,6.40,0.00,9688.80,0.00,0.00,-17.50,-15.20,10.20,50.90,32507.980
+2026-11-13T22:55:00Z,SPP,6839.60,2250.10,0.00,0.00,24.40,851.10,10588.20,792.60,0.00,1223.90,0.00,621.50,2.00,6.40,0.00,9807.70,0.00,0.00,-17.50,-15.20,10.30,50.90,32498.530
+2026-11-13T23:00:00Z,SPP,6867.30,2255.70,0.00,0.00,24.60,850.80,10627.00,801.30,0.00,1223.90,0.00,540.20,2.00,6.40,0.00,9937.10,0.00,0.00,-17.50,-15.10,10.20,50.90,32551.000
+2026-11-13T23:05:00Z,SPP,7357.90,1721.10,0.00,0.00,24.50,849.10,10469.90,744.60,0.00,1223.90,0.00,492.30,2.00,6.40,0.00,10150.80,0.00,0.00,292.50,-14.40,10.30,51.00,32834.350
+2026-11-13T23:10:00Z,SPP,7375.90,1744.40,0.00,0.00,24.40,847.00,10583.90,769.40,0.00,1223.90,0.00,382.70,2.00,6.40,0.00,10279.80,0.00,0.00,293.00,-12.80,10.30,51.10,32942.640
+2026-11-13T23:15:00Z,SPP,7445.00,1744.00,0.00,0.00,24.40,847.20,10456.70,774.00,0.00,1222.30,0.00,258.10,2.60,6.50,0.00,10578.00,0.00,0.00,432.00,-15.00,10.30,51.00,33039.420
+2026-11-13T23:20:00Z,SPP,7486.60,1743.60,0.00,0.00,24.50,844.60,10421.20,769.00,0.00,1223.90,0.00,202.50,2.60,6.60,0.00,10808.80,0.00,0.00,432.00,-13.10,10.20,51.10,33157.230
+2026-11-13T23:25:00Z,SPP,7511.20,1744.60,0.00,0.00,24.60,844.10,10353.10,788.80,0.00,1222.30,0.00,146.90,2.60,6.60,0.00,11018.10,0.00,0.00,432.00,-1.70,10.30,51.00,33317.280
+2026-11-13T23:30:00Z,SPP,7462.20,1740.00,0.00,0.00,24.70,843.10,10316.70,764.20,0.00,1223.90,0.00,86.70,2.60,6.70,0.00,11224.70,0.00,0.00,431.80,-1.10,10.30,51.10,33430.540
+2026-11-13T23:35:00Z,SPP,7434.30,1741.40,0.00,0.00,24.70,841.40,10303.50,736.50,0.00,1223.90,0.00,48.30,2.70,6.50,0.00,11421.20,0.00,0.00,431.50,-1.80,10.30,51.00,33499.610
+2026-11-13T23:40:00Z,SPP,7401.60,1734.80,0.00,0.00,24.80,841.60,10193.80,724.70,0.00,1222.30,0.00,27.30,2.70,6.60,0.00,11747.50,0.00,0.00,431.50,-1.80,10.20,51.00,33633.340
+2026-11-13T23:45:00Z,SPP,7313.50,1722.70,0.00,0.00,25.00,840.00,10029.30,701.90,0.00,1223.90,0.00,10.80,2.60,6.60,0.00,11994.00,0.00,0.00,431.50,-1.90,10.30,51.00,33707.150
+2026-11-13T23:50:00Z,SPP,7215.10,1695.50,0.00,0.00,28.30,839.60,9784.20,679.20,0.00,1223.90,0.00,5.40,2.60,6.60,0.00,12331.90,0.00,0.00,394.00,-1.70,10.30,50.90,33840.830
+2026-11-13T23:55:00Z,SPP,7126.90,1673.30,0.00,0.00,28.30,838.40,9494.00,659.80,0.00,1222.30,0.00,0.90,2.70,6.70,0.00,12661.80,0.00,0.00,403.40,-1.70,10.20,51.10,33861.980
+2026-11-14T00:00:00Z,SPP,7044.20,1656.10,0.00,0.00,28.40,837.20,9451.50,636.60,0.00,1222.30,0.00,0.30,2.60,6.70,0.00,13039.30,0.00,0.00,395.00,-1.70,10.20,51.00,33878.760
+2026-11-14T00:05:00Z,SPP,7028.00,1669.90,0.00,0.00,28.00,750.50,9225.60,1147.70,0.00,1222.30,0.00,-0.10,2.70,6.60,0.00,13347.90,0.00,0.00,9.50,-9.90,10.30,50.90,33918.970
+2026-11-14T00:10:00Z,SPP,6937.90,1643.60,0.00,0.00,28.40,751.80,9064.50,1110.40,0.00,1223.90,0.00,-0.10,2.60,6.60,0.00,13660.60,0.00,0.00,9.50,-9.50,10.20,50.90,33849.950
+2026-11-14T00:15:00Z,SPP,6831.50,1646.80,0.00,0.00,12.50,746.20,9102.10,933.60,0.00,1223.90,0.00,-0.10,2.70,6.70,0.00,14041.40,0.00,0.00,9.50,-12.60,10.20,51.00,33984.760
+2026-11-14T00:20:00Z,SPP,6832.50,1621.90,0.00,0.00,12.40,746.60,8971.10,724.60,0.00,1223.90,0.00,-0.10,2.60,6.60,0.00,14387.50,0.00,0.00,9.50,-8.70,10.30,51.10,34059.680
+2026-11-14T00:25:00Z,SPP,6845.00,1620.70,0.00,0.00,12.60,746.80,8751.30,664.30,0.00,1222.30,0.00,0.00,2.70,6.70,0.00,14693.10,0.00,0.00,9.80,-9.10,10.30,51.00,34021.220
+)gm";
+static const char US_NYISO[] = R"gm(Time Stamp,Time Zone,Fuel Category,Gen MW
+11/13/2026 00:30:00,EST,Dual Fuel,3646.0
+11/13/2026 00:30:00,EST,Natural Gas,3727.0
+11/13/2026 00:30:00,EST,Nuclear,3333.0
+11/13/2026 00:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 00:30:00,EST,Other Renewables,230.0
+11/13/2026 00:30:00,EST,Wind,740.0
+11/13/2026 00:30:00,EST,Hydro,2108.0
+11/13/2026 01:00:00,EST,Dual Fuel,3620.0
+11/13/2026 01:00:00,EST,Natural Gas,3569.0
+11/13/2026 01:00:00,EST,Nuclear,3334.0
+11/13/2026 01:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 01:00:00,EST,Other Renewables,226.0
+11/13/2026 01:00:00,EST,Wind,734.0
+11/13/2026 01:00:00,EST,Hydro,2105.0
+11/13/2026 01:30:00,EST,Dual Fuel,3601.0
+11/13/2026 01:30:00,EST,Natural Gas,3637.0
+11/13/2026 01:30:00,EST,Nuclear,3336.0
+11/13/2026 01:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 01:30:00,EST,Other Renewables,223.0
+11/13/2026 01:30:00,EST,Wind,739.0
+11/13/2026 01:30:00,EST,Hydro,2101.0
+11/13/2026 02:00:00,EST,Dual Fuel,3576.0
+11/13/2026 02:00:00,EST,Natural Gas,3474.0
+11/13/2026 02:00:00,EST,Nuclear,3338.0
+11/13/2026 02:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 02:00:00,EST,Other Renewables,226.0
+11/13/2026 02:00:00,EST,Wind,718.0
+11/13/2026 02:00:00,EST,Hydro,2048.0
+11/13/2026 02:30:00,EST,Dual Fuel,3608.0
+11/13/2026 02:30:00,EST,Natural Gas,3308.0
+11/13/2026 02:30:00,EST,Nuclear,3335.0
+11/13/2026 02:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 02:30:00,EST,Other Renewables,230.0
+11/13/2026 02:30:00,EST,Wind,662.0
+11/13/2026 02:30:00,EST,Hydro,2107.0
+11/13/2026 03:00:00,EST,Dual Fuel,3549.0
+11/13/2026 03:00:00,EST,Natural Gas,3163.0
+11/13/2026 03:00:00,EST,Nuclear,3337.0
+11/13/2026 03:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 03:00:00,EST,Other Renewables,224.0
+11/13/2026 03:00:00,EST,Wind,619.0
+11/13/2026 03:00:00,EST,Hydro,2077.0
+11/13/2026 03:30:00,EST,Dual Fuel,3664.0
+11/13/2026 03:30:00,EST,Natural Gas,3237.0
+11/13/2026 03:30:00,EST,Nuclear,3336.0
+11/13/2026 03:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 03:30:00,EST,Other Renewables,231.0
+11/13/2026 03:30:00,EST,Wind,627.0
+11/13/2026 03:30:00,EST,Hydro,2104.0
+11/13/2026 04:00:00,EST,Dual Fuel,3664.0
+11/13/2026 04:00:00,EST,Natural Gas,3216.0
+11/13/2026 04:00:00,EST,Nuclear,3336.0
+11/13/2026 04:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 04:00:00,EST,Other Renewables,226.0
+11/13/2026 04:00:00,EST,Wind,596.0
+11/13/2026 04:00:00,EST,Hydro,2095.0
+11/13/2026 04:30:00,EST,Dual Fuel,3715.0
+11/13/2026 04:30:00,EST,Natural Gas,3204.0
+11/13/2026 04:30:00,EST,Nuclear,3336.0
+11/13/2026 04:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 04:30:00,EST,Other Renewables,230.0
+11/13/2026 04:30:00,EST,Wind,586.0
+11/13/2026 04:30:00,EST,Hydro,2095.0
+11/13/2026 05:00:00,EST,Dual Fuel,3851.0
+11/13/2026 05:00:00,EST,Natural Gas,3346.0
+11/13/2026 05:00:00,EST,Nuclear,3337.0
+11/13/2026 05:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 05:00:00,EST,Other Renewables,224.0
+11/13/2026 05:00:00,EST,Wind,569.0
+11/13/2026 05:00:00,EST,Hydro,2115.0
+11/13/2026 05:30:00,EST,Dual Fuel,4157.0
+11/13/2026 05:30:00,EST,Natural Gas,3441.0
+11/13/2026 05:30:00,EST,Nuclear,3336.0
+11/13/2026 05:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 05:30:00,EST,Other Renewables,225.0
+11/13/2026 05:30:00,EST,Wind,568.0
+11/13/2026 05:30:00,EST,Hydro,2125.0
+11/13/2026 06:00:00,EST,Dual Fuel,4339.0
+11/13/2026 06:00:00,EST,Natural Gas,3580.0
+11/13/2026 06:00:00,EST,Nuclear,3339.0
+11/13/2026 06:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 06:00:00,EST,Other Renewables,227.0
+11/13/2026 06:00:00,EST,Wind,525.0
+11/13/2026 06:00:00,EST,Hydro,2242.0
+11/13/2026 06:30:00,EST,Dual Fuel,4517.0
+11/13/2026 06:30:00,EST,Natural Gas,3761.0
+11/13/2026 06:30:00,EST,Nuclear,3338.0
+11/13/2026 06:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 06:30:00,EST,Other Renewables,222.0
+11/13/2026 06:30:00,EST,Wind,545.0
+11/13/2026 06:30:00,EST,Hydro,2878.0
+11/13/2026 07:00:00,EST,Dual Fuel,4733.0
+11/13/2026 07:00:00,EST,Natural Gas,3804.0
+11/13/2026 07:00:00,EST,Nuclear,3334.0
+11/13/2026 07:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 07:00:00,EST,Other Renewables,233.0
+11/13/2026 07:00:00,EST,Wind,536.0
+11/13/2026 07:00:00,EST,Hydro,3337.0
+11/13/2026 07:30:00,EST,Dual Fuel,5142.0
+11/13/2026 07:30:00,EST,Natural Gas,3836.0
+11/13/2026 07:30:00,EST,Nuclear,3336.0
+11/13/2026 07:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 07:30:00,EST,Other Renewables,246.0
+11/13/2026 07:30:00,EST,Wind,504.0
+11/13/2026 07:30:00,EST,Hydro,3810.0
+11/13/2026 08:00:00,EST,Dual Fuel,5361.0
+11/13/2026 08:00:00,EST,Natural Gas,3825.0
+11/13/2026 08:00:00,EST,Nuclear,3339.0
+11/13/2026 08:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 08:00:00,EST,Other Renewables,248.0
+11/13/2026 08:00:00,EST,Wind,497.0
+11/13/2026 08:00:00,EST,Hydro,3651.0
+11/13/2026 08:30:00,EST,Dual Fuel,5378.0
+11/13/2026 08:30:00,EST,Natural Gas,3785.0
+11/13/2026 08:30:00,EST,Nuclear,3339.0
+11/13/2026 08:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 08:30:00,EST,Other Renewables,279.0
+11/13/2026 08:30:00,EST,Wind,450.0
+11/13/2026 08:30:00,EST,Hydro,3427.0
+11/13/2026 09:00:00,EST,Dual Fuel,5553.0
+11/13/2026 09:00:00,EST,Natural Gas,3789.0
+11/13/2026 09:00:00,EST,Nuclear,3339.0
+11/13/2026 09:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 09:00:00,EST,Other Renewables,275.0
+11/13/2026 09:00:00,EST,Wind,437.0
+11/13/2026 09:00:00,EST,Hydro,3341.0
+11/13/2026 09:30:00,EST,Dual Fuel,5771.0
+11/13/2026 09:30:00,EST,Natural Gas,3810.0
+11/13/2026 09:30:00,EST,Nuclear,3339.0
+11/13/2026 09:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 09:30:00,EST,Other Renewables,293.0
+11/13/2026 09:30:00,EST,Wind,396.0
+11/13/2026 09:30:00,EST,Hydro,3063.0
+11/13/2026 10:00:00,EST,Dual Fuel,5711.0
+11/13/2026 10:00:00,EST,Natural Gas,3792.0
+11/13/2026 10:00:00,EST,Nuclear,3339.0
+11/13/2026 10:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 10:00:00,EST,Other Renewables,353.0
+11/13/2026 10:00:00,EST,Wind,421.0
+11/13/2026 10:00:00,EST,Hydro,2937.0
+11/13/2026 10:30:00,EST,Dual Fuel,5368.0
+11/13/2026 10:30:00,EST,Natural Gas,3784.0
+11/13/2026 10:30:00,EST,Nuclear,3338.0
+11/13/2026 10:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 10:30:00,EST,Other Renewables,383.0
+11/13/2026 10:30:00,EST,Wind,431.0
+11/13/2026 10:30:00,EST,Hydro,2843.0
+11/13/2026 11:00:00,EST,Dual Fuel,5152.0
+11/13/2026 11:00:00,EST,Natural Gas,3847.0
+11/13/2026 11:00:00,EST,Nuclear,3339.0
+11/13/2026 11:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 11:00:00,EST,Other Renewables,437.0
+11/13/2026 11:00:00,EST,Wind,393.0
+11/13/2026 11:00:00,EST,Hydro,2835.0
+11/13/2026 11:30:00,EST,Dual Fuel,5357.0
+11/13/2026 11:30:00,EST,Natural Gas,3865.0
+11/13/2026 11:30:00,EST,Nuclear,3339.0
+11/13/2026 11:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 11:30:00,EST,Other Renewables,447.0
+11/13/2026 11:30:00,EST,Wind,365.0
+11/13/2026 11:30:00,EST,Hydro,2830.0
+11/13/2026 12:00:00,EST,Dual Fuel,5323.0
+11/13/2026 12:00:00,EST,Natural Gas,3817.0
+11/13/2026 12:00:00,EST,Nuclear,3339.0
+11/13/2026 12:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 12:00:00,EST,Other Renewables,405.0
+11/13/2026 12:00:00,EST,Wind,379.0
+11/13/2026 12:00:00,EST,Hydro,2861.0
+11/13/2026 12:30:00,EST,Dual Fuel,5239.0
+11/13/2026 12:30:00,EST,Natural Gas,3858.0
+11/13/2026 12:30:00,EST,Nuclear,3336.0
+11/13/2026 12:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 12:30:00,EST,Other Renewables,392.0
+11/13/2026 12:30:00,EST,Wind,420.0
+11/13/2026 12:30:00,EST,Hydro,2880.0
+11/13/2026 13:00:00,EST,Dual Fuel,5219.0
+11/13/2026 13:00:00,EST,Natural Gas,3857.0
+11/13/2026 13:00:00,EST,Nuclear,3337.0
+11/13/2026 13:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 13:00:00,EST,Other Renewables,379.0
+11/13/2026 13:00:00,EST,Wind,375.0
+11/13/2026 13:00:00,EST,Hydro,2837.0
+11/13/2026 13:30:00,EST,Dual Fuel,5094.0
+11/13/2026 13:30:00,EST,Natural Gas,3831.0
+11/13/2026 13:30:00,EST,Nuclear,3337.0
+11/13/2026 13:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 13:30:00,EST,Other Renewables,370.0
+11/13/2026 13:30:00,EST,Wind,418.0
+11/13/2026 13:30:00,EST,Hydro,2848.0
+11/13/2026 14:00:00,EST,Dual Fuel,5182.0
+11/13/2026 14:00:00,EST,Natural Gas,3797.0
+11/13/2026 14:00:00,EST,Nuclear,3336.0
+11/13/2026 14:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 14:00:00,EST,Other Renewables,355.0
+11/13/2026 14:00:00,EST,Wind,427.0
+11/13/2026 14:00:00,EST,Hydro,2977.0
+11/13/2026 14:30:00,EST,Dual Fuel,5397.0
+11/13/2026 14:30:00,EST,Natural Gas,3729.0
+11/13/2026 14:30:00,EST,Nuclear,3338.0
+11/13/2026 14:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 14:30:00,EST,Other Renewables,329.0
+11/13/2026 14:30:00,EST,Wind,472.0
+11/13/2026 14:30:00,EST,Hydro,2886.0
+11/13/2026 15:00:00,EST,Dual Fuel,5284.0
+11/13/2026 15:00:00,EST,Natural Gas,3728.0
+11/13/2026 15:00:00,EST,Nuclear,3337.0
+11/13/2026 15:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 15:00:00,EST,Other Renewables,304.0
+11/13/2026 15:00:00,EST,Wind,476.0
+11/13/2026 15:00:00,EST,Hydro,2875.0
+11/13/2026 15:30:00,EST,Dual Fuel,5495.0
+11/13/2026 15:30:00,EST,Natural Gas,3797.0
+11/13/2026 15:30:00,EST,Nuclear,3338.0
+11/13/2026 15:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 15:30:00,EST,Other Renewables,292.0
+11/13/2026 15:30:00,EST,Wind,469.0
+11/13/2026 15:30:00,EST,Hydro,2931.0
+11/13/2026 16:00:00,EST,Dual Fuel,5805.0
+11/13/2026 16:00:00,EST,Natural Gas,3801.0
+11/13/2026 16:00:00,EST,Nuclear,3339.0
+11/13/2026 16:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 16:00:00,EST,Other Renewables,247.0
+11/13/2026 16:00:00,EST,Wind,432.0
+11/13/2026 16:00:00,EST,Hydro,3157.0
+11/13/2026 16:30:00,EST,Dual Fuel,6107.0
+11/13/2026 16:30:00,EST,Natural Gas,3826.0
+11/13/2026 16:30:00,EST,Nuclear,3338.0
+11/13/2026 16:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 16:30:00,EST,Other Renewables,222.0
+11/13/2026 16:30:00,EST,Wind,426.0
+11/13/2026 16:30:00,EST,Hydro,3892.0
+11/13/2026 17:00:00,EST,Dual Fuel,6051.0
+11/13/2026 17:00:00,EST,Natural Gas,3833.0
+11/13/2026 17:00:00,EST,Nuclear,3338.0
+11/13/2026 17:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 17:00:00,EST,Other Renewables,222.0
+11/13/2026 17:00:00,EST,Wind,405.0
+11/13/2026 17:00:00,EST,Hydro,3904.0
+11/13/2026 17:30:00,EST,Dual Fuel,6122.0
+11/13/2026 17:30:00,EST,Natural Gas,3833.0
+11/13/2026 17:30:00,EST,Nuclear,3338.0
+11/13/2026 17:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 17:30:00,EST,Other Renewables,226.0
+11/13/2026 17:30:00,EST,Wind,370.0
+11/13/2026 17:30:00,EST,Hydro,3958.0
+11/13/2026 18:00:00,EST,Dual Fuel,6096.0
+11/13/2026 18:00:00,EST,Natural Gas,3836.0
+11/13/2026 18:00:00,EST,Nuclear,3339.0
+11/13/2026 18:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 18:00:00,EST,Other Renewables,231.0
+11/13/2026 18:00:00,EST,Wind,348.0
+11/13/2026 18:00:00,EST,Hydro,4037.0
+11/13/2026 18:30:00,EST,Dual Fuel,6036.0
+11/13/2026 18:30:00,EST,Natural Gas,3986.0
+11/13/2026 18:30:00,EST,Nuclear,3339.0
+11/13/2026 18:30:00,EST,Other Fossil Fuels,0.0
+11/13/2026 18:30:00,EST,Other Renewables,229.0
+11/13/2026 18:30:00,EST,Wind,344.0
+11/13/2026 18:30:00,EST,Hydro,4023.0
+11/13/2026 19:00:00,EST,Dual Fuel,6084.0
+11/13/2026 19:00:00,EST,Natural Gas,3984.0
+11/13/2026 19:00:00,EST,Nuclear,3338.0
+11/13/2026 19:00:00,EST,Other Fossil Fuels,0.0
+11/13/2026 19:00:00,EST,Other Renewables,229.0
+11/13/2026 19:00:00,EST,Wind,313.0
+11/13/2026 19:00:00,EST,Hydro,3886.0
+11/13/2026 19:10:00,EST,Dual Fuel,6039.0
+11/13/2026 19:10:00,EST,Natural Gas,3969.0
+11/13/2026 19:10:00,EST,Nuclear,3339.0
+11/13/2026 19:10:00,EST,Other Fossil Fuels,0.0
+11/13/2026 19:10:00,EST,Other Renewables,226.0
+11/13/2026 19:10:00,EST,Wind,302.0
+11/13/2026 19:10:00,EST,Hydro,3705.0
+)gm";
+static const char US_ISONE[] = R"gm([{"data":{"GenFuelMixes":{"GenFuelMix":[{"MarginalFlag":"N","GenMw":199,"FuelCategoryRollup":"Batteries","FuelCategory":"Batteries","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":947,"FuelCategoryRollup":"Hydro","FuelCategory":"Hydro","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"Y","GenMw":8600,"FuelCategoryRollup":"Natural Gas","FuelCategory":"Natural Gas","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":2107,"FuelCategoryRollup":"Nuclear","FuelCategory":"Nuclear","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":3,"FuelCategoryRollup":"Other","FuelCategory":"Other","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":22,"FuelCategoryRollup":"Renewables","FuelCategory":"Landfill Gas","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":319,"FuelCategoryRollup":"Renewables","FuelCategory":"Refuse","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":2,"FuelCategoryRollup":"Renewables","FuelCategory":"Solar","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":1239,"FuelCategoryRollup":"Renewables","FuelCategory":"Wind","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":244,"FuelCategoryRollup":"Renewables","FuelCategory":"Wood","BeginDate":"2026-11-13T19:22:24.000-05:00"},{"MarginalFlag":"N","GenMw":959.0,"FuelCategory":"Net Imports","FuelCategoryRollup":"Net Imports","BeginDate":"2026-11-13T19:22:24.000-05:00"}]}},"namespace":"_nstmp_"}])gm";
+static const char US_BPA[] = R"gm(BPA Balancing Authority Load & Total Wind Generation
+at 5-minute intervals, last 7 days
+Dates: 07Nov2026 - 14Nov2026 (last updated 13Nov2026 16:26:25) Pacific Time
+Based on 5-min MW readings from the BPA SCADA system for points 45583, 177167, 79682, 164377, 70681
+
+This represents loads and resources in BPA's Balancing Authority (BA) including some that are not BPA's.
+It does not include BPA loads served by transfer, scheduled out of region,
+or scheduled to customers with their own BAs such as Seattle and Tacoma
+
+BPA/Technical Operations (TOT-OpInfo@bpa.gov)
+
+Date/Time       	Load	VER	Hydro	Fossil/Biomass	Nuclear
+11/12/2026 15:30	7028	111	7130	1148	1145
+11/12/2026 16:00	7235	92	7778	1152	1144
+11/12/2026 16:30	7386	170	8000	1148	1150
+11/12/2026 17:00	7510	214	8072	1151	1150
+11/12/2026 17:30	7703	260	7958	1152	1148
+11/12/2026 18:00	7583	252	8014	1157	1150
+11/12/2026 18:30	7545	328	8001	1152	1146
+11/12/2026 19:00	7619	277	7925	1151	1149
+11/12/2026 19:30	7540	157	7776	1151	1152
+11/12/2026 20:00	7376	187	7640	1143	1147
+11/12/2026 20:30	7380	203	7446	1146	1150
+11/12/2026 21:00	7295	214	7263	1145	1152
+11/12/2026 21:30	7105	191	6841	1143	1149
+11/12/2026 22:00	6926	181	6659	1145	1153
+11/12/2026 22:30	6691	190	6497	1140	1152
+11/12/2026 23:00	6521	173	6185	1141	1151
+11/12/2026 23:30	6488	113	5995	1143	1154
+11/13/2026 00:00	6382	107	5603	1144	1152
+11/13/2026 00:30	6209	103	5072	1142	1154
+11/13/2026 01:00	6170	91	5051	1085	1152
+11/13/2026 01:30	6169	119	4951	1045	1154
+11/13/2026 02:00	6163	163	4965	1045	1155
+11/13/2026 02:30	6112	221	4904	1047	1149
+11/13/2026 03:00	6130	275	5034	1045	1152
+11/13/2026 03:30	6175	305	5119	1047	1153
+11/13/2026 04:00	6115	263	5628	1045	1151
+11/13/2026 04:30	6348	283	5755	1047	1149
+11/13/2026 05:00	6400	317	5787	1105	1149
+11/13/2026 05:30	6706	359	6104	1145	1150
+11/13/2026 06:00	6904	463	6440	896	1151
+11/13/2026 06:30	7224	538	6874	892	1156
+11/13/2026 07:00	7467	517	6881	891	1152
+11/13/2026 07:30	7593	491	7164	888	1151
+11/13/2026 08:00	7564	460	6882	888	1151
+11/13/2026 08:30	7605	475	7127	883	1155
+11/13/2026 09:00	7682	578	6982	887	1151
+11/13/2026 09:30	7602	615	6971	888	1155
+11/13/2026 10:00	7684	581	6993	887	1149
+11/13/2026 10:30	7623	594	7256	892	1149
+11/13/2026 11:00	7534	538	7195	888	1154
+11/13/2026 11:30	7597	530	7250	886	1153
+11/13/2026 12:00	7554	527	7476	887	1154
+11/13/2026 12:30	7523	517	7614	889	1148
+11/13/2026 13:00	7548	504	7619	890	1147
+11/13/2026 13:30	7532	683	7555	890	1152
+11/13/2026 14:00	7505	682	7402	894	1151
+11/13/2026 14:30	7466	1191	7097	890	1150
+11/13/2026 15:00	7494	1592	7076	893	1145
+11/13/2026 15:30	7543	1767	7254	930	1144
+11/13/2026 16:00	7588	1644	7450	988	1150
+11/13/2026 16:20	7651	1603	7481	1031	1145
+11/13/2026 16:25	7669	1589	7457	1035	1145
+11/13/2026 16:30					
+11/13/2026 16:35					
+11/13/2026 16:40					
+)gm";

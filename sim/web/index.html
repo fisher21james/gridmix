@@ -88,7 +88,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card" id="liveCard">
       <h2>Live data</h2>
       <div class="row"><label for="lvCountry">Country</label>
-        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option><option value="FR">France</option></select>
+        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option><option value="FR">France</option><option value="US">United States</option></select>
       </div>
       <div class="row"><label for="lvRegion">Region</label><select id="lvRegion" style="flex:1"></select></div>
       <div class="row" id="lvWholeRow"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
@@ -266,6 +266,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     setSettings: M.cwrap("gm_set_settings", "string", ["string"]),
     getSettings: M.cwrap("gm_get_settings", "string", []),
     parse: M.cwrap("gm_parse", "string", ["number", "string"]),
+    postBody: M.cwrap("gm_post_body", "string", ["string"]),
     real: M.cwrap("gm_load_real", null, ["number"]),
     demo: M.cwrap("gm_load_demo", null, ["number"]),
     apply: M.cwrap("gm_apply", "string", []),
@@ -467,13 +468,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
          ["6", "North Wales & Merseyside", "North Wales & Merseyside", "Europe/London"], ["7", "South Wales", "South Wales", "Europe/London"],
          ["2", "South Scotland", "South Scotland", "Europe/London"], ["1", "North Scotland", "North Scotland", "Europe/London"],
          ["15", "England", "England", "Europe/London"], ["17", "Wales", "Wales", "Europe/London"], ["16", "Scotland", "Scotland", "Europe/London"]],
-    US: [["CAL", "California", "California", "America/Los_Angeles"], ["CAR", "Carolinas", "Carolinas", "America/New_York"],
-         ["CENT", "Central", "Central", "America/Chicago"], ["FLA", "Florida", "Florida", "America/New_York"],
-         ["MIDA", "Mid-Atlantic", "Mid-Atlantic", "America/New_York"], ["MIDW", "Midwest", "Midwest", "America/Chicago"],
-         ["NE", "New England", "New England", "America/New_York"], ["NY", "New York", "New York", "America/New_York"],
-         ["NW", "Northwest", "Northwest", "America/Los_Angeles"], ["SE", "Southeast", "Southeast", "America/New_York"],
-         ["SW", "Southwest", "Southwest", "America/Phoenix"], ["TEN", "Tennessee", "Tennessee", "America/Chicago"],
-         ["TEX", "Texas", "Texas", "America/Chicago"]],
+    US: [["CAL", "California", "California", "America/Los_Angeles"], ["TEX", "Texas", "Texas", "America/Chicago"],
+         ["MIDW", "Midwest (MISO)", "Midwest", "America/Chicago"], ["CENT", "Central (SPP)", "Central US", "America/Chicago"],
+         ["NY", "New York", "New York", "America/New_York"], ["NE", "New England", "New England", "America/New_York"],
+         ["NW", "Northwest (BPA)", "Northwest", "America/Los_Angeles"]],
     FR: [["FR", "France", "France", "Europe/Paris"]],
   };
   const store = {
@@ -491,11 +489,13 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     $("lvKey").value = store.get(keyName());
     $("lvRemember").checked = !!$("lvKey").value;
     $("lvUS").hidden = c !== "US" && c !== "GB" && c !== "FR";
-    $("lvKeyRow").hidden = $("lvRememberRow").hidden = c === "GB" || c === "FR";   // Britain's and France's data need no key
-    $("lvWholeRow").hidden = c === "FR";   // France: national figures only
-    if (c === "FR") $("lvWhole").checked = false;
+    $("lvKeyRow").hidden = $("lvRememberRow").hidden = c === "GB" || c === "FR" || c === "US";   // no key needed
+    $("lvWholeRow").hidden = c === "FR" || c === "US";   // France: national figures only; US: one grid at a time
+    if (c === "FR" || c === "US") $("lvWhole").checked = false;
     $("lvFetchNote").textContent = c === "GB"
       ? "No key needed: the page asks the Carbon Intensity API directly, with the same requests the display sends (the half hour now, and the last 24 hours)."
+      : c === "US"
+      ? "No key needed: the page asks the grid operator directly, with the same request the display sends. Some (Texas, and others that don't allow web pages) only answer the display itself or US visitors; if so, the page will say."
       : c === "FR"
       ? "No key needed: the page asks RTE's éCO2mix data on ODRÉ directly, with the same requests the display sends (the newest quarter hour, and the last 24 hours)."
       : "The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.";
@@ -558,7 +558,9 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     const s = JSON.parse(api.state());
     const [code, , header, tz] = regionInfo();
     const us = lv.country() === "US", gb = lv.country() === "GB", fr = lv.country() === "FR";
-    applySettings({country: lv.country(), region: code, tz: gb ? "GMT0BST,M3.5.0/1,M10.5.0" : fr ? "CET-1CEST,M3.5.0,M10.5.0/3" : undefined}, true);
+    const usTz = {CAL: "PST8PDT,M3.2.0,M11.1.0", NW: "PST8PDT,M3.2.0,M11.1.0", NY: "EST5EDT,M3.2.0,M11.1.0", NE: "EST5EDT,M3.2.0,M11.1.0"};
+    applySettings({country: lv.country(), region: code,
+                   tz: gb ? "GMT0BST,M3.5.0/1,M10.5.0" : fr ? "CET-1CEST,M3.5.0,M10.5.0/3" : us ? (usTz[code] || "CST6CDT,M3.2.0,M11.1.0") : undefined}, true);
     if (us) { $("plan").value = "none"; api.hasPlan(0); }
     else if (gb && $("plan").value !== "custom") { $("plan").value = "uk"; api.hasPlan(1); applySettings(PLANS.uk, true); }
     else if (fr && $("plan").value !== "custom") { $("plan").value = "fr"; api.hasPlan(1); applySettings(PLANS.fr, true); }
@@ -585,6 +587,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   $("lvFetch").addEventListener("click", async () => {
     if (lv.country() === "GB") return fetchGB();
     if (lv.country() === "FR") return fetchFR();
+    if (lv.country() === "US") return fetchUS();
     const key = $("lvKey").value.trim();
     if (!key) { lvMsg("Add your EIA key first.", false); return; }
     const url = getUrl(2, "US", lv.region(), lv.whole() ? 1 : 0, Date.now() / 1000) + encodeURIComponent(key);
@@ -632,6 +635,29 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     const res = api.parse(6, mix);
     if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
     showLive(res);
+    if (hist) { log(api.loadHistory(hist)); rebuild(); }
+  }
+
+  // US: each grid operator's own data, no key. Not every operator lets a web page read it.
+  async function fetchUS() {
+    const now = Date.now() / 1000, region = $("lvRegion").value;
+    const url = getUrl(8, "US", region, 0, now), form = api.postBody(region);
+    lvMsg("Asking the grid operator\u2026", true);
+    let text;
+    try {
+      const r = await fetch(url, form ? {method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: form} : {});
+      if (!r.ok) { lvMsg(`The grid operator answered with error ${r.status}. Texas only answers visitors in the US; the display itself will be fine there.`, false); return; }
+      text = await r.text();
+    } catch {
+      lvMsg("This grid operator doesn't let web pages read its data (the display reads it directly, so it will work there). Try California or the Midwest.", false);
+      return;
+    }
+    const res = api.parse(8, text);
+    if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
+    showLive(res);
+    const hurl = getUrl(9, "US", region, 0, now);
+    let hist = text;
+    if (hurl) { try { const h = await fetch(hurl); hist = h.ok ? await h.text() : ""; } catch { hist = ""; } }
     if (hist) { log(api.loadHistory(hist)); rebuild(); }
   }
 

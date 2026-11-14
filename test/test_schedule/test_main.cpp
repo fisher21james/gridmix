@@ -36,9 +36,9 @@ void test_feeds() {
   TEST_ASSERT_EQUAL_STRING("", f.region);   // whole NEM
 
   f = feed_for("US", "TEX", false);
-  TEST_ASSERT_EQUAL(SRC_EIA, f.source);
+  TEST_ASSERT_EQUAL(SRC_US, f.source);   // each grid operator's own feed (EIA is kept, but runs hours behind)
   TEST_ASSERT_EQUAL_STRING("TEX", f.region);
-  TEST_ASSERT_EQUAL_STRING("US48", feed_for("US", "TEX", true).region);
+  TEST_ASSERT_EQUAL_STRING("TEX", feed_for("US", "TEX", true).region);   // no whole-country view
 }
 
 void test_urls() {

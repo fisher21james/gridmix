@@ -187,6 +187,8 @@ static gridui::Model build_model() {
   m.view_country = view_country;
   m.show_imports = ci.imports;
   m.show_geothermal = ci.geothermal;
+  m.single_view = ci.single_view;
+  if (ci.single_view) m.view_country = false;
 
   char local_sub[56], ago[48];
   snprintf(ago, sizeof ago, "%s", T("Waiting for data"));

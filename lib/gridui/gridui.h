@@ -51,6 +51,7 @@ struct Model {
   ViewOption local, country;
   bool show_imports = false;   // Britain: draw the transmission line bringing power in from abroad
   bool show_geothermal = false;   // New Zealand: geothermal station in place of the nuclear plant
+  bool single_view = false;       // no whole-country view to switch to: no chevron, header tap does nothing
 
   // Detail screen: renewable %, oldest first, last point = now. NAN = no data for that half hour.
   float history[HISTORY_POINTS];

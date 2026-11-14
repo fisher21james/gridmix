@@ -122,6 +122,25 @@ EIA (US support paused, 13 Nov 2026):
   grid that's 70%+ low-carbon like a renewable one ("Mostly low-carbon, but your rate is high"), and the detail
   badge is coloured by the low-carbon share. Australia has no nuclear, so nothing changes there.
 
+## United States: grid operators (14 Nov 2026)
+
+- EIA's national data runs 16-19 h behind, so the US now reads each grid operator directly (`lib/gridcore/us_grid.*`,
+  `SRC_US`, region = grid code). All keyless; measured 4-15 min behind on 14 Nov 2026 from GitHub's US runners:
+  | Code | Operator | Request | Notes |
+  |---|---|---|---|
+  | CAL | CAISO | `caiso.com/outlook/current/fuelsource.csv` (12 KB, today, Pacific time) | geothermal, biomass+biogas, small+large hydro, batteries (+/-), imports |
+  | TEX | ERCOT | `ercot.com/api/1/services/read/dashboards/fuel-mix.json` (~200 KB, yesterday+today) | US visitors only (403 from Australia); read one 5-min object at a time |
+  | MIDW | MISO | `public-api.misoenergy.org/api/FuelMix` (1 KB) + `/api/FuelMix/Today` (210 KB) for the chart | EST all year; hydro and biomass are inside "Other" |
+  | CENT | SPP | `portal.spp.org/.../generation-mix-historical?path=/SPP/GenMix2Hour_SPP.csv` (4.5 KB, 2 h, UTC) | Market + Self per fuel; waste disposal counted as biomass |
+  | NY | NYISO | `mis.nyiso.com/public/csv/rtfuelmix/YYYYMMDDrtfuelmix.csv` (70 KB, today, Eastern date) | Dual Fuel shown as gas; Other Renewables as biomass |
+  | NE | ISO-NE | POST `iso-ne.com/ws/wsclient` `_nstmp_requestType=fuelmix&_nstmp_fuelType=all` (1.5 KB) | the website's own feed (their documented API needs a login); wood/refuse/landfill gas as biomass |
+  | NW | BPA | `transmission.bpa.gov/business/operations/wind/baltwg.txt` (80 KB, 7 days, Pacific) | VER shown as wind, Fossil/Biomass as gas |
+- Not covered: PJM (hourly, needs a key), the Southeast, Florida, Carolinas, Tennessee, desert Southwest (no ISO; EIA only).
+- No whole-country view (`CountryInfo.single_view`): no chevron, header tap does nothing. No key needed.
+- Polled every 5 minutes (+2.5 min). Most answers hold the day, so the 24 h chart fills from the first answer;
+  the Midwest asks for `/Today` once. US daylight saving is worked out in `us_local_to_utc`.
+- `.github/workflows/probe-us.yml` (run by hand) pushes fresh samples of all seven to the `probe-samples` branch.
+
 ## New Zealand (in progress, 14 Nov 2026)
 
 - Source: Electricity Authority real-time dispatch API (emi.developer.azure-api.net), free key, subscription

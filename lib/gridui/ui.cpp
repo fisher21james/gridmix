@@ -359,7 +359,7 @@ static void spin_timer(lv_timer_t *) {
 
 // ---------------------------------------------------------------- build
 
-static void on_header(lv_event_t *) { lv_obj_set_hidden(picker, false); }
+static void on_header(lv_event_t *) { if (!cur.single_view) lv_obj_set_hidden(picker, false); }
 static void on_close(lv_event_t *) { lv_obj_set_hidden(picker, true); }
 static void on_option(lv_event_t *e) {
   const bool country = lv_event_get_user_data(e) != nullptr;
@@ -801,6 +801,7 @@ void update(const Model &m) {
 
   update_bottom();
 
+  set_hidden(chev, m.single_view);
   // picker
   const ViewOption *opts[2] = {&m.local, &m.country};
   for (int i = 0; i < 2; i++) {

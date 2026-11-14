@@ -1,3 +1,4 @@
+#include <time.h>
 // Browser simulator: the real screen code (lib/gridui) compiled to WebAssembly with Emscripten.
 // sim/web/index.html drives it: it sets the mix, time and plan, and draws the framebuffer on a canvas.
 // Built by sim/build_web.sh (and on GitHub by the workflow).
@@ -8,6 +9,7 @@
 #include "lvgl.h"
 #include "gridui.h"
 #include "parsers.h"
+#include "us_grid.h"
 #include "settings.h"
 #include "schedule.h"
 #include "../test/test_gridcore/fixtures.h"
@@ -155,7 +157,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
   }
   GridSnapshot s;
   const bool ok = kind == 0 ? parse_openelectricity(json, len, s) : kind == 4 ? parse_carbon_intensity(json, len, s)
-                : kind == 6 ? parse_rte(json, len, s) : parse_eia(json, len, s);
+                : kind == 6 ? parse_rte(json, len, s)
+                : kind == 8 ? parse_us(settings.region, json, len, (int64_t)time(nullptr), s) : parse_eia(json, len, s);
   if (!ok) { snprintf(out, sizeof out, "Couldn't read that as %s data.", kind == 0 ? "Open Electricity generation" : "EIA"); return out; }
   snap = s;
   has_data = true;
@@ -165,7 +168,7 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
 
 // The exact request the display would send (same code as the firmware).
 // kind: 0 = generation, 1 = market, 2 = EIA, 3 = 24-hour history, 4 = GB now, 5 = GB 24-hour history,
-// 6 = France now, 7 = France 24-hour history.
+// 6 = France now, 7 = France 24-hour history, 8 = US grid now, 9 = US grid 24-hour history (Midwest only).
 // The EIA URL ends with "api_key=" for the page to add the key.
 EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const char *region, int country_view, double now_utc) {
   const Feed f = feed_for(country, region, country_view);
@@ -175,6 +178,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const cha
   else if (kind == 5) n = f.source == SRC_CARBON_INTENSITY ? ci_history_url(f, (int64_t)now_utc, out, sizeof out) : 0;
   else if (kind == 6) n = f.source == SRC_RTE ? rte_url(out, sizeof out) : 0;
   else if (kind == 7) n = f.source == SRC_RTE ? rte_history_url((int64_t)now_utc, out, sizeof out) : 0;
+  else if (kind == 8) n = f.source == SRC_US ? us_url(f.region, (int64_t)now_utc, out, sizeof out) : 0;
+  else if (kind == 9) n = f.source == SRC_US ? us_history_url(f.region, (int64_t)now_utc, out, sizeof out) : 0;
   else if (f.source == SRC_OPEN_ELECTRICITY) {
     if (kind == 0) n = oe_power_url(f, (int64_t)now_utc, out, sizeof out);
     else if (kind == 3) n = oe_history_url(f, (int64_t)now_utc, out, sizeof out);
@@ -184,11 +189,19 @@ EMSCRIPTEN_KEEPALIVE const char *gm_url(int kind, const char *country, const cha
   return out;
 }
 
+// Form body to POST for the US grid (New England), or "" for a plain GET
+EMSCRIPTEN_KEEPALIVE const char *gm_post_body(const char *region) {
+  const char *b = us_post_body(region);
+  snprintf(out, sizeof out, "%s", b ? b : "");
+  return out;
+}
+
 // The 24-hour history answer (same request the display makes after start-up). Call after the mix.
 EMSCRIPTEN_KEEPALIVE const char *gm_load_history(const char *json) {
   static HistoryPoint pts[64];
   // Open Electricity hourly, or Carbon Intensity half-hourly (it has "generationmix")
-  const int n = strstr(json, "generationmix") ? parse_carbon_intensity_history(json, strlen(json), pts, 64)
+  const int n = !strcmp(settings.country, "US") ? parse_us_history(settings.region, json, strlen(json), (int64_t)time(nullptr), pts, 48)
+              : strstr(json, "generationmix") ? parse_carbon_intensity_history(json, strlen(json), pts, 64)
               : strstr(json, "date_heure")    ? parse_rte_history(json, strlen(json), pts, 64)
                                               : parse_openelectricity_history(json, strlen(json), pts, 64);
   if (!n) { snprintf(out, sizeof out, "Couldn't read the 24-hour history."); return out; }
@@ -240,6 +253,8 @@ EMSCRIPTEN_KEEPALIVE const char *gm_apply() {
   m.view_country = view_country;
   m.show_imports = ci.imports;
   m.show_geothermal = ci.geothermal;
+  m.single_view = ci.single_view;
+  if (ci.single_view) m.view_country = false;
   char ago[48];
   snprintf(ago, sizeof ago, "%s", T("Waiting for data"));
   if (has_data) format_ago((int64_t)data_age_min * 60, ago, sizeof ago);

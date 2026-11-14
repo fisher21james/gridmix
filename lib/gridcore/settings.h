@@ -31,7 +31,7 @@ struct Settings {
   bool has_tariff() const { return tariff_flat ? flat_cents > 0 : tou.count > 0; }
   Tariff active_tariff() const;   // what the rate engine should use (flat becomes one all-day period)
   // Great Britain's Carbon Intensity API and France's RTE data need no key
-  bool needs_key() const { return country[0] == 'A' || country[0] == 'U' || country[0] == 'N'; }
+  bool needs_key() const { return country[0] == 'A' || country[0] == 'N'; }
   const char *key_for_country() const {
     return country[0] == 'U' ? key_eia : country[0] == 'N' ? key_ea : needs_key() ? key_oe : "";
   }
@@ -50,6 +50,7 @@ struct CountryInfo {
   const char *lang;            // the country's own language for the screen: "en", "fr"
   bool imports;                // grid buys power from abroad (draw the transmission line); never in Australia
   bool geothermal;             // draw a geothermal station where the nuclear plant would be (New Zealand)
+  bool single_view;            // no "whole country" view (France: one national feed; US: no live national figure)
 };
 const CountryInfo &country_info(const char *country);
 

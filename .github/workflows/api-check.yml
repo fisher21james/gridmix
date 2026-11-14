@@ -29,6 +29,17 @@ jobs:
           curl -sf "https://api.carbonintensity.org.uk/regional/intensity/$(date -u +%Y-%m-%dT%H:%MZ)/pt24h/regionid/18" -o cih.json
           ./check_api cih cih.json
 
+      - name: United States (seven grid operators, no key)
+        run: |
+          fail=0
+          for r in CAL TEX MIDW CENT NY NE NW; do
+            url=$(./check_api url us $r); form=$(./check_api post us $r)
+            if [ -n "$form" ]; then curl -sf --max-time 60 -X POST -d "$form" "$url" -o us.dat || { echo "FAIL $r: no answer"; fail=1; continue; }
+            else curl -sf --max-time 60 "$url" -o us.dat || { echo "FAIL $r: no answer"; fail=1; continue; }; fi
+            ./check_api us $r us.dat || fail=1
+          done
+          exit $fail
+
       - name: France (RTE eCO2mix on ODRÉ, no key)
         run: |
           curl -sf "$(./check_api url fr)" -o fr.json

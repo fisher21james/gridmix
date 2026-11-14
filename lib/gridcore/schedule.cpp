@@ -32,10 +32,10 @@ Feed feed_for(const char *country, const char *region, bool country_view) {
     snprintf(f.region, sizeof f.region, "FR");
     return f;
   }
-  if (country && country[0] == 'U') {
-    f.source = SRC_EIA;
+  if (country && country[0] == 'U') {   // each grid operator's own feed; no fresh national figure exists
+    f.source = SRC_US;
     f.has_market = false;
-    snprintf(f.region, sizeof f.region, "%s", country_view || !region || !*region ? "US48" : region);
+    snprintf(f.region, sizeof f.region, "%s", region && *region ? region : "CAL");
     f.network[0] = 0;
     return f;
   }
@@ -169,6 +169,8 @@ int64_t Scheduler::next_regular(FetchKind k, int64_t now) const {
   // RTE: a new quarter hour appears about 15-20 minutes after it starts. Check every 5 minutes
   // (288 small requests a day, no key) so it's on screen soon after it's published.
   if (src_ == SRC_RTE) return (now / (5 * MIN) + 1) * 5 * MIN + 30;
+  // US grid operators publish each 5 minutes within a few minutes of its end
+  if (src_ == SRC_US) return (now / (5 * MIN) + 1) * 5 * MIN + 150;
   // Open Electricity: just after each 10 (or 30) minutes, when the newest 5-minute point has been published.
   // Slow down when the day's credits are nearly gone.
   int64_t step = k == FETCH_MIX ? 10 * MIN : 30 * MIN;

@@ -3,7 +3,9 @@
 #include <HTTPClient.h>
 #include "generated/ca_roots.h"
 
-int https_get(const char *url, const char *bearer, String &body) {
+int https_get(const char *url, const char *bearer, String &body) { return https_request(url, bearer, nullptr, body); }
+
+int https_request(const char *url, const char *bearer, const char *form, String &body) {
   body = "";
   WiFiClientSecure client;
   client.setCACert(CA_ROOTS_PEM);
@@ -15,7 +17,15 @@ int https_get(const char *url, const char *bearer, String &body) {
   if (!http.begin(client, url)) return -1;
   if (bearer && *bearer) http.addHeader("Authorization", String("Bearer ") + bearer);
 
-  const int code = http.GET();
+  // Big answers (Texas, ~200 KB) go to PSRAM; follow plain redirects (NYISO's archive moves files around)
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  int code;
+  if (form) {
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    code = http.POST((uint8_t *)form, strlen(form));
+  } else {
+    code = http.GET();
+  }
   if (code > 0) body = http.getString();
   http.end();
   return code;

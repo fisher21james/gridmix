@@ -7,6 +7,8 @@
 //   check_api fr  answer.json         France (RTE eCO2mix), newest quarter hour
 //   check_api frh answer.json         France, 24 h history
 //   check_api url fr|frh              prints the exact France request the display sends
+//   check_api us REGION answer       a US grid operator (CAL, TEX, MIDW, CENT, NY, NE, NW)
+//   check_api url us REGION          prints that grid's request; check_api post us REGION prints a POST body (or nothing)
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -15,10 +17,35 @@
 #include <ctime>
 #include "parsers.h"
 #include "schedule.h"
+#include "us_grid.h"
 using namespace gridcore;
 
 int main(int argc, char **argv) {
   if (argc < 3) { fprintf(stderr, "usage: check_api ci|cih|oe|oeh|fr|frh file, or check_api url fr|frh\n"); return 2; }
+  if (!strcmp(argv[1], "post") && argc > 3) {
+    const char *b = us_post_body(argv[3]);
+    if (b) puts(b);
+    return 0;
+  }
+  if (!strcmp(argv[1], "url") && !strcmp(argv[2], "us") && argc > 3) {
+    char url[512];
+    if (!us_url(argv[3], (long long)time(nullptr), url, sizeof url)) return 1;
+    puts(url);
+    return 0;
+  }
+  if (!strcmp(argv[1], "us") && argc > 3) {
+    std::ifstream f(argv[3]);
+    std::stringstream ss;
+    ss << f.rdbuf();
+    const std::string j = ss.str();
+    const long long now = (long long)time(nullptr);
+    GridSnapshot s;
+    if (!parse_us(argv[2], j.data(), j.size(), now, s)) { printf("FAIL: couldn't read the %s answer\n", argv[2]); return 1; }
+    const long long age_min = (now - s.data_time) / 60;
+    printf("OK %s: %.1f%% renewable, data %lld min old\n", argv[2], s.renewable_pct(), age_min);
+    if (age_min > 60 || age_min < -10) { printf("FAIL: data is %lld min old (should be under 30)\n", age_min); return 1; }
+    return 0;
+  }
   if (!strcmp(argv[1], "url")) {
     char url[512];
     const size_t n = !strcmp(argv[2], "fr") ? rte_url(url, sizeof url) : rte_history_url((long long)time(nullptr), url, sizeof url);
