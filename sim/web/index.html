@@ -99,6 +99,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         <div class="btns"><button id="lvFetch" class="primary">Fetch live data</button></div>
         <p class="note" id="lvFetchNote">The page asks the data service directly, with the same request the display sends.</p>
       </div>
+      <div id="lvUSFile" hidden>
+        <p class="note" style="margin:6px 0">This grid doesn't let web pages read its data (the display reads it directly, so it works there). Instead: <a id="lvUSLink" target="_blank" rel="noopener">download its latest file</a>, then load it here.</p>
+        <div class="btns"><label class="btn-file"><input type="file" id="lvUSIn" hidden><span>Load the downloaded file</span></label></div>
+      </div>
       <div id="lvAU">
         <p class="note" style="margin-top:0">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 3 of your 500 daily requests.</p>
         <div class="row"><label for="lvOS">Computer</label><select id="lvOS" style="flex:1"><option value="mac">Mac or Linux (Terminal)</option><option value="win">Windows (PowerShell)</option></select></div>
@@ -500,6 +504,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       ? "No key needed: the page asks RTE's éCO2mix data on ODRÉ directly, with the same requests the display sends (the newest quarter hour, and the last 24 hours)."
       : "The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.";
     $("lvAU").hidden = c !== "AU";
+    $("lvUSFile").hidden = true;
     $("lvMsg").textContent = "";
     makeCommand();
   }
@@ -649,9 +654,17 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       if (!r.ok) { lvMsg(`The grid operator answered with error ${r.status}. Texas only answers visitors in the US; the display itself will be fine there.`, false); return; }
       text = await r.text();
     } catch {
-      lvMsg("This grid operator doesn't let web pages read its data (the display reads it directly, so it will work there). Try California or the Midwest.", false);
+      if (form) { lvMsg("New England's data can only be read by the display itself, not a web page. Try the Midwest, which web pages can read.", false); return; }
+      $("lvUSLink").href = url;
+      $("lvUSFile").hidden = false;
+      lvMsg("This grid doesn't let web pages read it: use the download link below, then load the file.", false);
       return;
     }
+    useUSText(text, now, region);
+  }
+  async function useUSText(text, now, region) {
+    $("lvUSFile").hidden = true;
+    applySettings({country: "US", region}, true);   // the US reader needs to know which grid's format this is
     const res = api.parse(8, text);
     if (!res.startsWith("Read OK")) { lvMsg(res, false); return; }
     showLive(res);
@@ -712,6 +725,11 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     return true;
   }
   $("lvFile").addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ""; });
+  $("lvUSIn").addEventListener("change", async e => {
+    const f = e.target.files[0];
+    e.target.value = "";
+    if (f) useUSText(await f.text(), Date.now() / 1000, $("lvRegion").value);
+  });
   const card = $("liveCard");
   card.addEventListener("dragover", e => { e.preventDefault(); card.classList.add("drop"); });
   card.addEventListener("dragleave", () => card.classList.remove("drop"));
