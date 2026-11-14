@@ -301,7 +301,7 @@
         <button type="button" data-i="0">SA sunny afternoon</button>
         <button type="button" data-i="1">SA windy night</button>
         <button type="button" data-i="2">NSW evening peak</button>
-        <button type="button" data-i="3">VIC morning</button><button type="button" data-i="4">London (UK)</button><button type="button" data-i="5">France (en français)</button>
+        <button type="button" data-i="3">VIC morning</button><button type="button" data-i="4">London (UK)</button><button type="button" data-i="5">France (en français)</button><button type="button" data-i="6">California (US)</button>
       </div>
       <figcaption class="caption">Live preview with sample data. Photos of the real build coming soon.</figcaption>
     </figure>
@@ -468,7 +468,10 @@
       lowc: '56% low-carbon' },
     { region: 'France', time: '6:35', sky: 'dusk', renew: 22, mix: { nuclear: 76, wind: 13, hydro: 7, gas: 2, biomass: 2 },
       cells: 1, batt: true, status: 'Surtout bas carbone, mais tarif \u00e9lev\u00e9', tone: 'ok', rate: '27,0c', period: 'Pleines', band: 'high',
-      lowc: '97% bas carbone', fr: true }
+      lowc: '97% bas carbone', fr: true },
+    { region: 'California', time: '4:20 pm', sky: 'day', renew: 39, mix: { gas: 37, wind: 24, battery: 10, nuclear: 9, hydro: 7, imports: 5, solar: 4, geothermal: 3, biomass: 1 },
+      cells: 3, batt: true, status: 'Part renewable · peak rate, hold off if you can', tone: 'bad', rate: '52.0¢', period: 'Peak', band: 'high',
+      lowc: '48% low-carbon' }
   ];
   const $ = (id) => document.getElementById(id);
   const buttons = Array.from(document.querySelectorAll('.scene-picker button'));
