@@ -11,7 +11,7 @@
   --text: #e9eef2; --sub: #9aa5b1; --dim: #6b7682; --accent: #4fb3d9;
   --good: #3bb273; --warn: #e39b3a; --bad: #e0634f;
   --solar: #f5b800; --wind: #4fb3d9; --hydro: #2e6fd8; --battery: #9b7bea;
-  --nuclear: #3bb273; --gas: #f07a3a; --coal: #7a6e66; --other: #8a939c; --biomass: #8DB255; --imports: #E07BA0;
+  --nuclear: #3bb273; --gas: #f07a3a; --coal: #7a6e66; --other: #8a939c; --biomass: #8DB255; --imports: #E07BA0; --geothermal: #1AA59A;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -191,7 +191,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   const SOURCES = [
     ["Solar", "solar"], ["Wind", "wind"], ["Hydro", "hydro"], ["Battery", "battery"],
     ["Nuclear", "nuclear"], ["Gas", "gas"], ["Coal", "coal"], ["Other", "other"],
-    ["Biomass", "biomass"], ["Imports", "imports"],
+    ["Biomass", "biomass"], ["Imports", "imports"], ["Geothermal", "geothermal"],
   ];
   const PLANS = {
     tou: {tariff: {type: "tou", periods: [
