@@ -1,0 +1,37 @@
+# One-off: the Electricity Authority's list of generating plant (grid point, plant, fuel), for the NZ fuel table.
+name: Probe NZ plant list
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch
+        run: |
+          mkdir out && cd out
+          curl -sSL --max-time 120 -o md.csv https://www.emi.ea.govt.nz/Wholesale/Datasets/Generation/Generation_MD/202610_Generation_MD.csv
+          head -c 400 md.csv; echo
+          # one line per grid point + plant: fuel, technology, October energy (MWh)
+          python3 - <<'PY'
+          import csv, collections
+          tot = collections.defaultdict(float)
+          rows = csv.DictReader(open("md.csv"))
+          tp = [c for c in rows.fieldnames if c.startswith("TP")]
+          for r in rows:
+              k = (r["POC_Code"], r["Gen_Code"], r["Fuel_Code"], r["Tech_Code"], r.get("Site_Code",""))
+              tot[k] += sum(float(r[c] or 0) for c in tp) / 1000
+          with open("plants.csv", "w") as f:
+              f.write("POC_Code,Gen_Code,Fuel_Code,Tech_Code,Site_Code,MWh_Oct2026\n")
+              for k, v in sorted(tot.items()):
+                  f.write(",".join(k) + f",{v:.0f}\n")
+          print(len(tot), "plants")
+          PY
+          rm md.csv
+      - name: Push to the probe-samples branch
+        run: |
+          cd out
+          git init -q -b probe-samples
+          git config user.name "probe" && git config user.email "probe@users.noreply.github.com"
+          git add -A && git commit -qm "NZ plant list"
+          git push -fq "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-samples
