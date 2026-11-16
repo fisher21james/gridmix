@@ -9,6 +9,7 @@
 #include "parsers.h"
 #include "health.h"
 #include "us_grid.h"
+#include "nz_grid.h"
 #include "ota.h"
 #include "gridui.h"
 
@@ -148,8 +149,9 @@ static void task(void *) {
       if (!us_url(j.feed.region, now, url, sizeof url)) continue;
       log_url("mix", url);
       code = https_request(url, nullptr, us_post_body(j.feed.region), body);
-    } else if (j.feed.source == SRC_EA) {
-      continue;   // New Zealand: waiting on the Electricity Authority key to finish this source
+    } else if (j.feed.source == SRC_EA) {   // New Zealand: Electricity Authority real-time dispatch
+      log_url("mix", NZ_RTD_URL);
+      code = https_request(NZ_RTD_URL, nullptr, nullptr, body, NZ_KEY_HEADER, j.key);
     } else {
       if (!eia_url(j.feed, url, sizeof url)) continue;
       log_url("mix", url);
@@ -165,6 +167,7 @@ static void task(void *) {
          : ci ? parse_carbon_intensity(body.c_str(), body.length(), snap)
          : rte ? parse_rte(body.c_str(), body.length(), snap)
          : us ? parse_us(j.feed.region, body.c_str(), body.length(), now, snap)
+         : j.feed.source == SRC_EA ? parse_nz(body.c_str(), body.length(), j.feed.region, snap)
               : parse_eia(body.c_str(), body.length(), snap);
       if (ok && oe && market_body.length()) {
         MarketInfo mk;

@@ -91,6 +91,7 @@ input[type=range]{height:auto;padding:0;border:0;background:none;accent-color:va
         <option value="GB">United Kingdom (Great Britain)</option>
         <option value="FR">France</option>
         <option value="US">United States (some regions)</option>
+        <option value="NZ">New Zealand</option>
         <!-- US paused: EIA's fuel mix runs about 18 hours behind (Nov 2026). The code paths stay for later. -->
       </select>
     </label>
@@ -202,12 +203,14 @@ var $ = function (id) { return document.getElementById(id); };
 var REGIONS = {
   GB: [["13","London"],["14","South East England"],["12","South England"],["11","South West England"],["10","East England"],["9","East Midlands"],["8","West Midlands"],["3","North West England"],["4","North East England"],["5","Yorkshire"],["6","North Wales & Merseyside"],["7","South Wales"],["2","South Scotland"],["1","North Scotland"],["15","England (all)"],["17","Wales (all)"],["16","Scotland (all)"]],
   FR: [["FR","France (whole country)"]],
+  NZ: [["NI","North Island"],["SI","South Island"]],
   AU: [["SA1","South Australia"],["NSW1","New South Wales & ACT"],["VIC1","Victoria"],["QLD1","Queensland"],["TAS1","Tasmania"],["WEM","Western Australia (South West)"]],
   US: [["CAL","California (CAISO)"],["TEX","Texas (ERCOT)"],["MIDW","Midwest (MISO: ND, MN, WI, MI, IA, IL, IN, MO, AR, LA, MS)"],["CENT","Central (SPP: KS, OK, NE, SD, parts of TX, NM, WY, MT)"],["NY","New York (NYISO)"],["NE","New England (ISO-NE)"],["NW","Northwest (BPA area: OR, WA, ID)"]]
 };
 var ZONES = {
   GB: [["GMT0BST,M3.5.0/1,M10.5.0","UK time (GMT/BST)"]],
   FR: [["CET-1CEST,M3.5.0,M10.5.0/3","France (Paris time)"]],
+  NZ: [["NZST-12NZDT,M9.5.0,M4.1.0/3","New Zealand time"]],
   AU: [["ACST-9:30ACDT,M10.1.0,M4.1.0/3","Adelaide"],["AEST-10AEDT,M10.1.0,M4.1.0/3","Sydney, Melbourne, Canberra, Hobart"],["AEST-10","Brisbane"],["AWST-8","Perth"],["ACST-9:30","Darwin"]],
   US: [["EST5EDT,M3.2.0,M11.1.0","Eastern"],["CST6CDT,M3.2.0,M11.1.0","Central"],["MST7MDT,M3.2.0,M11.1.0","Mountain"],["MST7","Arizona"],["PST8PDT,M3.2.0,M11.1.0","Pacific"]]
 };
@@ -215,6 +218,7 @@ var DEFAULT_TZ = {SA1:0,NSW1:1,VIC1:1,QLD1:2,TAS1:1,WEM:3, CAL:4,NW:4,SW:3,CENT:
 var PROVIDER = {
   GB: {id:"", name:"", intro:"", help:"", about:"Great Britain uses the Carbon Intensity API from NESO (the grid operator) and the University of Oxford. It's free and needs no key. It updates every half hour."},
   FR: {id:"", name:"", intro:"", help:"", about:"France uses RTE's éCO2mix figures (RTE runs the national grid), published on the ODRÉ open data site. They're free, need no key, and update every 15 minutes, about 20 minutes behind real time. Regional figures run about 45 minutes behind, so the display shows the whole country.", lang:["local","Français"]},
+  NZ: {id:"ea", name:"Electricity Authority", intro:"New Zealand uses the Electricity Authority's real-time dispatch data, updated every 5 minutes. The key is free: sign up at the Authority's developer portal and subscribe to the product with the Real-time dispatch API. They approve it by hand, usually within a couple of business days.", help:"https://fisher21james.github.io/gridmix/#key"},
   AU: {id:"oe", name:"Open Electricity", intro:"Australia uses Open Electricity, which updates every 5 minutes. The key is free and starts with oe_.", help:"https://fisher21james.github.io/gridmix/#key"},
   US: {id:"", name:"", intro:"", help:"", single:true, about:"In the US the display reads your grid operator's own live figures, updated every 5 minutes. No key needed. Pick the grid that serves you; the Southeast, Florida, the Carolinas, Tennessee, the desert Southwest and the PJM area (Mid-Atlantic, Ohio and the Chicago area) aren't covered yet because their data isn't published fast enough."}
 };
@@ -224,7 +228,7 @@ var DAYS = {all:[0x7F,"Every day"], weekdays:[0x3E,"Mon – Fri"], weekends:[0x4
 var DEMO = /github\.io$/.test(location.hostname) || location.protocol === "file:" || /[?&]demo\b/.test(location.search);
 var demoState = {
   country:"AU", region:"SA1", tz:ZONES.AU[0][0], view:"local",
-  keys:{oe:{set:true, hint:"x9Qa"}, eia:{set:false, hint:""}},
+  keys:{oe:{set:true, hint:"x9Qa"}, eia:{set:false, hint:""}, ea:{set:false, hint:""}},
   tariff:{type:"tou", flat:0, periods:[
     {name:"Peak", from:"06:00", to:"10:00", rate:53.99, days:"all"},
     {name:"Shoulder", from:"10:00", to:"15:00", rate:23.78, days:"all"},
@@ -244,7 +248,7 @@ function api(method, path, body) {
       else if (path === "/api/settings" && method === "GET") resolve(JSON.parse(JSON.stringify(demoState)));
       else if (path === "/api/settings") {
         var c = JSON.parse(JSON.stringify(body));
-        ["oe","eia"].forEach(function (k) { var v = c.keys[k].value; c.keys[k] = v ? {set:true, hint:v.slice(-4)} : demoState.keys[k]; });
+        ["oe","eia","ea"].forEach(function (k) { if (!c.keys[k]) return; var v = c.keys[k].value; c.keys[k] = v ? {set:true, hint:v.slice(-4)} : demoState.keys[k]; });
         demoState = c; resolve({httpOk:true, ok:true, message:"Saved (demo, nothing was sent)"});
       } else if (path.indexOf("/api/update") === 0) {
         if (path === "/api/update/check") demoUpd = {state:"available", latest:"0.2.0 (build 61)", percent:0, message:"Update available"};
@@ -358,7 +362,9 @@ function renderLocation() {
   if (lg) fillSelect($("lang"), [["en","English"], lg], cur.display.language);
   document.querySelectorAll(".unit").forEach(function (u) { u.textContent = unit(); });
   if (nokey) return;
-  var pv = PROVIDER[cur.country], k = cur.keys[pv.id];
+  var pv = PROVIDER[cur.country];
+  if (pv.id && !cur.keys[pv.id]) cur.keys[pv.id] = {set:false, hint:""};
+  var k = cur.keys[pv.id];
   $("keyProvider").textContent = pv.name;
   $("keyIntro").textContent = pv.intro;
   $("keyHelp").href = pv.help;
@@ -446,7 +452,7 @@ function renderAll() { renderLocation(); renderTariff(); renderDisplay(); update
 // ---------------------------------------------------------------- dirty / validity / save
 function payload() {
   var c = clone(cur);
-  ["oe","eia"].forEach(function (k) { if (!c.keys[k].value) delete c.keys[k].value; });
+  ["oe","eia","ea"].forEach(function (k) { if (c.keys[k] && !c.keys[k].value) delete c.keys[k].value; });
   c.tariff.periods = c.tariff.periods.map(function (p) { return {name:(p.name || "").trim(), from:p.from, to:p.to, rate:num(p.rate), days:p.days}; });
   c.tariff.flat = num(c.tariff.flat); c.tariff.supply = num(c.tariff.supply); c.tariff.feed_in = num(c.tariff.feed_in);
   return c;

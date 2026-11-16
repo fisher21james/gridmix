@@ -583,3 +583,815 @@ Date/Time       	Load	VER	Hydro	Fossil/Biomass	Nuclear
 11/13/2026 16:35					
 11/13/2026 16:40					
 )gm";
+static const char NZ_RTD[] = R"gm([
+ {
+  "PointOfConnectionCode": "ARA2201 ARA0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 24.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ARI1101 ARI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 46.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ARI1102 ARI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 23.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ASB0661 LAU0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.668,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ATI2201 ATI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 38.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "AVI2201 AVI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 138.83,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "BEN2202 BEN0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 539.304,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "BPE0331 TWF0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 25.07,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "BWK1101 WPI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 18.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "COL0661 COL0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 41.5,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "CYD2201 CYD0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 412.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "DVK0111 DVK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 0.593,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "EDG0331 EDS0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.566,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "EDG0331 RGT0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.651,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "GLN0332 GLN0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 9.6,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "GOR0331 KWD0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 36.349,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HLY0331 TOH0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 0.692,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HLY2201 HLY1",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 78.865,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HLY2201 HLY11",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 40.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HLY2201 HLY6",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 43.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HRP2201 HRP0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 149.85,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HWA1102 WAA0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 7.77,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HWB0331 MAH0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 6.96,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "HWB0331 WPI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 2.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ISL0661 KPS0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 6.754,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KAW0112 ONU0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 30.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KAW1101 KAG0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 71.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KAW2201 TAM0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 24.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KIN0112 KIN0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 22.4,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KIW2201 KWE0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 102.086,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KOE1101 KSF0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.226,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KOE1101 NGB0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 31.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KOE1101 PSF0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.59,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KOE1101 TRS0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 0.793,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KPA1101 KPI1",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 4.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KPO1101 KPO0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 46.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KPU0661 WTA0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.15,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "KUM0661 KUM0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 6.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "LTN0331 TWF0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 26.43,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "LTN2201 TUR0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 204.2,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MAN2201 MAN0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 620.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MAT1101 ANI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 20.22,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MHO0331 MHO0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 26.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MPE1101 KWK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 19.863,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MTI2201 MTI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 142.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MTO0331 GDS0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.131,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "MTO0331 RWI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.574,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "NAP2201 NAP0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 120.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "NSY0331 PAE0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 3.5,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OHA2201 OHA0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 120.052,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OHB2201 OHB0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 153.719,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OHC2201 OHC0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 149.026,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OHG1101 PTA1",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 9.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OHG1101 PTA2",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 9.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OHK2201 OHK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 52.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "OKI2201 OKI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 36.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ROT1101 WHE0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 11.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ROX1101 ROX0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 80.001,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ROX2201 ROX0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 200.002,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "RPO2201 RPO0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 45.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "SFD2201 SFD21",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 101.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "STK0661 COB0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 32.8,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TAB0331 TAC0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 53.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TGA0331 KMI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 36.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "THI2201 THI1",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 79.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "THI2201 THI2",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 85.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TKA0111 TKA1",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 2.708,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TKB2201 TKB1",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 124.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TKU2201 TKU0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 126.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TMK0331 CLB0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 1.006,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TUI1101 PRI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 6.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TUI1101 TUI0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 8.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TWC2201 NZW0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 9.64,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TWC2201 TWF0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 77.01,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "TWH0331 TUK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 22.3,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WAI0331 HTR0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 2.63,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WDV1101 TAP0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 17.92,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WHU1101 TAH0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 7.31,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WIL0331 MCK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 55.59,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WKM2201 MOK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 40.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WKM2201 WKM0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 56.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WPA2201 WPA0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 27.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WRK0331 TAA0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 12.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WRK2201 WRK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 66.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WTK0111 WTK0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 55.56,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WVY1101 WPP0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 107.51,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "WWD1103 WWD0",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 96.84,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ABY0111",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": -3.3,
+  "SPDGenerationMegawatt": 0.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ABY1101",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 0,
+  "SPDGenerationMegawatt": 0.0,
+  "DollarsPerMegawattHour": 31.0
+ },
+ {
+  "PointOfConnectionCode": "ALB0331",
+  "FiveMinuteIntervalDatetime": "2026-11-16T19:30:00",
+  "FiveMinuteIntervalNumber": 7,
+  "RunDateTime": "2026-11-16T06:29:00",
+  "SPDLoadMegawatt": 86.167,
+  "SPDGenerationMegawatt": 0.0,
+  "DollarsPerMegawattHour": 31.0
+ }
+])gm";

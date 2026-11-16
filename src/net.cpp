@@ -5,7 +5,7 @@
 
 int https_get(const char *url, const char *bearer, String &body) { return https_request(url, bearer, nullptr, body); }
 
-int https_request(const char *url, const char *bearer, const char *form, String &body) {
+int https_request(const char *url, const char *bearer, const char *form, String &body, const char *header, const char *header_value) {
   body = "";
   WiFiClientSecure client;
   client.setCACert(CA_ROOTS_PEM);
@@ -16,6 +16,7 @@ int https_request(const char *url, const char *bearer, const char *form, String 
   http.setUserAgent("GridMixDisplay/" FW_VERSION);
   if (!http.begin(client, url)) return -1;
   if (bearer && *bearer) http.addHeader("Authorization", String("Bearer ") + bearer);
+  if (header && header_value) http.addHeader(header, header_value);
 
   // Big answers (Texas, ~200 KB) go to PSRAM; follow plain redirects (NYISO's archive moves files around)
   http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);

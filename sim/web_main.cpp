@@ -10,6 +10,7 @@
 #include "gridui.h"
 #include "parsers.h"
 #include "us_grid.h"
+#include "nz_grid.h"
 #include "settings.h"
 #include "schedule.h"
 #include "../test/test_gridcore/fixtures.h"
@@ -158,7 +159,9 @@ EMSCRIPTEN_KEEPALIVE const char *gm_parse(int kind, const char *json) {
   GridSnapshot s;
   const bool ok = kind == 0 ? parse_openelectricity(json, len, s) : kind == 4 ? parse_carbon_intensity(json, len, s)
                 : kind == 6 ? parse_rte(json, len, s)
-                : kind == 8 ? parse_us(settings.region, json, len, (int64_t)time(nullptr), s) : parse_eia(json, len, s);
+                : kind == 8 ? parse_us(settings.region, json, len, (int64_t)time(nullptr), s)
+                : kind == 10 ? parse_nz(json, len, feed_for(settings.country, settings.region, view_country).region, s)
+                             : parse_eia(json, len, s);
   if (!ok) { snprintf(out, sizeof out, "Couldn't read that as %s data.", kind == 0 ? "Open Electricity generation" : "EIA"); return out; }
   snap = s;
   has_data = true;

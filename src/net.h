@@ -6,7 +6,8 @@
 // Returns the HTTP status (200 = OK), or a negative number if the connection failed.
 int https_get(const char *url, const char *bearer, String &body);
 // Same, but POSTs `form` (application/x-www-form-urlencoded) when it isn't nullptr
-int https_request(const char *url, const char *bearer, const char *form, String &body);
+int https_request(const char *url, const char *bearer, const char *form, String &body,
+                  const char *header = nullptr, const char *header_value = nullptr);   // e.g. an API key header
 
 // Percent-encodes a value for use in a URL query string.
 String url_encode(const char *s);

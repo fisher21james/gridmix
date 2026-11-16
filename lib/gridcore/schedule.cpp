@@ -171,6 +171,8 @@ int64_t Scheduler::next_regular(FetchKind k, int64_t now) const {
   if (src_ == SRC_RTE) return (now / (5 * MIN) + 1) * 5 * MIN + 30;
   // US grid operators publish each 5 minutes within a few minutes of its end
   if (src_ == SRC_US) return (now / (5 * MIN) + 1) * 5 * MIN + 150;
+  // NZ: the dispatch run for each 5 minutes happens about a minute before it starts
+  if (src_ == SRC_EA) return (now / (5 * MIN) + 1) * 5 * MIN + 30;
   // Open Electricity: just after each 10 (or 30) minutes, when the newest 5-minute point has been published.
   // Slow down when the day's credits are nearly gone.
   int64_t step = k == FETCH_MIX ? 10 * MIN : 30 * MIN;

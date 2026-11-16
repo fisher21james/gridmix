@@ -12,6 +12,7 @@
 #include "gridui.h"
 #include "parsers.h"
 #include "us_grid.h"
+#include "nz_grid.h"
 #include "schedule.h"
 #include "../test/test_gridcore/fixtures.h"
 
@@ -258,23 +259,22 @@ int main(int argc, char **argv) {
     }
   }
   {
-    // New Zealand, sample numbers from Transpower's live page (13 Nov 2026, 6pm NZ time). The live
-    // feed (Electricity Authority) is still to come; this is to check the geothermal station.
-    GridSnapshot s;
-    s.mw[HYDRO] = 3306; s.mw[GEOTHERMAL] = 776; s.mw[WIND] = 477; s.mw[SOLAR] = 239;
-    s.mw[GAS] = 101; s.mw[OTHER] = 42; s.mw[BATTERY] = 49;
-    s.valid = true;
-    s.data_time = 1794546000;
-    Tariff t;
-    t.add("Off-peak", 21 * 60, 7 * 60, 19.5f);
-    t.add("Peak", 7 * 60, 21 * 60, 33.0f);
-    Model m = model_build(s, true, "New Zealand", 5, 18 * 60 + 5, &t);
-    m.show_geothermal = true;
-    char ago[48];
-    format_ago(5 * 60, ago, sizeof ago);
-    model_views(m, "New Zealand", "My region \xC2\xB7 island grid", "New Zealand", "Both islands", "Every 5 min", ago, FRESH_OK);
-    list.push_back({"26-nz-sample", m, 0});
-    list.push_back({"27-nz-detail", m, 3});
+    // New Zealand: the Electricity Authority's real-time dispatch, 16 Nov 2026 7:30pm NZ time
+    for (int south = 0; south < 2; south++) {
+      GridSnapshot s;
+      parse_nz(NZ_RTD, strlen(NZ_RTD), south ? "SI" : "NI", s);
+      Tariff t;
+      t.add("Off-peak", 21 * 60, 7 * 60, 19.5f);
+      t.add("Peak", 7 * 60, 21 * 60, 33.0f);
+      const char *name = south ? "South Island" : "North Island";
+      Model m = model_build(s, true, name, 1, 19 * 60 + 32, &t);
+      m.show_geothermal = true;
+      char ago[48];
+      format_ago(2 * 60, ago, sizeof ago);
+      model_views(m, name, "My region \xC2\xB7 island grid", "New Zealand", "Both islands", "Every 5 min", ago, FRESH_OK);
+      list.push_back({south ? "26b-nz-south" : "26-nz-north", m, 0});
+      if (!south) list.push_back({"27-nz-detail", m, 3});
+    }
   }
   {
     Model m = list[4].model;       // data that's falling behind: amber dot next to the clock

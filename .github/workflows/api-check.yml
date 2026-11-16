@@ -29,6 +29,14 @@ jobs:
           curl -sf "https://api.carbonintensity.org.uk/regional/intensity/$(date -u +%Y-%m-%dT%H:%MZ)/pt24h/regionid/18" -o cih.json
           ./check_api cih cih.json
 
+      - name: New Zealand (Electricity Authority, key in the EA_KEY secret)
+        env:
+          EA_KEY: ${{ secrets.EA_KEY }}
+        run: |
+          if [ -z "$EA_KEY" ]; then echo "No EA_KEY secret yet: skipping New Zealand."; exit 0; fi
+          curl -sf --max-time 60 -H "Ocp-Apim-Subscription-Key: $EA_KEY" https://emi.azure-api.net/real-time-dispatch/ -o nz.json
+          ./check_api nz nz.json
+
       - name: United States (seven grid operators, no key)
         run: |
           fail=0

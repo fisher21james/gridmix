@@ -6,6 +6,7 @@
 #include <time.h>
 #include "app_state.h"
 #include "net.h"
+#include "nz_grid.h"
 #include "settings_store.h"
 #include "health.h"
 #include "ota.h"
@@ -105,11 +106,19 @@ static void handle_test_key() {
   if (deserializeJson(in, server.arg("plain"))) { send_message(400, false, "Bad request."); return; }
   const char *provider = in["provider"] | "";
   const char *typed = in["key"] | "";
-  const bool oe = !strcmp(provider, "oe");
-  const char *key = *typed ? typed : (oe ? g_settings.key_oe : g_settings.key_eia);
+  const bool oe = !strcmp(provider, "oe"), ea = !strcmp(provider, "ea");
+  const char *key = *typed ? typed : (oe ? g_settings.key_oe : ea ? g_settings.key_ea : g_settings.key_eia);
   if (!*key) { send_message(200, false, "Paste a key first."); return; }
 
   String body;
+  if (ea) {
+    const int code = https_request(NZ_RTD_URL, nullptr, nullptr, body, NZ_KEY_HEADER, key);
+    if (code < 0) { send_message(200, false, "Couldn't reach the Electricity Authority. Check the display's internet connection."); return; }
+    if (code == 401 || code == 403) { send_message(200, false, "The Electricity Authority didn't accept that key. Check it's the Primary key, and that your subscription has been approved."); return; }
+    if (code != 200) { send_message(200, false, "The Electricity Authority gave an unexpected answer. Try again in a minute."); return; }
+    send_message(200, true, "Key works.");
+    return;
+  }
   if (oe) {
     if (strncmp(key, "oe_", 3) != 0) { send_message(200, false, "That doesn't look like an Open Electricity key. They start with oe_."); return; }
     const int code = https_get("https://api.openelectricity.org.au/v4/me", key, body);

@@ -18,6 +18,7 @@
 #include "parsers.h"
 #include "schedule.h"
 #include "us_grid.h"
+#include "nz_grid.h"
 using namespace gridcore;
 
 int main(int argc, char **argv) {
@@ -32,6 +33,18 @@ int main(int argc, char **argv) {
     if (!us_url(argv[3], (long long)time(nullptr), url, sizeof url)) return 1;
     puts(url);
     return 0;
+  }
+  if (!strcmp(argv[1], "nz")) {   // check_api nz answer.json   (New Zealand, Electricity Authority)
+    std::ifstream f(argv[2]);
+    std::stringstream ss;
+    ss << f.rdbuf();
+    const std::string j = ss.str();
+    GridSnapshot s;
+    if (!parse_nz(j.data(), j.size(), "", s)) { printf("FAIL: couldn't read the New Zealand answer\n"); return 1; }
+    const long long age_min = ((long long)time(nullptr) - s.data_time) / 60;
+    printf("OK NZ: %.0f MW, %.1f%% renewable, data %lld min old, %.0f MW counted as Other (Glenbrook, diesel, or points missing from the fuel table)\n",
+           s.total(), s.renewable_pct(), age_min, s.mw[OTHER]);
+    return age_min > 60 ? 1 : 0;
   }
   if (!strcmp(argv[1], "us") && argc > 3) {
     std::ifstream f(argv[3]);

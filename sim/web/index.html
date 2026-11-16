@@ -88,7 +88,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
     <section class="card" id="liveCard">
       <h2>Live data</h2>
       <div class="row"><label for="lvCountry">Country</label>
-        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option><option value="FR">France</option><option value="US">United States</option></select>
+        <select id="lvCountry" style="flex:1"><option value="AU">Australia</option><option value="GB">United Kingdom</option><option value="FR">France</option><option value="US">United States</option><option value="NZ">New Zealand</option></select>
       </div>
       <div class="row"><label for="lvRegion">Region</label><select id="lvRegion" style="flex:1"></select></div>
       <div class="row" id="lvWholeRow"><label></label><span class="check"><input type="checkbox" id="lvWhole"> Whole country</span></div>
@@ -104,10 +104,10 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
         <div class="btns"><label class="btn-file"><input type="file" id="lvUSIn" hidden><span>Load the downloaded file</span></label></div>
       </div>
       <div id="lvAU">
-        <p class="note" style="margin-top:0">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 3 of your 500 daily requests.</p>
+        <p class="note" style="margin-top:0" id="lvAUNote">Open Electricity doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves. It uses 3 of your 500 daily requests.</p>
         <div class="row"><label for="lvOS">Computer</label><select id="lvOS" style="flex:1"><option value="mac">Mac or Linux (Terminal)</option><option value="win">Windows (PowerShell)</option></select></div>
         <textarea id="lvCmd" readonly spellcheck="false" style="min-height:96px"></textarea>
-        <div class="btns"><button id="lvCopy">Copy command</button><label class="btn-file"><input type="file" id="lvFile" accept=".json,application/json" hidden><span>Load gridmix-live.json</span></label></div>
+        <div class="btns"><button id="lvCopy">Copy command</button><label class="btn-file"><input type="file" id="lvFile" accept=".json,application/json" hidden><span>Load the saved file</span></label></div>
       </div>
       <div class="msg" id="lvMsg"></div>
       <p class="note">Your key stays in this browser. It's only sent to the data service itself.</p>
@@ -477,6 +477,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
          ["NY", "New York", "New York", "America/New_York"], ["NE", "New England", "New England", "America/New_York"],
          ["NW", "Northwest (BPA)", "Northwest", "America/Los_Angeles"]],
     FR: [["FR", "France", "France", "Europe/Paris"]],
+    NZ: [["NI", "North Island", "North Island", "Pacific/Auckland"], ["SI", "South Island", "South Island", "Pacific/Auckland"]],
   };
   const store = {
     get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
@@ -489,7 +490,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   function fillRegions() {
     const c = lv.country();
     $("lvRegion").innerHTML = REGIONS[c].map(r => `<option value="${r[0]}">${r[1]}</option>`).join("");
-    $("lvRegion").value = c === "AU" ? "SA1" : c === "GB" ? "13" : c === "FR" ? "FR" : "TEX";
+    $("lvRegion").value = c === "AU" ? "SA1" : c === "GB" ? "13" : c === "FR" ? "FR" : c === "NZ" ? "NI" : "TEX";
     $("lvKey").value = store.get(keyName());
     $("lvRemember").checked = !!$("lvKey").value;
     $("lvUS").hidden = c !== "US" && c !== "GB" && c !== "FR";
@@ -503,12 +504,25 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
       : c === "FR"
       ? "No key needed: the page asks RTE's éCO2mix data on ODRÉ directly, with the same requests the display sends (the newest quarter hour, and the last 24 hours)."
       : "The page asks the EIA directly, the same request the display sends. US data is hourly and often several hours behind.";
-    $("lvAU").hidden = c !== "AU";
+    $("lvAU").hidden = c !== "AU" && c !== "NZ";   // both need a command run on your computer (their APIs block web pages)
+    if (!$("lvAUNote").dataset.au) $("lvAUNote").dataset.au = $("lvAUNote").textContent;
+    $("lvAUNote").textContent = c === "NZ"
+      ? "The Electricity Authority doesn't let web pages read its data, so this takes one extra step: copy the command, run it in Terminal (Mac) or PowerShell (Windows), then load the file it saves (gridmix-nz.json)."
+      : $("lvAUNote").dataset.au;
     $("lvUSFile").hidden = true;
     $("lvMsg").textContent = "";
     makeCommand();
   }
   function makeCommand() {
+    if (lv.country() === "NZ") {
+      // The Electricity Authority's API doesn't let web pages call it: save its answer with a command instead
+      const key = $("lvKey").value.trim() || "PASTE_YOUR_KEY";
+      const u = "https://emi.azure-api.net/real-time-dispatch/";
+      $("lvCmd").value = $("lvOS").value === "mac"
+        ? `cd ~/Downloads && curl -s -H "Ocp-Apim-Subscription-Key: ${key}" "${u}" -o gridmix-nz.json && echo "Saved gridmix-nz.json in Downloads"`
+        : `cd $HOME\\Downloads; Invoke-WebRequest -Headers @{'Ocp-Apim-Subscription-Key'='${key}'} -Uri '${u}' -OutFile gridmix-nz.json; "Saved gridmix-nz.json in Downloads"`;
+      return;
+    }
     if (lv.country() !== "AU") return;
     const now = Date.now() / 1000;
     const p = getUrl(0, "AU", lv.region(), lv.whole() ? 1 : 0, now);
@@ -536,7 +550,7 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   $("lvOS").value = /Win/.test(navigator.platform) ? "win" : "mac";
   $("lvCopy").addEventListener("click", async () => {
     makeCommand();   // fresh times
-    if (!$("lvKey").value.trim()) { lvMsg("Add your Open Electricity key first.", false); return; }
+    if (!$("lvKey").value.trim()) { lvMsg(lv.country() === "NZ" ? "Add your Electricity Authority key first." : "Add your Open Electricity key first.", false); return; }
     try { await navigator.clipboard.writeText($("lvCmd").value); lvMsg("Copied. Run it, then load the file it saves.", true); }
     catch { $("lvCmd").select(); lvMsg("Select the command and copy it with Ctrl+C / Cmd+C.", false); }
   });
@@ -689,6 +703,14 @@ textarea { width: 100%; min-height: 84px; padding: 8px; font: 12px/1.4 ui-monosp
   });
 
   async function loadFile(file) {
+    if (lv.country() === "NZ") {   // the Electricity Authority's answer, as saved by the command
+      applySettings({country: "NZ", region: $("lvRegion").value, tz: "NZST-12NZDT,M9.5.0,M4.1.0/3"}, true);
+      const res = api.parse(10, (await file.text()).replace(/^\uFEFF/, ""));
+      if (!res.startsWith("Read OK")) { lvMsg(/401|denied|subscription/i.test(res) ? "The Electricity Authority didn't accept that key." : res, false); return; }
+      showLive(res);
+      log("New Zealand has no 24-hour history request: the display builds its chart up over the first day.");
+      return;
+    }
     let obj;
     try { obj = JSON.parse((await file.text()).replace(/^\uFEFF/, "")); }
     catch { lvMsg("That file isn't the one the command saves (it isn't valid JSON). Run the command again.", false); return; }

@@ -2,6 +2,7 @@
 #include <unity.h>
 #include <string.h>
 #include "us_grid.h"
+#include "nz_grid.h"
 #include "schedule.h"
 #include "settings.h"
 #include "../test_gridcore/fixtures.h"
@@ -89,6 +90,29 @@ void test_daylight_saving() {
   TEST_ASSERT_EQUAL_INT64(T("2026-10-31T15:00Z"), us_local_to_utc(2026, 10, 31, 8, 0, -8));  // day before: PDT
 }
 
+void test_new_zealand() {
+  GridSnapshot all, north, south;
+  TEST_ASSERT_TRUE(parse_nz(NZ_RTD, strlen(NZ_RTD), "", all));
+  TEST_ASSERT_TRUE(parse_nz(NZ_RTD, strlen(NZ_RTD), "NI", north));
+  TEST_ASSERT_TRUE(parse_nz(NZ_RTD, strlen(NZ_RTD), "SI", south));
+  TEST_ASSERT_EQUAL_INT64(T("2026-11-16T06:30Z"), all.data_time);   // 7:30pm NZ time
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 5391.809f, all.total());
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, all.total(), north.total() + south.total());
+  TEST_ASSERT_FLOAT_WITHIN(0.05f, 94.72f, all.renewable_pct());
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 78.865f, all.mw[COAL]);           // Huntly units 1-4
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0, south.mw[GEOTHERMAL]);          // all geothermal is in the North Island
+  TEST_ASSERT_TRUE(south.mw[HYDRO] > 2000);                          // Manapouri, Benmore, Clyde...
+  Source f;
+  bool s;
+  TEST_ASSERT_TRUE(nz_point("KOE1101 NGB0", f, s)); TEST_ASSERT_EQUAL(GEOTHERMAL, f);
+  TEST_ASSERT_TRUE(nz_point("KOE1101 KSF0", f, s)); TEST_ASSERT_EQUAL(SOLAR, f);
+  TEST_ASSERT_TRUE(nz_point("WKM2201 MOK0", f, s)); TEST_ASSERT_EQUAL(GEOTHERMAL, f);
+  TEST_ASSERT_TRUE(nz_point("WKM2201 WKM0", f, s)); TEST_ASSERT_EQUAL(HYDRO, f);
+  TEST_ASSERT_TRUE(nz_point("WIL0331 MCK0", f, s)); TEST_ASSERT_EQUAL(WIND, f);       // Mill Creek wind, not McKee
+  TEST_ASSERT_TRUE(nz_point("MAN2201 MAN0", f, s)); TEST_ASSERT_TRUE(s);
+  TEST_ASSERT_FALSE(nz_point("XYZ0331 XYZ0", f, s)); TEST_ASSERT_EQUAL(OTHER, f);
+}
+
 int main() {
   UNITY_BEGIN();
   RUN_TEST(test_now);
@@ -96,5 +120,6 @@ int main() {
   RUN_TEST(test_history);
   RUN_TEST(test_requests);
   RUN_TEST(test_daylight_saving);
+  RUN_TEST(test_new_zealand);
   return UNITY_END();
 }

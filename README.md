@@ -28,8 +28,9 @@ An animated 4.3" desk display that shows what's powering your electricity grid r
 | UK (Great Britain) | [Carbon Intensity API](https://carbonintensity.org.uk) by NESO and the University of Oxford (CC BY 4.0), no key | Every 30 minutes |
 | France | [RTE éCO2mix](https://www.rte-france.com/en/eco2mix) via [ODRÉ](https://odre.opendatasoft.com) (Licence Ouverte 2.0), no key. Screen in French or English | Every 15 minutes |
 | United States (California, Texas, Midwest/MISO, Central/SPP, New York, New England, Northwest/BPA) | Each grid operator's own live fuel mix (CAISO, ERCOT, MISO, SPP, NYISO, ISO-NE, BPA), no key | Every 5 minutes |
+| New Zealand (North Island, South Island) | [Electricity Authority](https://www.ea.govt.nz/data-and-insights/tools-and-apis/) real-time dispatch, free key | Every 5 minutes |
 
-Supported: Australia, Great Britain, France and seven US grid regions; New Zealand is in progress. A place is only added when free data is no more than about 30 minutes behind. The renewable figure counts solar, wind, hydro, geothermal and bioenergy (biomass), as official figures do; the details screen says when biomass is included, and grids with nuclear also show a low-carbon figure.
+Supported: Australia, Great Britain, France, New Zealand and seven US grid regions. A place is only added when free data is no more than about 30 minutes behind. The renewable figure counts solar, wind, hydro, geothermal and bioenergy (biomass), as official figures do; the details screen says when biomass is included, and grids with nuclear also show a low-carbon figure.
 
 Each display uses its owner's own free API key and talks to the source directly. There's no account or cloud service in between.
 
