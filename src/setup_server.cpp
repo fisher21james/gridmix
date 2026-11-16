@@ -112,7 +112,7 @@ static void handle_test_key() {
 
   String body;
   if (ea) {
-    const int code = https_request(NZ_RTD_URL, nullptr, nullptr, body, NZ_KEY_HEADER, key);
+    const int code = https_request(gridcore::NZ_RTD_URL, nullptr, nullptr, body, gridcore::NZ_KEY_HEADER, key);
     if (code < 0) { send_message(200, false, "Couldn't reach the Electricity Authority. Check the display's internet connection."); return; }
     if (code == 401 || code == 403) { send_message(200, false, "The Electricity Authority didn't accept that key. Check it's the Primary key, and that your subscription has been approved."); return; }
     if (code != 200) { send_message(200, false, "The Electricity Authority gave an unexpected answer. Try again in a minute."); return; }
